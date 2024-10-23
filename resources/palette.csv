@@ -1,8 +1,9 @@
-name,hex
-purple_deep,#0d0429ff
-purple_bright,#8b227a
-periwinkle,#44228e
-fuchsia,#8b227a
-salmon,#f8766d
-orange,#f8ae5e
-white_hot,#ffdea9
+name,hex,gradient
+black,#000000,0
+purple_deep,#0d0429ff,0
+purple,#452390,1
+periwinkle,#44228e,2
+fuchsia,#b8216c,3
+salmon,#f7504a,4
+tangerine,#f9ac5a,5
+white_hot,#ecdeac,6

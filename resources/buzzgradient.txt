@@ -1,6 +1,0 @@
-#000000  # black
-#452390  # purple
-#b8216c  # fuchsia
-#f7504a  # salmon
-#f9ac5a  # tangerine
-#ecdeac  # white hot
