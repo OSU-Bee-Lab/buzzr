@@ -15,17 +15,20 @@ read_raw <- function(path_raw){
 #' Bin raw buzzdetect output by time
 #'
 #' @param dt_raw A data.table holding raw detection values, in the _buzzdetect.csv format
-#' @param time_start A POSIXct value (or a value that can be converted to such) identifying the date and time that the output begins
 #' @param thresholds A named vector where the names correspond to buzzdetect classes and their values correspond to the desired detection threshold for that class.
 #' @param binwidth The desired with of the bin in minutes, to be passed to the "unit" argument of lubridate::floor_date()
+#' @param time_start A POSIXct value (or a value that can be converted to such) identifying the date and time that the output begins. Required if the input data has no start_real column, otherwise ignored.
 #' @return A data.table
 #' @export
-bin_raw <- function(dt_raw, time_start, thresholds=c('ins_buzz'=-1), binwidth=5){
-  time_start <- as.POSIXct(time_start)
+bin_raw <- function(dt_raw, thresholds=c('ins_buzz'=-1), binwidth=5, time_start=NA){
+  # TODO: give warning when time_start and $start_real both exist
+  if(is.null(dt_raw$start_real)){
+    if(is.na(time_start)){stop('input data has no start_real column, so you must provide a value for time_start')}
+    time_start <- as.POSIXct(time_start)
+    dt_raw$start_real <- time_start + dt_raw$start
+  }
 
-  dt_raw$start_real <- time_start + dt_raw$start
   dt_raw$start_bin <- lubridate::floor_date(dt_raw$start_real, unit = paste0(binwidth, 'minutes'))
-
 
   dt_bin <- dt_raw[
     ,

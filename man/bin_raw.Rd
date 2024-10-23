@@ -4,16 +4,16 @@
 \alias{bin_raw}
 \title{Bin raw buzzdetect output by time}
 \usage{
-bin_raw(dt_raw, time_start, thresholds = c(ins_buzz = -1), binwidth = 5)
+bin_raw(dt_raw, thresholds = c(ins_buzz = -1), binwidth = 5, time_start = NA)
 }
 \arguments{
 \item{dt_raw}{A data.table holding raw detection values, in the _buzzdetect.csv format}
 
-\item{time_start}{A POSIXct value (or a value that can be converted to such) identifying the date and time that the output begins}
-
 \item{thresholds}{A named vector where the names correspond to buzzdetect classes and their values correspond to the desired detection threshold for that class.}
 
 \item{binwidth}{The desired with of the bin in minutes, to be passed to the "unit" argument of lubridate::floor_date()}
+
+\item{time_start}{A POSIXct value (or a value that can be converted to such) identifying the date and time that the output begins. Required if the input data has no start_real column, otherwise ignored.}
 }
 \value{
 A data.table
