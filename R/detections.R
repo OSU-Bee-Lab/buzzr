@@ -26,7 +26,6 @@ bin_raw <- function(dt_raw, time_start, thresholds=c('ins_buzz'=-1), binwidth=5)
   dt_raw$start_real <- time_start + dt_raw$start
   dt_raw$start_bin <- lubridate::floor_date(dt_raw$start_real, unit = paste0(binwidth, 'minutes'))
 
-  cols_out <- paste0("detections_", cols_bin)
 
   dt_bin <- dt_raw[
     ,
