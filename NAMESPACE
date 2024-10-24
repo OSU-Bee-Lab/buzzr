@@ -3,3 +3,4 @@
 export(bin_raw)
 export(read_raw)
 export(rebin)
+export(theme_activitycurve)
