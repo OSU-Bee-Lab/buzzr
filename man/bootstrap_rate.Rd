@@ -4,12 +4,16 @@
 \alias{bootstrap_rate}
 \title{Non-parametric bootstrapping of detection rates}
 \usage{
-bootstrap_rate(dt, groupby)
+bootstrap_rate(dt, groupby, replicates = 10000, conf = 0.95)
 }
 \arguments{
 \item{dt}{A data.table with a detectionrate column}
 
 \item{groupby}{A vector of column names by which the bootstraps should be grouped}
+
+\item{replicates}{The number of replicates to draw for bootstrapping; passed to the R argument of one.boot}
+
+\item{conf}{The desired confidence interval}
 }
 \value{
 A data.table
