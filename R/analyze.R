@@ -55,6 +55,6 @@ quantile_rate <- function(dt, groupby, conf=0.50, median=T){
   dt_long[, percentile := as.numeric(sub("quant_", "", percentile))]
 
 
-  return(dt_summ)
+  return(dt_long)
 }
 
