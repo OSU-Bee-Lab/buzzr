@@ -2,8 +2,11 @@
 
 export(bin_raw)
 export(bootstrap_rate)
+export(commontime)
+export(quantile_rate)
 export(read_raw)
 export(rebin)
+export(stepper)
 export(theme_activitycurve)
 import(boot)
 import(data.table)

@@ -54,8 +54,11 @@ bin_raw <- function(dt_raw, thresholds=c('ins_buzz'=-1), binwidth=5, time_start=
 #' @param binwidth The desired with of the bin in minutes, to be passed to the "unit" argument of lubridate::floor_date()
 #' @return A data.table
 #' @export
-rebin <- function(dt_bin, binwidth){
+rebin <- function(dt_bin, binwidth, tz){
   # TODO: catch when input binwidth is less than existing binwidth
+  # TODO: default tz? It's giving me so much agony I'm thinking I should leave it required...
+  # TODO: catch when time_common exists?
+  warning('rebin currently does not handle values well; only sums detections and frames, treats the rest as ID')
   if(is.null(dt_bin$start_bin)){
     stop('input data has no start_bin value')
   }
@@ -65,12 +68,13 @@ rebin <- function(dt_bin, binwidth){
   }
 
   dt_bin <- data.table::as.data.table(dt_bin)
+
   if(!lubridate::is.POSIXct(dt_bin$start_bin)){
-    dt_bin$start_bin <- fasttime::fastPOSIXct(dt_bin$start_bin)
+    dt_bin$start_bin <- fasttime::fastPOSIXct(dt_bin$start_bin, tz)
   }
 
   dt_rebin <- dt_bin
-  dt_rebin$start_bin <- lubridate::floor_date(dt_bin$start_bin, unit = paste0(binwidth, 'minutes'))
+  dt_rebin$start_bin <- lubridate::floor_date(dt_bin$start_bin, unit = paste0(binwidth*60, ' aseconds'))
 
   value_cols <- c('frames', grep("^detections_", names(dt_rebin), value = TRUE))
 

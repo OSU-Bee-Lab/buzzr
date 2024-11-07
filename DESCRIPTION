@@ -1,12 +1,17 @@
-Package: buzzr
 Type: Package
-Title: What the Package Does (Title Case)
+Package: buzzr
+Title: Tools for Handling buzzdetect Results
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: Luke Hearon
+Maintainer: Luke hearon <hearon.9@osu.edu>
+Description: A package for handling, manipulating, and analyzing output
+    files from buzzdetect.
 License: What license is it under?
+Imports:
+    data.table,
+    fasttime,
+    lubridate,
+    simpleboot
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
