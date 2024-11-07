@@ -44,17 +44,18 @@ quantile_rate <- function(dt, groupby, conf=0.50, median=T){
     by = .(start_bin, recorder)  # Group by time_common and recorder
   ]
 
-  dt_long <- melt(
-    dt_summ,
-    id.vars = groupby,
-    measure.vars = patterns("^quant_"),
-    variable.name = "percentile",
-    value.name = "value"
-  )
+  # hmmm...for plotting, the wide form is actually better
+  # dt_long <- melt(
+  #   dt_summ,
+  #   id.vars = groupby,
+  #   measure.vars = patterns("^quant_"),
+  #   variable.name = "percentile",
+  #   value.name = "value"
+  # )
+  #
+  # dt_long[, percentile := as.numeric(sub("quant_", "", percentile))]
 
-  dt_long[, percentile := as.numeric(sub("quant_", "", percentile))]
 
-
-  return(dt_long)
+  return(dt_summ)
 }
 
