@@ -27,34 +27,27 @@ bootstrap_rate <- function(dt, groupby, replicates=1e4, conf=0.95){
 #' @return A data.table
 #' @export
 quantile_rate <- function(dt, groupby, conf=0.50, median=T){
-  quants <- sapply(conf, function(cnf){return(c(0 + (cnf/2), 1 - (cnf/2)))})
+  quants <- sapply(
+    conf,
+    function(cnf){
+      x <- (1-cnf)/2
+      q <- c(x, 1-x)
+      return(q)
+    }
+  )
   if(median){quants <- c(quants, 0.5)}
 
   dt_summ <- dt[
     ,
     {
-      detectionrate_mean  <-  mean(detectionrate, na.rm=T)
       q_vals <- quantile(detectionrate, probs=quants, na.rm=T)
       names(q_vals) <- sub('\\%', '', names(q_vals))
-      q_vals_named <- setNames(as.list(q_vals), paste0("quant_", names(q_vals)))
 
-      c(list(detectionrate_mean = detectionrate_mean), q_vals_named)
+      setNames(as.list(q_vals), paste0("quant_", names(q_vals)))
     }
     ,
-    by = .(start_bin, recorder)  # Group by time_common and recorder
+    by = groupby
   ]
-
-  # hmmm...for plotting, the wide form is actually better
-  # dt_long <- melt(
-  #   dt_summ,
-  #   id.vars = groupby,
-  #   measure.vars = patterns("^quant_"),
-  #   variable.name = "percentile",
-  #   value.name = "value"
-  # )
-  #
-  # dt_long[, percentile := as.numeric(sub("quant_", "", percentile))]
-
 
   return(dt_summ)
 }
