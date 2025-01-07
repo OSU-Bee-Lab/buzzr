@@ -9,9 +9,9 @@ Description: A package for handling, manipulating, and analyzing output
 License: What license is it under?
 Imports:
     data.table,
-    fasttime,
     lubridate,
-    simpleboot
+    simpleboot,
+    ggplot2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
