@@ -56,8 +56,11 @@ bin_raw <- function(dt_raw, thresholds=c('ins_buzz'=-1), binwidth=5, time_start=
 #' @export
 rebin <- function(dt_bin, binwidth){
   # TODO: catch when input binwidth is less than existing binwidth
-  # TODO: catch when time_common exists?
-  warning('rebin currently does not handle values well; only sums detections and frames, treats the rest as ID')
+  # TODO: don't group by time_common, detectionrate
+  has_detectionrate <- 'detectionrate' %in% names(dt_bin)
+  if(has_detectionrate){dt_bin$detectionrate <- NULL}
+
+
   if(is.null(dt_bin$start_bin)){
     stop('input data has no start_bin value')
   }
@@ -65,6 +68,13 @@ rebin <- function(dt_bin, binwidth){
   if(length(grep("^detections_", names(dt_bin)))==0){
     stop('input data has no detections_ columns')
   }
+
+  cnames <- names(dt_bin)
+  name_mask <- rep(T, ncol(dt_bin))
+  name_mask[cnames %in% c('start_bin', 'frames')] <- F
+  name_mask[grepl('detections_', cnames)] <- F
+
+  if(any(name_mask)){message('using the following columns as grouping variables: ', paste(cnames[name_mask], collapse = ', '))}
 
   dt_bin <- data.table::as.data.table(dt_bin)
 
@@ -88,6 +98,80 @@ rebin <- function(dt_bin, binwidth){
     .SDcols = value_cols
   ]
 
+  if(has_detectionrate){dt_rebin$detectionrate <- dt_rebin$detections_ins_buzz/dt_rebin$frames}
   return(dt_rebin)
 }
 
+rebin2 <- function(dt_bin, binwidth){
+  # TODO: catch when input binwidth is less than existing binwidth
+  # TODO: don't group by time_common, detectionrate
+  if(is.null(dt_bin$start_bin)){
+    stop('input data has no start_bin value')
+  }
+  if(length(grep("^detections_", names(dt_bin)))==0){
+    stop('input data has no detections_ columns')
+  }
+
+  # Convert to data.table to ensure compatibility
+  dt_bin <- data.table::as.data.table(dt_bin)
+
+  # Identify column types
+  cnames <- names(dt_bin)
+  name_mask <- rep(TRUE, ncol(dt_bin))
+  name_mask[cnames %in% c('start_bin', 'frames')] <- FALSE
+  name_mask[grepl('detections_', cnames)] <- FALSE
+
+  # Identify detectionrate column if present
+  detectionrate_col <- grep("^detectionrate$", cnames, value = TRUE)
+
+  # Print grouping variables
+  if(any(name_mask)){
+    message('using the following columns as grouping variables: ',
+            paste(cnames[name_mask], collapse = ', '))
+  }
+
+  # Ensure start_bin is POSIXct
+  if(!lubridate::is.POSIXct(dt_bin$start_bin)){
+    dt_bin$start_bin <- as.POSIXct(dt_bin$start_bin)
+  }
+
+  # Rebin start_bin
+  dt_rebin <- dt_bin
+  dt_rebin$start_bin <- lubridate::floor_date(dt_bin$start_bin,
+                                              unit = paste0(binwidth*60, ' aseconds'))
+
+  # Identify columns to sum
+  value_cols <- c('frames', grep("^detections_", names(dt_rebin), value = TRUE))
+
+  # Perform aggregation
+  if(length(detectionrate_col) > 0){
+    # If detectionrate column exists, use a different aggregation approach
+    dt_rebin <- dt_rebin[
+      ,
+      c(
+        lapply(value_cols, \(x) sum(get(x))),
+        list(detectionrate = mean(get(detectionrate_col)))
+      ),
+      # group by non-values
+      by = setdiff(names(dt_rebin), c(value_cols, detectionrate_col))
+    ]
+
+    # Ensure column names are correct
+    setnames(dt_rebin,
+             old = c(value_cols, "detectionrate"),
+             new = c(value_cols, detectionrate_col)
+    )
+  } else {
+    # If no detectionrate column, use original summing method
+    dt_rebin <- dt_rebin[
+      ,
+      lapply(.SD, sum),
+      # group by non-values
+      by = setdiff(names(dt_rebin), value_cols),
+      # summarize values
+      .SDcols = value_cols
+    ]
+  }
+
+  return(dt_rebin)
+}
