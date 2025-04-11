@@ -6,7 +6,7 @@ rm(palette)
 #' @export
 stepper <- function(dt, time_col, binwidth = NULL) {
   # detect binwidth if not provided
-  if (is.null(binwidth)) {
+  if (is.null(binwidth)){
     times <- sort(unique(dt[[time_col]]))
     binwidth <- times[2] - times[1]
     message(paste0('No binwidth provided; binwidth automatically detected as ', binwidth, ' minutes.'))
@@ -25,72 +25,83 @@ stepper <- function(dt, time_col, binwidth = NULL) {
   return(dt_step)
 }
 
-
 #' @export
-theme_activitycurve <- function(){
-  ggplot2::theme_minimal() +
+theme_buzzr_light <- function(base_size=10){
+  ggplot2::theme_minimal(base_size) +
   ggplot2::theme(
-    # text
+    # Parent text settings
     #
-    text = ggplot2::element_text(
-      size=26,
-      family="Futura-Medium",
-      color = 'white'
-    ),
+      text = ggplot2::element_text(family="Futura-Medium", size=ggplot2::rel(5)),
 
-    # panel
+    # Plot
     #
-    plot.background = ggplot2::element_rect( # oh...right, I put the panel on top. Will have to do in GIMP
-      fill = cp[['purple_deep']],
-      linewidth=0
-    ),
-
-    panel.border = element_blank(),
-
-    # axes
-    #
-      # text
-      axis.text = ggplot2::element_text(
-        size = 24,
-        color = 'white'
+      plot.background = ggplot2::element_rect(linewidth=0),  # remove border
+      plot.title = ggplot2::element_text(
+        hjust = 0,
+        size=ggplot2::rel(8),
+        margin = ggplot2::margin(b=base_size/5, unit='lines')
+      ),
+      plot.margin = ggplot2::margin(
+        t=base_size*8,
+        r=base_size*9,
+        b=base_size*4,
+        l=base_size*5
       ),
 
-      axis.title.x = ggplot2::element_text(
-        size = 38,
-        margin =  ggplot2::margin(t=30, b = 30)
-      ),
+    # Panel
+    #
+      panel.border = ggplot2::element_blank(),
+      panel.ontop = F,
+      panel.spacing.y = ggplot2::unit(base_size/4, 'lines'),
 
+
+      # horizontal
+      panel.grid.major.y = ggplot2::element_line(linewidth = ggplot2::rel(0.8)),
+      panel.grid.minor.y = ggplot2::element_line(linewidth = ggplot2::rel(0)),
+
+      # vertical
+      panel.grid.major.x = ggplot2::element_line(linewidth = ggplot2::rel(1.5)),
+      panel.grid.minor.x = ggplot2::element_line(linewidth = ggplot2::rel(0)),
+
+    # Axes
+    #
       axis.title.y = ggplot2::element_text(
         angle=0,
         hjust=1,
         vjust=0.5,
-        size = 34,
-        margin = ggplot2::margin(r=30)
+        margin = ggplot2::margin(r=ggplot2::rel(25))
       ),
 
+    # Legend
+    #
+      legend.text = ggplot2::element_text(size=ggplot2::rel(4.5))  # dunno why this needs to be adjusted seperately from parent text
+  )
+}
+
+#' @export
+theme_buzzr <- function(base_size=11){
+  theme_buzzr_light(base_size) +
+  ggplot2::theme(
+    # text
+    #
+    text = ggplot2::element_text(color = 'white'),
+
+    # panel
+    #
+    plot.background = ggplot2::element_rect(fill = cp[['purple_deep']]),
+
+    # axes
+    #
+      axis.text = ggplot2::element_text(color='white'),
+      # text
+      # axis.title.x = ggplot2::element_text(margin =  ggplot2::margin(t=30, b = 30)),
+
+
     # grid
-    panel.grid.major.x = ggplot2::element_line(
-      color = '#4a4753',
-      linewidth = 0.8
-    ),
+    panel.grid.major.x = ggplot2::element_line(color = '#4a4753'),
+    panel.grid.major.y = ggplot2::element_line(color = 'white'),
 
-    panel.grid.minor.x = ggplot2::element_line(linewidth = 0),
-    panel.grid.major.y = ggplot2::element_line(linewidth = 0.2, color = 'white'),
-    panel.grid.minor.y = ggplot2::element_line(linewidth = 0),
-    panel.ontop = F,
-
-    plot.margin = ggplot2::margin(2,3,0,1, 'cm'),
-
-    strip.text = ggplot2::element_text(
-      size = 24,
-      color = 'white'
-    ),
-
-    plot.title = ggplot2::element_text(
-      size = 40,
-      margin =  ggplot2::margin(b=20),
-      hjust = 0
-    )
+    strip.text = ggplot2::element_text(color = 'white')
   )
 }
 
