@@ -38,7 +38,7 @@ theme_buzzr_light <- function(base_size=10){
       plot.background = ggplot2::element_rect(linewidth=0),  # remove border
       plot.title = ggplot2::element_text(
         hjust = 0,
-        size=ggplot2::rel(8),
+        size=ggplot2::rel(8), # Why does this need to be set separately from text?
         margin = ggplot2::margin(b=base_size/5, unit='lines')
       ),
       plot.margin = ggplot2::margin(
@@ -50,7 +50,7 @@ theme_buzzr_light <- function(base_size=10){
 
     # Panel
     #
-      panel.border = ggplot2::element_blank(),
+      panel.border = ggplot2::element_rect(linewidth=1, color = 'black', fill='transparent'),
       panel.ontop = F,
       panel.spacing.y = ggplot2::unit(base_size/4, 'lines'),
 
@@ -74,7 +74,11 @@ theme_buzzr_light <- function(base_size=10){
 
     # Legend
     #
-      legend.text = ggplot2::element_text(size=ggplot2::rel(4.5))  # dunno why this needs to be adjusted seperately from parent text
+      legend.text = ggplot2::element_text(size=ggplot2::rel(4.5)),  # Why does this need to be set separately from text?
+
+    # Facets/strips
+    #
+    strip.text = ggplot2::element_text(size=rel(4))  # Why does this need to be set separately from text?
   )
 }
 
@@ -82,25 +86,26 @@ theme_buzzr_light <- function(base_size=10){
 theme_buzzr <- function(base_size=11){
   theme_buzzr_light(base_size) +
   ggplot2::theme(
-    # text
+    # Parent text settings
     #
     text = ggplot2::element_text(color = 'white'),
 
-    # panel
+    # Plot
     #
     plot.background = ggplot2::element_rect(fill = cp[['purple_deep']]),
 
-    # axes
+    # Axes
     #
       axis.text = ggplot2::element_text(color='white'),
-      # text
-      # axis.title.x = ggplot2::element_text(margin =  ggplot2::margin(t=30, b = 30)),
 
+    # Panel
+    #
+      panel.border = ggplot2::element_rect(linewidth=1, color = 'black'),
+      panel.grid.major.x = ggplot2::element_line(color = '#4a4753'),
+      panel.grid.major.y = ggplot2::element_line(color = 'white'),
 
-    # grid
-    panel.grid.major.x = ggplot2::element_line(color = '#4a4753'),
-    panel.grid.major.y = ggplot2::element_line(color = 'white'),
-
+    # Facets/strips
+    #
     strip.text = ggplot2::element_text(color = 'white')
   )
 }
