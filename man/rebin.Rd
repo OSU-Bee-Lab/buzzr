@@ -4,7 +4,7 @@
 \alias{rebin}
 \title{Re-bin existing binned detections}
 \usage{
-rebin(dt_bin, binwidth, tz)
+rebin(dt_bin, binwidth)
 }
 \arguments{
 \item{dt_bin}{A data.table in the binned buzzdetect format}

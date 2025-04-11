@@ -4,7 +4,13 @@
 \alias{bootstrap_rate}
 \title{Non-parametric bootstrapping of detection rates}
 \usage{
-bootstrap_rate(dt, groupby, replicates = 10000, conf = 0.95)
+bootstrap_rate(
+  dt,
+  groupby,
+  boot_func = median,
+  replicates = 10000,
+  conf = 0.95
+)
 }
 \arguments{
 \item{dt}{A data.table with a detectionrate column}

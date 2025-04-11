@@ -4,7 +4,7 @@
 \alias{quantile_rate}
 \title{Calculate quantiles of detection rates}
 \usage{
-quantile_rate(dt, groupby, conf = 0.5, median = T)
+quantile_rate(dt, groupby, conf = 0.5, take_median = T, take_mean = F)
 }
 \arguments{
 \item{dt}{A data.table with a detectionrate column}
