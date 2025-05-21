@@ -149,7 +149,7 @@ bin_recorder <- function(dir_recorder, intermediate_dirs = NULL, thresholds=c(in
 #' @param dir_experiment The directory holding all buzzdetect results to be analyzed.
 #' @inheritParams bin_recorder
 #' @export
-bin_experiment <- function(dir_experiment, intermediate_dirs, thresholds=c(ins_buzz=0), binwidth=5, results_tag="_buzzdetect", append_path=T){
+bin_experiment <- function(dir_experiment, intermediate_dirs, thresholds=c(ins_buzz=0), binwidth=5, results_tag="_buzzdetect"){
   paths_results <- list_matching_tag(dir_experiment, results_tag)
   dirs_recorders <- unique(dirname(paths_results))
 
