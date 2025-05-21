@@ -74,11 +74,11 @@ theme_buzzr_light <- function(base_size=10){
 
     # Legend
     #
-      legend.text = ggplot2::element_text(size=ggplot2::rel(4.5)),  # Why does this need to be set separately from text?
+      legend.text = ggplot2::element_text(size=ggplot2::rel(4.5))#,  # Why does this need to be set separately from text?
 
     # Facets/strips
     #
-    strip.text = ggplot2::element_text(size=rel(4))  # Why does this need to be set separately from text?
+    # strip.text = ggplot2::element_text(size=rel(1))  # Why does this need to be set separately from text? Now it seems to cause issues
   )
 }
 
