@@ -155,7 +155,7 @@ bin_experiment <- function(dir_experiment, intermediate_dirs, thresholds=c(ins_b
 
   results <- lapply(
     X = dirs_recorders,
-    FUN = read_bin_recorder,
+    FUN = bin_recorder,
     intermediate_dirs = intermediate_dirs,
     thresholds = thresholds,
     binwidth = binwidth,

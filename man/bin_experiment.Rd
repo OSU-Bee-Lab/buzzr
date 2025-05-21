@@ -9,8 +9,7 @@ bin_experiment(
   intermediate_dirs,
   thresholds = c(ins_buzz = 0),
   binwidth = 5,
-  results_tag = "_buzzdetect",
-  append_path = T
+  results_tag = "_buzzdetect"
 )
 }
 \arguments{
