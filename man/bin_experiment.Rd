@@ -2,7 +2,7 @@
 % Please edit documentation in R/results.R
 \name{bin_experiment}
 \alias{bin_experiment}
-\title{Read and join all result files in a direct4ory, appending the names of directories between the dir_experiment and the recorder_dir.}
+\title{Read and join all result files in a directory, appending the names of directories between the dir_experiment and the recorder_dir.}
 \usage{
 bin_experiment(
   dir_experiment,
@@ -25,5 +25,5 @@ bin_experiment(
 \item{results_tag}{The tag used to identify result files during file matching, should NOT include a file extension. E.g., _buzzdetect instead of _buzzdetect.csv}
 }
 \description{
-Read and join all result files in a direct4ory, appending the names of directories between the dir_experiment and the recorder_dir.
+Read and join all result files in a directory, appending the names of directories between the dir_experiment and the recorder_dir.
 }
