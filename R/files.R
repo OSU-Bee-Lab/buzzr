@@ -22,7 +22,7 @@ list_matching_tag <- function(dir_in, tag) {
 #' @export
 file_start_time <- function(path_raw){
   filename <- basename(path_raw)
-  pattern <- paste0("^\\d{6}_\\d{4}")
+  pattern <- paste0("\\d{6}_\\d{4}")
   matches <- regexec(pattern, filename)
   timestamp <- regmatches(filename, matches)[[1]]
   start_real <- as.POSIXct(timestamp, format = "%y%m%d_%H%M", tz='America/New_York')
