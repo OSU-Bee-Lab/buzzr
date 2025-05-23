@@ -4,28 +4,6 @@ names(cp) <- palette$name
 rm(palette)
 
 #' @export
-stepper <- function(dt, time_col, binwidth = NULL) {
-  # detect binwidth if not provided
-  if (is.null(binwidth)){
-    times <- sort(unique(dt[[time_col]]))
-    binwidth <- times[2] - times[1]
-    message(paste0('No binwidth provided; binwidth automatically detected as ', binwidth, ' minutes.'))
-  }
-
-  dt[, time_col_shifted := get(time_col) + (binwidth * 0.99)]
-
-  dt_step <- rbind(
-    dt[, .SD, .SDcols = names(dt)],  # original table with all columns
-    dt[, .SD, .SDcols = setdiff(names(dt), time_col)][, (time_col) := time_col_shifted]  # shifted table with updated time_col
-  )
-
-  # drop the shifted column
-  dt_step[, time_col_shifted := NULL]
-
-  return(dt_step)
-}
-
-#' @export
 theme_buzzr_light <- function(base_size=10){
   ggplot2::theme_minimal(base_size) +
   ggplot2::theme(
