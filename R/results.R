@@ -129,12 +129,13 @@ bin_recorder <- function(dir_recorder, intermediate_dirs = NULL, thresholds=c(in
     X = list_matching_tag(dir_recorder, results_tag),
     FUN = read_raw,
     translate_to_real = T
-  )
+  ) |>
+    data.table::rbindlist(fill = T)
 
-  results <- data.table::rbindlist(results)
   results_bin <- bin_raw(results, thresholds=thresholds, binwidth=binwidth)
 
   elements <- recdir_to_elements(dir_recorder, intermediate_dirs)
+
   results_bin <- cbind(
     as.data.frame(as.list(elements)),
     results_bin
@@ -149,7 +150,7 @@ bin_recorder <- function(dir_recorder, intermediate_dirs = NULL, thresholds=c(in
 #' @param dir_experiment The directory holding all buzzdetect results to be analyzed.
 #' @inheritParams bin_recorder
 #' @export
-bin_experiment <- function(dir_experiment, intermediate_dirs, thresholds=c(ins_buzz=0), binwidth=5, results_tag="_buzzdetect"){
+bin_experiment <- function(dir_experiment, intermediate_dirs=NULL, thresholds=c(ins_buzz=0), binwidth=5, results_tag="_buzzdetect"){
   paths_results <- list_matching_tag(dir_experiment, results_tag)
   dirs_recorders <- unique(dirname(paths_results))
 
@@ -162,7 +163,7 @@ bin_experiment <- function(dir_experiment, intermediate_dirs, thresholds=c(ins_b
     results_tag = results_tag
   )
 
-  results <- data.table::rbindlist(results)
+  results <- data.table::rbindlist(results, fill = T)
 
   return(results)
 }

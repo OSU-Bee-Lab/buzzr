@@ -2,16 +2,18 @@
 % Please edit documentation in R/files.R
 \name{file_start_time}
 \alias{file_start_time}
-\title{Given a path, extract the start time as POSIXct object. Assumes YYMMDD_HHMM format, as used by Sony ICD-PX370 recorders.}
+\title{Extract timestamp from path. Assumes YYMMDD_HHMM format, as used by Sony ICD-PX370 recorders.}
 \usage{
-file_start_time(path_raw)
+file_start_time(path_raw, tz = "America/New_York")
 }
 \arguments{
-\item{path_raw}{The file path of any file with a name starting with a YYMMDD_HHMM timestamp}
+\item{path_raw}{Character vector of file paths}
+
+\item{tz}{Timezone string}
 }
 \value{
-A POSIXct object bearing the start time of the file
+POSIXct vector
 }
 \description{
-Given a path, extract the start time as POSIXct object. Assumes YYMMDD_HHMM format, as used by Sony ICD-PX370 recorders.
+Extract timestamp from path. Assumes YYMMDD_HHMM format, as used by Sony ICD-PX370 recorders.
 }

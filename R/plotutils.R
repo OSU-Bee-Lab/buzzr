@@ -1,7 +1,10 @@
-palette <- read.csv('./resources/palette.csv')
-cp <- palette$hex
-names(cp) <- palette$name
-rm(palette)
+#' @export
+palette <- {
+  palette_df <- read.csv('./resources/palette.csv')
+  p <- palette_df$hex
+  names(p) <- palette_df$name
+  p
+}
 
 #' @export
 theme_buzzr_light <- function(base_size=10){
@@ -70,7 +73,7 @@ theme_buzzr <- function(base_size=11){
 
     # Plot
     #
-    plot.background = ggplot2::element_rect(fill = cp[['purple_deep']]),
+    plot.background = ggplot2::element_rect(fill = palette[['purple_deep']]),
 
     # Axes
     #
@@ -87,37 +90,3 @@ theme_buzzr <- function(base_size=11){
     strip.text = ggplot2::element_text(color = 'white')
   )
 }
-
-#' @export
-plot_quants <- function(quants, boot_conf=0.95, observation_quantiles = 0.5, time='common'){
-  if(!(T %in% (c('start_common', 'start_bin') %in% names(quants)))){stop('quants has neither a start_common nor a start_bin column')}
-  if(!(time %in% c('common', 'actual'))){stop("time must be either 'common' or 'actual'")}
-
-  time <- tolower(time)
-  if(time=='common'){
-    col_time = 'start_common'
-    if(!('start_common' %in% names(quants))){quants$start_common <- commontime(quants$start_bin)}
-  } else if(time=='actual'){
-    col_time = 'start_bin'
-  }
-
-  if(!('POSIXct' %in% class(quants[[col_time]]))){quants[[col_time]] <- as.POSIXct(quants[[col_time]])}
-
-  plot_base <- ggplot2::ggplot(
-    data = quants,
-    ggplot2::aes(
-      x = !!col_time
-    )
-  )
-
-  # NOTE TO SELF: I don't need to have the color and facet cols in the function; user can do after
-  # add bootstraps
-  for(b in boot_conf){
-    col_boot_low <- paste0('conf_', (1-boot_conf)/2)
-    col_boot_hi <- paste0('conf_', 1-boot_low)
-    plot_base <- plot_base +
-      ggplot2::geom_ribbon(ggplot2::aes(ymin=!!col_boot_low, ymax=!!col_boot_hi))
-  }
-
-}
-

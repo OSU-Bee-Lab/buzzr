@@ -15,30 +15,31 @@ list_matching_tag <- function(dir_in, tag) {
 }
 
 
-#' Given a path, extract the start time as POSIXct object. Assumes YYMMDD_HHMM format, as used by Sony ICD-PX370 recorders.
+#' Extract timestamp from path. Assumes YYMMDD_HHMM format, as used by Sony ICD-PX370 recorders.
 #'
-#' @param path_raw The file path of any file with a name starting with a YYMMDD_HHMM timestamp
-#' @return A POSIXct object bearing the start time of the file
+#' @param path_raw Character vector of file paths
+#' @param tz Timezone string
+#' @return POSIXct vector
+#' @importFrom stringr str_extract
 #' @export
-file_start_time <- function(path_raw){
-  filename <- basename(path_raw)
-  pattern <- paste0("\\d{6}_\\d{4}")
-  matches <- regexec(pattern, filename)
-  timestamp <- regmatches(filename, matches)[[1]]
-  start_real <- as.POSIXct(timestamp, format = "%y%m%d_%H%M", tz='America/New_York')
-
-  return(start_real)
+file_start_time <- function(path_raw, tz = "America/New_York") {
+  timestamps <- str_extract(basename(path_raw), "\\d{6}_\\d{4}")
+  as.POSIXct(timestamps, format = "%y%m%d_%H%M", tz = tz)
 }
 
 
-recdir_to_elements <- function(dir_recorder, intermediate_dirs){
-  path_split <- strsplit(dir_recorder, split='/')[[1]]
 
-  element_start <- length(path_split) - length(intermediate_dirs)
-  elements <- path_split[element_start:length(path_split)]
-  names(elements) <- c(intermediate_dirs, 'recorder')
+#' @importFrom stringr str_split
+recdir_to_elements <- function(dir_recorder, intermediate_dirs) {
+  path_parts <- stringr::str_split(dir_recorder, "/", simplify = TRUE)
+  n <- length(path_parts)
+  start <- n - length(intermediate_dirs)
 
-  return(elements)
+  elements <- path_parts[start:n]
+  names(elements) <- c(intermediate_dirs, "recorder")
+
+  elements
 }
+
 
 
