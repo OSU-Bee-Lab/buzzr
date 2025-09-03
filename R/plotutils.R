@@ -18,10 +18,11 @@ theme_buzzr_light <- function(base_size=10){
     #
       plot.background = ggplot2::element_rect(linewidth=0),  # remove border
       plot.title = ggplot2::element_text(
-        hjust = 0,
-        size=ggplot2::rel(8), # Why does this need to be set separately from text?
+        hjust = 0.5,
+        size=ggplot2::rel(6), # for some reason, this needs to be set indepentently of "text"
         margin = ggplot2::margin(b=base_size/5, unit='lines')
       ),
+
       plot.margin = ggplot2::margin(
         t=base_size*8,
         r=base_size*9,
@@ -53,13 +54,31 @@ theme_buzzr_light <- function(base_size=10){
         margin = ggplot2::margin(r=ggplot2::rel(25))
       ),
 
+      axis.title.x = ggplot2::element_text(
+        hjust=0.5,
+        margin = ggplot2::margin(t=ggplot2::rel(15))
+      ),
+
+
+      axis.text = ggplot2::element_text(
+        margin=ggplot2::margin(
+          l=15*base_size,
+          r=15*base_size,
+          t=15*base_size,
+          b=15*base_size
+        )
+      ),
+
     # Legend
     #
-      legend.text = ggplot2::element_text(size=ggplot2::rel(4.5))#,  # Why does this need to be set separately from text?
+      legend.text = ggplot2::element_text(size=ggplot2::rel(4.5)),  # Why does this need to be set separately from text?
 
     # Facets/strips
     #
-    # strip.text = ggplot2::element_text(size=rel(1))  # Why does this need to be set separately from text? Now it seems to cause issues
+    # strip.text.y appears to be get two updates, one from the base "text" setting and again here;
+    # however, strip.text.x doesn't? So only set x.
+    strip.text.x = ggplot2::element_text(size=rel(4), angle=0),
+    strip.text.y = ggplot2::element_text(angle=0, hjust=0)
   )
 }
 
@@ -89,4 +108,11 @@ theme_buzzr <- function(base_size=11){
     #
     strip.text = ggplot2::element_text(color = 'white')
   )
+}
+
+#' @export
+label_hour <- function(breaks){
+  strftime(breaks, format = "%I %p", tz='America/New_York') %>%
+    stringr::str_remove('^0') %>%
+    tolower()
 }
