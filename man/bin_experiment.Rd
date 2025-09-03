@@ -6,7 +6,7 @@
 \usage{
 bin_experiment(
   dir_experiment,
-  intermediate_dirs,
+  intermediate_dirs = NULL,
   thresholds = c(ins_buzz = 0),
   binwidth = 5,
   results_tag = "_buzzdetect"
