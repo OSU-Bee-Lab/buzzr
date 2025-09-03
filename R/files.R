@@ -15,20 +15,6 @@ list_matching_tag <- function(dir_in, tag) {
 }
 
 
-#' Extract timestamp from path. Assumes YYMMDD_HHMM format, as used by Sony ICD-PX370 recorders.
-#'
-#' @param path_raw Character vector of file paths
-#' @param tz Timezone string
-#' @return POSIXct vector
-#' @importFrom stringr str_extract
-#' @export
-file_start_time <- function(path_raw, tz = "America/New_York") {
-  timestamps <- str_extract(basename(path_raw), "\\d{6}_\\d{4}")
-  as.POSIXct(timestamps, format = "%y%m%d_%H%M", tz = tz)
-}
-
-
-
 #' @importFrom stringr str_split
 recdir_to_elements <- function(dir_recorder, intermediate_dirs) {
   path_parts <- stringr::str_split(dir_recorder, "/", simplify = TRUE)
