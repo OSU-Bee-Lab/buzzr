@@ -4,7 +4,7 @@
 #' @param translate_to_real `r DOC_PARAM_TRANSLATE_TO_REAL`
 #' @return A data.table of the raw data file; the start column will be replaced with start_real if translate_to_real is set to TRUE.
 #' @export
-read_raw <- function(path_raw, translate_to_real=T, tz='UTC', drop_filetime=T){
+read_raw <- function(path_raw, translate_to_real=T, tz=NA, drop_filetime=T){
   extension <- tools::file_ext(path_raw)
   if(extension=='csv'){
     data_raw <- data.table::fread(path_raw)
@@ -175,7 +175,7 @@ bin <- function(results, binwidth, calculate_rate=F){
 #' @param parent_dir_names `r DOC_PARAM_PARENT_DIR_NAMES`
 #' @param results_tag `r DOC_PARAM_RESULTS_TAG`
 #' @export
-read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz='UTC'){
+read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz=NA){
   paths_raw <- list_matching_tag(dir_in, TAG_RESULTS)
   if(length(paths_raw)==0){
     warning(paste0('No results found in directory ', dir_in))
@@ -209,7 +209,7 @@ read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_
 #' @param binwidth `r DOC_PARAM_BINWIDTH`
 #' @return A data.table
 #' @export
-bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz='UTC', thresholds=c(ins_buzz=0), binwidth=5){
+bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5){
   results <- read_directory(
     dir_in=dir_in,
     translate_to_real=translate_to_real,
@@ -223,4 +223,40 @@ bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_d
   results_bin <- bin(results, binwidth=binwidth)
 
   return(results_bin)
+}
+
+# Reduce the size of buzzdetect results by binning at 1 minute, dropping irrelevant columns, and saving as rds
+# (not production ready; need to test folder deletion; also, specify how much smaller the output files are in documentation)
+trim <- function(dir_in, dir_out, thresholds, translate_to_real, tz=NA, delete_original=F, overwrite_output=F){
+  paths_results <- list_matching_tag(dir_in, TAG_RESULTS)
+  for(path_in in paths_results){
+    path_out <- gsub(dir_in, dir_out, path_in, fixed=T)
+    path_out <- paste0(tools::file_path_sans_ext(path_out), '.rds')
+    if((!overwrite_output) & file.exists(path_out)){next}
+
+    results <- read_raw(path_in, translate_to_real=translate_to_real, tz=tz, drop_filetime=T)
+    results_called <- call_detections(results, thresholds=thresholds, drop=T)
+    results_bin <- bin(results_called, binwidth=1, calculate_rate = F)
+    dir.create(dirname(path_out), recursive=T, showWarnings=F)
+    saveRDS(results_bin, path_out)
+  }
+
+  if(delete_original){
+    sapply(paths_results, file.remove)
+
+    output_dirs <- data.frame(dir = list.dirs(dir_in, recursive = T))
+    output_dirs$sequence <- lengths(regmatches(output_dirs$dir, gregexpr('/', output_dirs$dir)))
+    output_dirs <- output_dirs[order(output_dirs$sequence, decreasing = TRUE), ]
+    sapply(output_dirs$dir, unlink)
+
+
+    # Iterate through each folder
+    for(folder in folders){
+      # Check if the folder is empty
+      if(length(dir(folder)) == 0){
+        # Remove the empty folder
+        unlink(folder, recursive = TRUE)
+      }
+    }
+  }
 }

@@ -75,7 +75,7 @@ file_start_time <- function(paths, tz) {
 #' @param tz Timezone string
 #' @return POSIXct vector
 #' @importFrom stringr str_extract
-file_start_time_AudioMoth <- function(path_raw, tz = "UTC") {
+file_start_time_AudioMoth <- function(path_raw, tz=NA) {
   timestamps <- str_extract(basename(path_raw), "\\d{8}_\\d{6}")
   as.POSIXct(timestamps, format = patterns[['AudioMoth']], tz = tz)
 }
