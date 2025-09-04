@@ -6,9 +6,7 @@
 #'  file: the filename or unique identifier for each file from a recorder
 #'  @export
 read_file_range <- function(path_raw){
-  start_real <- file_start_time(path_raw)
-
-  timerange <- range(read_raw(path_raw)$start) + start_real
+  timerange <- range(read_raw(path_raw)[[COL_START_FILE]])
 
   df <- data.frame(
     recorder = basename(dirname(path_raw)),

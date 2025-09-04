@@ -4,7 +4,7 @@
 #' @param translate_to_real `r DOC_PARAM_TRANSLATE_TO_REAL`
 #' @return A data.table of the raw data file; the start column will be replaced with start_real if translate_to_real is set to TRUE.
 #' @export
-read_raw <- function(path_raw, translate_to_real=T){
+read_raw <- function(path_raw, translate_to_real=T, tz='UTC', drop_filetime=T){
   extension <- tools::file_ext(path_raw)
   if(extension=='csv'){
     data_raw <- data.table::fread(path_raw)
@@ -12,159 +12,215 @@ read_raw <- function(path_raw, translate_to_real=T){
     data_raw <- readRDS(path_raw)
   }
 
+  names(data_raw)[names(data_raw)==COL_START_RAW] <- COL_START_FILE
+
   if(translate_to_real){
-    file_start <- file_start_time(path_raw)
-    data_raw$start <- data_raw$start + file_start
-    names(data_raw)[names(data_raw)=='start'] <- 'start_real'
+    file_start <- file_start_time(path_raw, tz=tz)
+    realcol <- list()
+    realcol[[COL_START_REAL]] <-  data_raw[[COL_START_FILE]] + file_start
+    realcol <- as.data.frame(realcol)
+
+    data_raw <- cbind(realcol, data_raw)
+    if(drop_filetime){data_raw[[COL_START_FILE]] <- NULL}
   }
 
+  data.table::setDT(data_raw)
   return(data_raw)
 }
 
 
-#' Bin a raw buzzdetect output into bins by time, calling detections according to the input thresholds.
+drop_activations <- function(results){
+  drop_cols <- names(results)[startsWith(names(results), PREFIX_ACTIVATION)]
+  if (length(drop_cols)) results[, (drop_cols) := NULL]
+
+  return(results)
+}
+
+
+call_detections <- function(results, thresholds, drop=T){
+  results <- data.table::copy(results)  # don't modify in place; users might want to try different thresholds
+  cols_detection_out <- paste0(PREFIX_DETECTION, names(thresholds))
+  cols_already_detected <- cols_detection_out[cols_detection_out %in%  names(results)]
+  if(length(cols_already_detected)>0){
+    plural <- ifelse(length(cols_already_detected) > 1, 's', '')
+    warning(
+      'Ignoring existing detection column', plural, ' ',
+      paste(cols_already_detected, collapse=', ')
+    )
+
+    thresholds <- thresholds[!(paste0(PREFIX_DETECTION, names(thresholds)) %in% cols_already_detected)]
+  }
+
+  cols_to_threshold <- paste0(PREFIX_ACTIVATION, names(thresholds))
+  cols_noresults <- cols_to_threshold[!(cols_to_threshold %in% names(results))]
+  if(length(cols_noresults)>0){
+      plural <- ifelse(length(cols_noresults) > 1, 's', '')
+      warning(
+        'Ignoring threshold', plural, ' given for neuron', plural, ' not found in results: ',
+        paste(cols_noresults, collapse=', ')
+      )
+
+    thresholds <- thresholds[!(paste0(PREFIX_ACTIVATION, names(thresholds)) %in% cols_noresults)]
+  }
+
+
+  cols_to_threshold <- paste0(PREFIX_ACTIVATION, names(thresholds))
+  cols_detection_out <- paste0(PREFIX_DETECTION, names(thresholds))
+  if (length(thresholds) > 0) {
+    results[, (cols_detection_out) := Map(`>`, mget(cols_to_threshold), as.list(thresholds))]
+  }
+
+  if(drop){
+    results <- drop_activations(results)
+  }
+
+  return(results)
+}
+
+
+# where bincols is any known columns to bin by, probably calculated from the time columns
+cols_group <- function(colnames_in, bincols){
+  mask <- !(startsWith(colnames_in, PREFIX_ACTIVATION) |
+      startsWith(colnames_in, PREFIX_DETECTION) |
+      startsWith(colnames_in, PREFIX_DETECTIONRATE) |
+      colnames_in %in% c(COL_START_REAL, COL_START_FILE, COL_BIN_REAL, COL_BIN_FILE, COL_FRAMES))
+
+  mask[colnames_in %in% bincols] <- T
+
+  return(colnames_in[mask])
+}
+
+cols_sum <- function(colnames_in){
+  mask <- grepl("^detections_", colnames_in)
+  mask[colnames_in==COL_FRAMES] <- T
+
+  return(colnames_in[mask])
+}
+
+
+
+#' Bin a buzzdetect results file with called detections into bins by time; can re-bin previously binned results
 #'
-#' @param data_raw `r DOC_PARAM_DATA_RAW`
 #' @param thresholds `r DOC_PARAM_THRESHOLDS`
 #' @param binwidth  `r DOC_PARAM_BINWIDTH`
 #' @param time_start `r DOC_PARAM_TIME_START`
 #' @return A data.table with detection counts for each neuron listed in thresholds
 #' @export
-bin_raw <- function(data_raw, thresholds=c(ins_buzz=0), binwidth=5, time_start=NA){
-  # TODO: add ability to group within non-neuron, non-start times, as does rebin()
-  data_raw <- data.table::as.data.table(data_raw)
-
-  # TODO: give warning when time_start and $start_real both exist
-  if(is.null(data_raw$start_real)){
-    if(is.na(time_start)){stop('input data has no start_real column, so you must provide a value for time_start')}
-    time_start <- as.POSIXct(time_start)
-    data_raw$start_real <- time_start + data_raw$start
+bin <- function(results, binwidth, calculate_rate=F){
+  cnames <- names(results)
+  if(COL_START_FILE  %in% cnames){
+    results[[COL_BIN_FILE]] <- floor(results[[COL_START_FILE]]/(binwidth*60))*(binwidth*60)
+  } else if(COL_BIN_FILE %in% cnames){
+    results[[COL_BIN_FILE]] <- floor(results[[COL_BIN_FILE]]/(binwidth*60))*(binwidth*60)
   }
 
-  data_raw$start_bin <- lubridate::floor_date(data_raw$start_real, unit = paste0(binwidth, 'minutes'))
+  if(COL_START_REAL  %in% cnames){
+    results[[COL_BIN_REAL]] <- results[[COL_BIN_REAL]] <- lubridate::floor_date(results[[COL_START_REAL]], unit = paste0(binwidth, 'minutes'))
+  } else if(COL_BIN_REAL %in% cnames){
+    results[[COL_BIN_REAL]] <- results[[COL_BIN_REAL]] <- lubridate::floor_date(results[[COL_BIN_REAL]], unit = paste0(binwidth, 'minutes'))
+  }
 
-  data.bin <- data_raw[
+  if(is.null(results[[COL_BIN_FILE]]) & is.null(results[[COL_BIN_REAL]])){
+    stop(
+      'No compatible time column found; must have one of: ',
+      paste(COL_START_FILE, COL_BIN_FILE, COL_START_REAL, COL_BIN_REAL, sep=', ')
+    )
+  }
+
+  # if there aren't frames, impute them
+  if(is.null(results[[COL_FRAMES]])){
+    # but if there isn't a start column (only bin columns), warn the  user
+    if(is.null(results[[COL_START_FILE]]) & is.null(results[[COL_START_REAL]])){
+      warning('Results have neither a frames column, nor start columns. Assuming each row represents one frame.')
+    }
+
+    results[[COL_FRAMES]] <- 1
+  }
+
+  bincols <- names(results)[names(results) %in% c(COL_BIN_FILE, COL_BIN_REAL)]
+
+  groupcols <- cols_group(names(results), bincols)
+  sumcols <- cols_sum(names(results))
+
+  # Group by all columns in group_mask and sum the specified columns
+  results_bin <- results[
     ,
     c(
-      .N,
-      lapply(names(thresholds), function(col) sum(.SD[[col]] > thresholds[col]))
+      lapply(sumcols, function(col) sum(.SD[[col]], na.rm = TRUE))
     ),
-    by = start_bin,
-    .SDcols = names(thresholds)
+    by = groupcols,
+    .SDcols = sumcols
   ]
 
-  names(data.bin) <- c('start_bin', 'frames', paste0('detections_', names(thresholds)))
+  # Set proper column names for the summed columns
+  data.table::setnames(results_bin,
+           paste0("V", seq_along(sumcols)),
+           sumcols)
 
-  return(data.bin)
-}
-
-
-#' Re-bin already-binned detections.
-#'
-#' @param data_bin `r DOC_PARAM_DATA_BIN`
-#' @param binwidth `r DOC_PARAM_BINWIDTH`
-#' @export
-rebin <- function(data_bin, binwidth){
-  # TODO: catch when input binwidth is less than existing binwidth
-  has_detectionrate <- 'detectionrate' %in% names(data_bin)
-  if(has_detectionrate){data_bin$detectionrate <- NULL}
-
-  has_time_common <- 'time_common' %in% names(data_bin)
-  if(has_time_common){data_bin$time_common <- NULL}
-
-
-  if(is.null(data_bin$start_bin)){
-    stop('input data has no start_bin value')
+  if(calculate_rate){
+    for(c in names(results_bin)[startsWith(names(results_bin), PREFIX_DETECTION)]){
+      c_rate <- gsub(PREFIX_DETECTION, PREFIX_DETECTIONRATE, c)
+      data.table::set(results_bin, j=c_rate, value=results_bin[[c]]/results_bin[[COL_FRAMES]])
+    }
   }
-
-  if(length(grep("^detections_", names(data_bin)))==0){
-    stop('input data has no detections_ columns')
-  }
-
-  cnames <- names(data_bin)
-  name_mask <- rep(T, ncol(data_bin))
-  name_mask[cnames %in% c('start_bin', 'frames')] <- F
-  name_mask[grepl('detections_', cnames)] <- F
-
-  if(any(name_mask)){message('using the following columns as grouping variables: ', paste(cnames[name_mask], collapse = ', '))}
-
-  data_bin <- data.table::as.data.table(data_bin)
-
-  if(!lubridate::is.POSIXct(data_bin$start_bin)){
-    data_bin$start_bin <- as.POSIXct(data_bin$start_bin)
-  }
-
-  data_rebin <- data_bin
-  data_rebin$start_bin <- lubridate::floor_date(data_bin$start_bin, unit = paste0(binwidth*60, ' aseconds'))
-
-  value_cols <- c('frames', grep("^detections_", names(data_rebin), value = TRUE))
-
-  data_rebin <- data_rebin[
-    ,
-    lapply(.SD, sum),
-
-    # group by non-values
-    by = setdiff(names(data_rebin), value_cols),
-
-    # summarize values
-    .SDcols = value_cols
-  ]
-
-  if(has_detectionrate){data_rebin$detectionrate <- data_rebin$detections_ins_buzz/data_rebin$frames}
-  if(has_time_common){data_rebin$time_common <- commontime(data_rebin$start_bin)}
-  return(data_rebin)
-}
-
-#' Read all files in a recorder directory and return the binned results
-#'
-#' @param dir_recorder `r DOC_PARAM_DIR_RECORDER`
-#' @param intermediate_dirs `r DOC_PARAM_INTERMEDIATE_DIRS` description
-#' @param thresholds `r DOC_PARAM_THRESHOLDS`
-#' @param binwidth `r DOC_PARAM_BINWIDTH`
-#' @param results_tag `r DOC_PARAM_RESULTS_TAG`
-#' @return A data.table
-#' @export
-bin_recorder <- function(dir_recorder, intermediate_dirs = NULL, thresholds=c(ins_buzz=0), binwidth=5, results_tag = "_buzzdetect"){
-  results <- lapply(
-    X = list_matching_tag(dir_recorder, results_tag),
-    FUN = read_raw,
-    translate_to_real = T
-  ) |>
-    data.table::rbindlist(fill = T)
-
-  results_bin <- bin_raw(results, thresholds=thresholds, binwidth=binwidth)
-
-  elements <- recdir_to_elements(dir_recorder, intermediate_dirs)
-
-  results_bin <- cbind(
-    as.data.frame(as.list(elements)),
-    results_bin
-  )
 
   return(results_bin)
 }
 
 
-#' Read and join all result files in a directory, appending the names of directories between the dir_experiment and the recorder_dir.
+#' Read and join all result files in a directory, optionally adding columns for parent directories.
 #'
-#' @param dir_experiment The directory holding all buzzdetect results to be analyzed.
-#' @inheritParams bin_recorder
+#' @param dir_in The directory holding all buzzdetect results to be analyzed.
+#' @param translate_to_real `r DOC_PARAM_TRANSLATE_TO_REAL`
+#' @param parent_dir_names `r DOC_PARAM_PARENT_DIR_NAMES`
+#' @param results_tag `r DOC_PARAM_RESULTS_TAG`
 #' @export
-bin_experiment <- function(dir_experiment, intermediate_dirs=NULL, thresholds=c(ins_buzz=0), binwidth=5, results_tag="_buzzdetect"){
-  paths_results <- list_matching_tag(dir_experiment, results_tag)
-  dirs_recorders <- unique(dirname(paths_results))
+read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz='UTC'){
+  paths_raw <- list_matching_tag(dir_in, TAG_RESULTS)
+  if(length(paths_raw)==0){
+    warning(paste0('No results found in directory ', dir_in))
+    return(NULL)
+  }
 
   results <- lapply(
-    X = dirs_recorders,
-    FUN = bin_recorder,
-    intermediate_dirs = intermediate_dirs,
-    thresholds = thresholds,
-    binwidth = binwidth,
-    results_tag = results_tag
-  )
+    X = paths_raw,
+    FUN = function(path_raw){
+      out <- read_raw(path_raw, translate_to_real=translate_to_real, drop_filetime=drop_filetime)
+      if(!is.null(parent_dir_names)){
+        elements <- path_elements(path_raw, parent_dir_names, return_filename) |>
+          as.list() |>
+          as.data.frame()
 
-  results <- data.table::rbindlist(results, fill = T)
+        out <- cbind(elements, out)
+      }
+      return(out)
+    }
+  ) |>
+    data.table::rbindlist(fill = T)
 
   return(results)
 }
 
+
+#' Read all buzzdetect results in a directory, apply thresholds to call buzzes, and bin
+#'
+#' @inheritParams read_directory
+#' @param thresholds `r DOC_PARAM_THRESHOLDS`
+#' @param binwidth `r DOC_PARAM_BINWIDTH`
+#' @return A data.table
+#' @export
+bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz='UTC', thresholds=c(ins_buzz=0), binwidth=5){
+  results <- read_directory(
+    dir_in=dir_in,
+    translate_to_real=translate_to_real,
+    drop_filetime=drop_filetime,
+    parent_dir_names=parent_dir_names,
+    return_filename=return_filename,
+    tz=tz
+  )
+
+  results_called <- call_detections(results, thresholds)
+  results_bin <- bin(results, binwidth=binwidth)
+
+  return(results_bin)
+}

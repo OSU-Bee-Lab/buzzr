@@ -4,10 +4,11 @@ NULL
 # Parameters ----
 #
   # file paths
-  DOC_PARAM_PATH_RAW <- "The file path to the raw buzzdetect output file"
+  DOC_PARAM_PATH_RAW <- "The file path to the raw buzzdetect output file. The filetype can be csv or rds."
   DOC_PARAM_DIR_RECORDER <- "The file path to the recorder directory"
   DOC_PARAM_RESULTS_TAG <- "The tag used to identify result files during file matching, should NOT include a file extension. E.g., _buzzdetect instead of _buzzdetect.csv"
-  DOC_PARAM_INTERMEDIATE_DIRS <- "A vector of strings holding the column names to represent each directory between the experiment directory and the recorder directories. For example, c('site', 'date_deployed') would give the name of the parent directory of the recorder as a 'date_deployed' column, and the name of thegrandparent directory as a 'site' column."
+  DOC_PARAM_PARENT_DIR_NAMES <- "A vector of strings holding the column names to associate with the parent directories of the file in question. Unnamed directories will not be returned."
+  DOC_PARAM_RETURN_FILENAME <- "A boolean representing whether or not to return the filename as an element/column."
 
   # data
   DOC_PARAM_DATA_RAW <- "A data.frame holding raw detection values, in the _buzzdetect.csv format"

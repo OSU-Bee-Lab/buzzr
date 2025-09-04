@@ -16,15 +16,17 @@ list_matching_tag <- function(dir_in, tag) {
 
 
 #' @importFrom stringr str_split
-recdir_to_elements <- function(dir_recorder, intermediate_dirs) {
-  path_parts <- stringr::str_split(dir_recorder, "/", simplify = TRUE)
-  n <- length(path_parts)
-  start <- n - length(intermediate_dirs)
+path_elements <- function(filepath, parent_dir_names, return_filename=T) {
+  path_parts <- stringr::str_split(filepath, "/", simplify = T)
 
-  elements <- path_parts[start:n]
-  names(elements) <- c(intermediate_dirs, "recorder")
+  end <- length(path_parts)
+  start <- end - length(parent_dir_names)
 
-  elements
+  elements <- path_parts[start:end]
+
+  names(elements) <- c(parent_dir_names, 'filename')
+
+  head(elements, length(elements)- (!return_filename))
 }
 
 

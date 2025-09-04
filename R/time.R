@@ -24,15 +24,14 @@ time_formats <- list(
 )
 
 
-
 #' Extract timestamp from path.
 #'
 #' @param paths Character vector of file paths
-#' @param tz Timezone string
+#' @param tz What time zone should the timestamp be interpreted as? See [base::timezones]
 #' @return POSIXct vector
 #' @importFrom stringr str_extract
 #' @export
-file_start_time <- function(paths, tz = "America/New_York") {
+file_start_time <- function(paths, tz) {
   extract_time <- function(path, tz){
     path_base = basename(path)
     times <- lapply(
@@ -76,7 +75,7 @@ file_start_time <- function(paths, tz = "America/New_York") {
 #' @param tz Timezone string
 #' @return POSIXct vector
 #' @importFrom stringr str_extract
-file_start_time_AudioMoth <- function(path_raw, tz = "America/New_York") {
+file_start_time_AudioMoth <- function(path_raw, tz = "UTC") {
   timestamps <- str_extract(basename(path_raw), "\\d{8}_\\d{6}")
   as.POSIXct(timestamps, format = patterns[['AudioMoth']], tz = tz)
 }

@@ -4,12 +4,12 @@
 \alias{file_start_time}
 \title{Extract timestamp from path.}
 \usage{
-file_start_time(paths, tz = "America/New_York")
+file_start_time(paths, tz)
 }
 \arguments{
 \item{paths}{Character vector of file paths}
 
-\item{tz}{Timezone string}
+\item{tz}{What time zone should the timestamp be interpreted as? See \link[base:timezones]{base::timezones}}
 }
 \value{
 POSIXct vector
