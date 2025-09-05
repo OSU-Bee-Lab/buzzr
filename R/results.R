@@ -228,10 +228,11 @@ bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_d
 
 #' Reduce the size of buzzdetect results by binning at 1 minute, dropping irrelevant columns, and saving as rds
 #' If no thresholds value is supplied, exports neuron activations
+#' When binning into minutes and selecting 2/13 neurons, reduces the size of result files to 1/1,000 the original size.
 #'
 #' @export
 # (not production ready; need to test folder deletion; also, specify how much smaller the output files are in documentation)
-trim <- function(dir_in, dir_out, thresholds, translate_to_real, tz=NA, delete_original=F, overwrite_output=F, compress=T, results_tag=TAG_RESULTS){
+trim <- function(dir_in, dir_out, thresholds, translate_to_real, tz=NA, delete_original=F, overwrite_output=F, results_tag=TAG_RESULTS){
   paths_results <- list_matching_tag(dir_in, TAG_RESULTS)
   for(path_in in paths_results){
     path_out <- gsub(dir_in, dir_out, path_in, fixed=T)
@@ -242,7 +243,7 @@ trim <- function(dir_in, dir_out, thresholds, translate_to_real, tz=NA, delete_o
     results_called <- call_detections(results, thresholds=thresholds, drop=T)
     results_bin <- bin(results_called, binwidth=1, calculate_rate = F)
     dir.create(dirname(path_out), recursive=T, showWarnings=F)
-    saveRDS(results_bin, path_out, compress=compress)
+    saveRDS(results_bin, path_out)
   }
 
   if(delete_original){

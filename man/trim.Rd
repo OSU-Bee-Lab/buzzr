@@ -3,7 +3,8 @@
 \name{trim}
 \alias{trim}
 \title{Reduce the size of buzzdetect results by binning at 1 minute, dropping irrelevant columns, and saving as rds
-If no thresholds value is supplied, exports neuron activations}
+If no thresholds value is supplied, exports neuron activations
+When binning into minutes and selecting 2/13 neurons, reduces the size of result files to 1/1,000 the original size.}
 \usage{
 trim(
   dir_in,
@@ -13,11 +14,11 @@ trim(
   tz = NA,
   delete_original = F,
   overwrite_output = F,
-  compress = T,
   results_tag = TAG_RESULTS
 )
 }
 \description{
 Reduce the size of buzzdetect results by binning at 1 minute, dropping irrelevant columns, and saving as rds
 If no thresholds value is supplied, exports neuron activations
+When binning into minutes and selecting 2/13 neurons, reduces the size of result files to 1/1,000 the original size.
 }
