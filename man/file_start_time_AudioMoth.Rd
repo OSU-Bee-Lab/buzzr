@@ -4,7 +4,7 @@
 \alias{file_start_time_AudioMoth}
 \title{Extract timestamp from path. Assumes YYYYMMDD_HHMMSS format, as used by AudioMoth recorders.}
 \usage{
-file_start_time_AudioMoth(path_raw, tz = "UTC")
+file_start_time_AudioMoth(path_raw, tz = NA)
 }
 \arguments{
 \item{path_raw}{Character vector of file paths}

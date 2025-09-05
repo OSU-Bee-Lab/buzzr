@@ -10,7 +10,8 @@ read_directory(
   drop_filetime = T,
   parent_dir_names = NULL,
   return_filename = F,
-  tz = "UTC"
+  tz = NA,
+  results_tag = TAG_RESULTS
 )
 }
 \arguments{

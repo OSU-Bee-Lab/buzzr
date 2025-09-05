@@ -10,9 +10,10 @@ bin_directory(
   drop_filetime = T,
   parent_dir_names = NULL,
   return_filename = F,
-  tz = "UTC",
+  tz = NA,
   thresholds = c(ins_buzz = 0),
-  binwidth = 5
+  binwidth = 5,
+  results_tag = TAG_RESULTS
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ bin_directory(
 \item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron}
 
 \item{binwidth}{The desired width of the bin in minutes}
+
+\item{results_tag}{The tag used to identify result files during file matching, should NOT include a file extension. E.g., _buzzdetect instead of _buzzdetect.csv}
 }
 \value{
 A data.table

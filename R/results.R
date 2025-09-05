@@ -175,8 +175,8 @@ bin <- function(results, binwidth, calculate_rate=F){
 #' @param parent_dir_names `r DOC_PARAM_PARENT_DIR_NAMES`
 #' @param results_tag `r DOC_PARAM_RESULTS_TAG`
 #' @export
-read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz=NA){
-  paths_raw <- list_matching_tag(dir_in, TAG_RESULTS)
+read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz=NA, results_tag=TAG_RESULTS){
+  paths_raw <- list_matching_tag(dir_in, results_tag)
   if(length(paths_raw)==0){
     warning(paste0('No results found in directory ', dir_in))
     return(NULL)
@@ -209,7 +209,7 @@ read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_
 #' @param binwidth `r DOC_PARAM_BINWIDTH`
 #' @return A data.table
 #' @export
-bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5){
+bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5, results_tag=TAG_RESULTS){
   results <- read_directory(
     dir_in=dir_in,
     translate_to_real=translate_to_real,
@@ -225,9 +225,13 @@ bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_d
   return(results_bin)
 }
 
-# Reduce the size of buzzdetect results by binning at 1 minute, dropping irrelevant columns, and saving as rds
+
+#' Reduce the size of buzzdetect results by binning at 1 minute, dropping irrelevant columns, and saving as rds
+#' If no thresholds value is supplied, exports neuron activations
+#'
+#' @export
 # (not production ready; need to test folder deletion; also, specify how much smaller the output files are in documentation)
-trim <- function(dir_in, dir_out, thresholds, translate_to_real, tz=NA, delete_original=F, overwrite_output=F){
+trim <- function(dir_in, dir_out, thresholds, translate_to_real, tz=NA, delete_original=F, overwrite_output=F, compress=T, results_tag=TAG_RESULTS){
   paths_results <- list_matching_tag(dir_in, TAG_RESULTS)
   for(path_in in paths_results){
     path_out <- gsub(dir_in, dir_out, path_in, fixed=T)
@@ -238,7 +242,7 @@ trim <- function(dir_in, dir_out, thresholds, translate_to_real, tz=NA, delete_o
     results_called <- call_detections(results, thresholds=thresholds, drop=T)
     results_bin <- bin(results_called, binwidth=1, calculate_rate = F)
     dir.create(dirname(path_out), recursive=T, showWarnings=F)
-    saveRDS(results_bin, path_out)
+    saveRDS(results_bin, path_out, compress=compress)
   }
 
   if(delete_original){

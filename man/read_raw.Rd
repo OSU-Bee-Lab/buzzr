@@ -4,7 +4,7 @@
 \alias{read_raw}
 \title{Read in raw buzzdetect output and optionally translate start column to real-world times.}
 \usage{
-read_raw(path_raw, translate_to_real = T, tz = "UTC", drop_filetime = T)
+read_raw(path_raw, translate_to_real = T, tz = NA, drop_filetime = T)
 }
 \arguments{
 \item{path_raw}{The file path to the raw buzzdetect output file. The filetype can be csv or rds.}
