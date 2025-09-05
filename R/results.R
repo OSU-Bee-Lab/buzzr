@@ -1,31 +1,33 @@
-#' Read in raw buzzdetect output and optionally translate start column to real-world times.
+#' Read in raw result files
 #'
 #' @param path_raw `r DOC_PARAM_PATH_RAW`
 #' @param translate_to_real `r DOC_PARAM_TRANSLATE_TO_REAL`
-#' @return A data.table of the raw data file; the start column will be replaced with start_real if translate_to_real is set to TRUE.
 #' @export
-read_raw <- function(path_raw, translate_to_real=T, tz=NA, drop_filetime=T){
-  extension <- tools::file_ext(path_raw)
+read_results <- function(path_in, translate_to_real=T, tz=NA, drop_filetime=T){
+  extension <- tools::file_ext(path_in)
   if(extension=='csv'){
-    data_raw <- data.table::fread(path_raw)
+    data <- data.table::fread(path_in)
   } else if(extension=='rds'){
-    data_raw <- readRDS(path_raw)
+    data <- readRDS(path_in)
   }
 
-  names(data_raw)[names(data_raw)==COL_START_RAW] <- COL_START_FILE
+  if((COL_START_RAW %in% names(data))){
+    names(data)[names(data)==COL_START_RAW] <- COL_START_FILE
+  }
 
-  if(translate_to_real){
-    file_start <- file_start_time(path_raw, tz=tz)
+  has_real <- (COL_START_REAL %in% names(data)) | (COL_BIN_REAL %in% names(data))
+  if(translate_to_real & (!has_real)){
+    file_start <- file_start_time(path_in, tz=tz)
     realcol <- list()
-    realcol[[COL_START_REAL]] <-  data_raw[[COL_START_FILE]] + file_start
+    realcol[[COL_START_REAL]] <-  data[[COL_START_FILE]] + file_start
     realcol <- as.data.frame(realcol)
 
-    data_raw <- cbind(realcol, data_raw)
-    if(drop_filetime){data_raw[[COL_START_FILE]] <- NULL}
+    data <- cbind(realcol, data)
+    if(drop_filetime){data[[COL_START_FILE]] <- NULL}
   }
 
-  data.table::setDT(data_raw)
-  return(data_raw)
+  data.table::setDT(data)
+  return(data)
 }
 
 
@@ -51,6 +53,14 @@ call_detections <- function(results, thresholds, drop=T){
     thresholds <- thresholds[!(paste0(PREFIX_DETECTION, names(thresholds)) %in% cols_already_detected)]
   }
 
+  if(length(thresholds)==0){
+    if(drop){
+      results <- drop_activations(results)
+    }
+
+    return(results)
+  }
+
   cols_to_threshold <- paste0(PREFIX_ACTIVATION, names(thresholds))
   cols_noresults <- cols_to_threshold[!(cols_to_threshold %in% names(results))]
   if(length(cols_noresults)>0){
@@ -63,6 +73,13 @@ call_detections <- function(results, thresholds, drop=T){
     thresholds <- thresholds[!(paste0(PREFIX_ACTIVATION, names(thresholds)) %in% cols_noresults)]
   }
 
+  if(length(thresholds)==0){
+    if(drop){
+      results <- drop_activations(results)
+    }
+
+    return(results)
+  }
 
   cols_to_threshold <- paste0(PREFIX_ACTIVATION, names(thresholds))
   cols_detection_out <- paste0(PREFIX_DETECTION, names(thresholds))
@@ -185,7 +202,7 @@ read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_
   results <- lapply(
     X = paths_raw,
     FUN = function(path_raw){
-      out <- read_raw(path_raw, translate_to_real=translate_to_real, drop_filetime=drop_filetime)
+      out <- read_results(path_raw, translate_to_real=translate_to_real, drop_filetime=drop_filetime, tz=tz)
       if(!is.null(parent_dir_names)){
         elements <- path_elements(path_raw, parent_dir_names, return_filename) |>
           as.list() |>
@@ -239,7 +256,7 @@ trim <- function(dir_in, dir_out, thresholds, translate_to_real, tz=NA, delete_o
     path_out <- paste0(tools::file_path_sans_ext(path_out), '.rds')
     if((!overwrite_output) & file.exists(path_out)){next}
 
-    results <- read_raw(path_in, translate_to_real=translate_to_real, tz=tz, drop_filetime=T)
+    results <- read_results(path_in, translate_to_real=translate_to_real, tz=tz, drop_filetime=T)
     results_called <- call_detections(results, thresholds=thresholds, drop=T)
     results_bin <- bin(results_called, binwidth=1, calculate_rate = F)
     dir.create(dirname(path_out), recursive=T, showWarnings=F)
