@@ -246,7 +246,8 @@ bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_d
     parent_dir_names=parent_dir_names,
     return_filename=return_filename,
     return_ident=return_ident,
-    tz=tz
+    tz=tz,
+    results_tag = results_tag
   )
 
   results_called <- call_detections(results, thresholds)
