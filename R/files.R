@@ -26,7 +26,7 @@ path_elements <- function(filepath, parent_dir_names, return_filename=T) {
 
   names(elements) <- c(parent_dir_names, 'filename')
 
-  head(elements, length(elements)- (!return_filename))
+  head(elements, length(elements) - (!return_filename))
 }
 
 

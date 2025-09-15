@@ -6,28 +6,30 @@
 read_results <- function(path_in, translate_to_real=T, tz=NA, drop_filetime=T){
   extension <- tools::file_ext(path_in)
   if(extension=='csv'){
-    data <- data.table::fread(path_in)
+    results <- data.table::fread(path_in)
   } else if(extension=='rds'){
-    data <- readRDS(path_in)
+    results <- readRDS(path_in)
+  } else if(extension==''){
+    stop(paste0('file extension not recognized for results file ', path_in, '.\n Must be .csv or .rds'))
   }
 
-  if((COL_START_RAW %in% names(data))){
-    names(data)[names(data)==COL_START_RAW] <- COL_START_FILE
+  if((COL_START_RAW %in% names(results))){
+    names(results)[names(results)==COL_START_RAW] <- COL_START_FILE
   }
 
-  has_real <- (COL_START_REAL %in% names(data)) | (COL_BIN_REAL %in% names(data))
+  has_real <- (COL_START_REAL %in% names(results)) | (COL_BIN_REAL %in% names(results))
   if(translate_to_real & (!has_real)){
     file_start <- file_start_time(path_in, tz=tz)
     realcol <- list()
-    realcol[[COL_START_REAL]] <-  data[[COL_START_FILE]] + file_start
+    realcol[[COL_START_REAL]] <-  results[[COL_START_FILE]] + file_start
     realcol <- as.data.frame(realcol)
 
-    data <- cbind(realcol, data)
-    if(drop_filetime){data[[COL_START_FILE]] <- NULL}
+    results <- cbind(realcol, results)
+    if(drop_filetime){results[[COL_START_FILE]] <- NULL}
   }
 
-  data.table::setDT(data)
-  return(data)
+  data.table::setDT(results)
+  return(results)
 }
 
 
@@ -39,6 +41,7 @@ drop_activations <- function(results){
 }
 
 
+#' @export
 call_detections <- function(results, thresholds, drop=T){
   results <- data.table::copy(results)  # don't modify in place; users might want to try different thresholds
   cols_detection_out <- paste0(PREFIX_DETECTION, names(thresholds))
@@ -192,24 +195,33 @@ bin <- function(results, binwidth, calculate_rate=F){
 #' @param parent_dir_names `r DOC_PARAM_PARENT_DIR_NAMES`
 #' @param results_tag `r DOC_PARAM_RESULTS_TAG`
 #' @export
-read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz=NA, results_tag=TAG_RESULTS){
-  paths_raw <- list_matching_tag(dir_in, results_tag)
-  if(length(paths_raw)==0){
+read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, return_ident=F, tz=NA, results_tag=TAG_RESULTS){
+  paths_in <- list_matching_tag(dir_in, results_tag)
+  if(length(paths_in)==0){
     warning(paste0('No results found in directory ', dir_in))
     return(NULL)
   }
 
   results <- lapply(
-    X = paths_raw,
+    X = paths_in,
     FUN = function(path_raw){
       out <- read_results(path_raw, translate_to_real=translate_to_real, drop_filetime=drop_filetime, tz=tz)
       if(!is.null(parent_dir_names)){
-        elements <- path_elements(path_raw, parent_dir_names, return_filename) |>
+        elements <- path_elements(path_raw, parent_dir_names, return_filename=return_filename) |>
           as.list() |>
           as.data.frame()
-
         out <- cbind(elements, out)
       }
+
+      if(return_ident){
+        ident <- gsub(dir_in, '', path_raw)
+        ident <- gsub('^/', '', ident)
+        ident <- tools::file_path_sans_ext(ident)
+        ident <- gsub(results_tag, '', ident)
+
+        out <- cbind(ident, out)
+      }
+
       return(out)
     }
   ) |>
