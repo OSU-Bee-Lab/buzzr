@@ -3,6 +3,7 @@
 export(bin)
 export(bin_directory)
 export(bootstrap_rate)
+export(call_detections)
 export(commontime)
 export(file_start_time)
 export(label_hour)
