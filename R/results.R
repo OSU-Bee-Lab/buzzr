@@ -238,13 +238,14 @@ read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_
 #' @param binwidth `r DOC_PARAM_BINWIDTH`
 #' @return A data.table
 #' @export
-bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5, results_tag=TAG_RESULTS){
+bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, return_ident=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5, results_tag=TAG_RESULTS){
   results <- read_directory(
     dir_in=dir_in,
     translate_to_real=translate_to_real,
     drop_filetime=drop_filetime,
     parent_dir_names=parent_dir_names,
     return_filename=return_filename,
+    return_ident=return_ident,
     tz=tz
   )
 
