@@ -251,7 +251,7 @@ bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_d
   )
 
   results_called <- call_detections(results, thresholds)
-  results_bin <- bin(results, binwidth=binwidth)
+  results_bin <- bin(results_called, binwidth=binwidth)
 
   return(results_bin)
 }
