@@ -127,6 +127,7 @@ cols_sum <- function(colnames_in){
 #' @return A data.table with detection counts for each neuron listed in thresholds
 #' @export
 bin <- function(results, binwidth, calculate_rate=F){
+  binwidth_sec = binwidth*60
   cnames <- names(results)
   if(COL_START_FILE  %in% cnames){
     results[[COL_BIN_FILE]] <- floor(results[[COL_START_FILE]]/(binwidth*60))*(binwidth*60)
@@ -135,9 +136,9 @@ bin <- function(results, binwidth, calculate_rate=F){
   }
 
   if(COL_START_REAL  %in% cnames){
-    results[[COL_BIN_REAL]] <- results[[COL_BIN_REAL]] <- lubridate::floor_date(results[[COL_START_REAL]], unit = paste0(binwidth, 'minutes'))
+    results[[COL_BIN_REAL]] <- results[[COL_BIN_REAL]] <- lubridate::floor_date(results[[COL_START_REAL]], unit = paste0(binwidth_sec, 'aseconds'))
   } else if(COL_BIN_REAL %in% cnames){
-    results[[COL_BIN_REAL]] <- results[[COL_BIN_REAL]] <- lubridate::floor_date(results[[COL_BIN_REAL]], unit = paste0(binwidth, 'minutes'))
+    results[[COL_BIN_REAL]] <- results[[COL_BIN_REAL]] <- lubridate::floor_date(results[[COL_BIN_REAL]], unit = paste0(binwidth_sec, 'aseconds'))
   }
 
   if(is.null(results[[COL_BIN_FILE]]) & is.null(results[[COL_BIN_REAL]])){
