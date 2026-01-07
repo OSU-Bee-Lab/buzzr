@@ -198,8 +198,15 @@ bin <- function(results, binwidth, calculate_rate=F){
 read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, return_ident=F, tz=NA, results_tag=TAG_RESULTS){
   paths_in <- list_matching_tag(dir_in, results_tag)
   if(length(paths_in)==0){
-    warning(paste0('No results found in directory ', dir_in))
-    return(NULL)
+    msg <- paste0('No results found in directory ', dir_in)
+
+    tag_has_extension <- stringr::str_detect(results_tag, stringr::fixed('.'))
+    if(tag_has_extension){
+      msg <- paste0(msg, '. If your supplied results_tag contains a file extension, remove it and re-run.\nInput results tag: ', results_tag)
+    }
+
+    warning(msg)
+    return(data.frame())  # return an empty data frame (doesn't mess up downstream ops like bind_rows and mutate)
   }
 
   results <- lapply(
@@ -238,7 +245,7 @@ read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_
 #' @param binwidth `r DOC_PARAM_BINWIDTH`
 #' @return A data.table
 #' @export
-bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, return_ident=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5, results_tag=TAG_RESULTS){
+bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, return_ident=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5, calculate_rate=F, results_tag=TAG_RESULTS){
   results <- read_directory(
     dir_in=dir_in,
     translate_to_real=translate_to_real,
@@ -250,8 +257,10 @@ bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_d
     results_tag = results_tag
   )
 
+  if(nrow(results)==0){return(data.frame())}
+
   results_called <- call_detections(results, thresholds)
-  results_bin <- bin(results_called, binwidth=binwidth)
+  results_bin <- bin(results_called, binwidth=binwidth, calculate_rate = calculate_rate)
 
   return(results_bin)
 }

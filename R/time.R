@@ -2,14 +2,18 @@
 #'
 #' @param times Vector of POSIXct datetimes
 #' @export
-commontime <- function(times){
-  tz <- lubridate::tz(times)
-  times <- format(times, usetz=T)
-  times <- stringr::str_replace(times, '^\\d{4}-\\d{2}-\\d{2}', '2000-01-01')
-  times <- as.POSIXct(times, tz=tz)
+commontime <- function(times, tz=Sys.timezone()) {
+  # Extract the hour and minute in the *original* timezone
+  h <- lubridate::hour(times)
+  m <- lubridate::minute(times)
+  s <- lubridate::second(times)
 
-  return(times)
+  base <- as.POSIXct("2000-01-01", tz = tz)
+  result <- base + h * 3600 + m * 60 + s
+
+  return(result)
 }
+
 
 time_formats <- list(
   'SonyICDPX370' = list(
@@ -60,11 +64,11 @@ file_start_time <- function(paths, tz) {
     }
 
     times[!is.na(times)][[1]] |> # drop names (USE.NAMES = F doesn't do this already for some reason)
-      as.POSIXct()
+      as.POSIXct(tz=tz)
   }
 
   times = sapply(paths, extract_time, tz=tz, USE.NAMES = F) |>
-    as.POSIXct()
+    as.POSIXct(tz=tz)
 
   return(times)
 }
@@ -79,3 +83,19 @@ file_start_time_AudioMoth <- function(path_raw, tz=NA) {
   timestamps <- str_extract(basename(path_raw), "\\d{8}_\\d{6}")
   as.POSIXct(timestamps, format = patterns[['AudioMoth']], tz = tz)
 }
+
+
+#' Get the time of day as a 0-1 value (left-inclusive) where 0 represents midnight
+#'
+#' @param times Vector of POSIXct datetimes
+#' @export
+time_of_day <- function(times){
+  h <- lubridate::hour(times)
+  m <- lubridate::minute(times)
+  s <- lubridate::second(times)
+
+  tod <- (h/24) + (m/(60*24)) + (s/(60*60*24))
+
+  return(tod)
+}
+

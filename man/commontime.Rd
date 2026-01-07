@@ -4,7 +4,7 @@
 \alias{commontime}
 \title{Set the year, month, and date of input datetimes to 2000-01-01. Used for plotting results from different time periods on a common X axis.}
 \usage{
-commontime(times)
+commontime(times, tz = Sys.timezone())
 }
 \arguments{
 \item{times}{Vector of POSIXct datetimes}

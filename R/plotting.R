@@ -19,16 +19,16 @@ theme_buzzr_light <- function(base_size=10){
       plot.background = ggplot2::element_rect(linewidth=0),  # remove border
       plot.title = ggplot2::element_text(
         hjust = 0.5,
-        size=ggplot2::rel(6), # for some reason, this needs to be set indepentently of "text"
+        size=ggplot2::rel(6), # for some reason, this needs to be set independently of "text"
         margin = ggplot2::margin(b=base_size/5, unit='lines')
       ),
 
-      plot.margin = ggplot2::margin(
-        t=base_size*8,
-        r=base_size*9,
-        b=base_size*4,
-        l=base_size*5
-      ),
+      # plot.margin = ggplot2::margin(
+      #   t=base_size*8,
+      #   r=base_size*9,
+      #   b=base_size*4,
+      #   l=base_size*5
+      # ),
 
     # Panel
     #

@@ -4,7 +4,7 @@
 \alias{read_file_range}
 \title{Get the start and end times for a raw result}
 \usage{
-read_file_range(path_raw)
+read_file_range(path_in, translate_to_real = T, tz = NA, drop_filetime = T)
 }
 \value{
 A data.frame with the following columns:
