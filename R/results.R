@@ -43,6 +43,7 @@ drop_activations <- function(results){
 
 #' @export
 call_detections <- function(results, thresholds, drop=T){
+  setDT(results)
   results <- data.table::copy(results)  # don't modify in place; users might want to try different thresholds
   cols_detection_out <- paste0(PREFIX_DETECTION, names(thresholds))
   cols_already_detected <- cols_detection_out[cols_detection_out %in%  names(results)]
