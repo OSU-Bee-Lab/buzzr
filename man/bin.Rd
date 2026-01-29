@@ -2,7 +2,7 @@
 % Please edit documentation in R/results.R
 \name{bin}
 \alias{bin}
-\title{Bin a buzzdetect results file with called detections into bins by time; can re-bin previously binned results}
+\title{Bin results by time and count detections}
 \usage{
 bin(results, binwidth, calculate_rate = F)
 }
@@ -11,11 +11,18 @@ bin(results, binwidth, calculate_rate = F)
 
 \item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
 
-\item{time_start}{A POSIXct value (or a value that can be converted to such) identifying the date and time that the output begins. Required if the input data has no start_real column, otherwise ignored.}
+\item{time_start}{Should the detection rate for detection_ columns be calculated? Takes total detections, divides by the number of frames, and outputs as a detectionrate_ column.}
 }
 \value{
-A data.table with detection counts for each neuron listed in thresholds
+A data.table with a bin_ time column (bin_filetime or bin_realtime), the same detection_ columns as the input, and a frames column counting the total frames in the bin.
 }
 \description{
-Bin a buzzdetect results file with called detections into bins by time; can re-bin previously binned results
+Given a results file, group results into bins by time and sum any detection_ columns.
+Can re-bin previously binned results, though this gives weird results if the new bin is not a multiple of the old (e.g., bin(10), then bin(15)).
+Optionally, calculate the detection rate for detection_ columns (simply the total detections divided by the total frames).
+Generally, calculating detection rate is best as a final step. For example, you may first bin into 1 minute bins to compress the dataset,
+but then re-bin by 15 minutes for graphing, re-bin by 1 hour for one model and, re-bin by 1 day for another.
+}
+\details{
+Drops all activation columns.
 }

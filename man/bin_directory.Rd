@@ -2,26 +2,29 @@
 % Please edit documentation in R/results.R
 \name{bin_directory}
 \alias{bin_directory}
-\title{Read all buzzdetect results in a directory, apply thresholds to call buzzes, and bin}
+\title{Read and bin all buzzdetect results in a directory}
 \usage{
 bin_directory(
   dir_in,
   translate_to_real = T,
   drop_filetime = T,
   parent_dir_names = NULL,
-  return_filename = F,
   return_ident = F,
   tz = NA,
   thresholds = c(ins_buzz = 0),
   binwidth = 5,
   calculate_rate = F,
-  results_tag = TAG_RESULTS
+  results_tag = "_buzzdetect"
 )
 }
 \arguments{
 \item{translate_to_real}{Logical value to choose whether or not to translate start column to real-world times.}
 
 \item{parent_dir_names}{A vector of strings holding the column names to associate with the parent directories of the file in question. Unnamed directories will not be returned.}
+
+\item{return_ident}{Whether or not to include an ident column. The ident is the relative path from your results directory to the file, not including the file extension or results tag. For example, if your results directory is models/model_general_v3/output and the result file is './foo/bar/testbuzz_buzzdetect.csv', the ident is 'foo/bar/testbuzz'.}
+
+\item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.}
 
 \item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
 
@@ -33,5 +36,6 @@ bin_directory(
 A data.table
 }
 \description{
-Read all buzzdetect results in a directory, apply thresholds to call buzzes, and bin
+Serves as a one-step implementation of \link{read_directory}, \link{call_detections}, and \link{bin}.
+See documentation of these functions for details.
 }
