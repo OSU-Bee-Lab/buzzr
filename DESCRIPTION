@@ -6,7 +6,7 @@ Author: Luke Hearon
 Maintainer: Luke hearon <hearon.9@osu.edu>
 Description: A package for handling, manipulating, and analyzing output
     files from buzzdetect.
-License: What license is it under?
+License: MIT + file LICENSE
 Imports:
     data.table,
     lubridate,
