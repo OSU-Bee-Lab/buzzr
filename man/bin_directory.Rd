@@ -19,17 +19,15 @@ bin_directory(
 )
 }
 \arguments{
-\item{dir_in}{The directory holding all buzzdetect results to be analyzed.}
-
-\item{translate_to_real}{Logical value to choose whether or not to translate start column to real-world times}
+\item{translate_to_real}{Logical value to choose whether or not to translate start column to real-world times.}
 
 \item{parent_dir_names}{A vector of strings holding the column names to associate with the parent directories of the file in question. Unnamed directories will not be returned.}
 
-\item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron}
+\item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
 
 \item{binwidth}{The desired width of the bin in minutes}
 
-\item{results_tag}{The tag used to identify result files during file matching, should NOT include a file extension. E.g., _buzzdetect instead of _buzzdetect.csv}
+\item{results_tag}{The tag used to identify result files during file matching, should NOT include a file extension. E.g., '_buzzdetect' instead of '_buzzdetect.csv'.}
 }
 \value{
 A data.table

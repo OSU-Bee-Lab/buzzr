@@ -7,7 +7,7 @@
 time_of_day(times)
 }
 \arguments{
-\item{times}{Vector of POSIXct datetimes}
+\item{times}{A vector of POSIX times.}
 }
 \description{
 Get the time of day as a 0-1 value (left-inclusive) where 0 represents midnight

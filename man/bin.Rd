@@ -9,9 +9,9 @@ bin(results, binwidth, calculate_rate = F)
 \arguments{
 \item{binwidth}{The desired width of the bin in minutes}
 
-\item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron}
+\item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
 
-\item{time_start}{A POSIXct value (or a value that can be converted to such) identifying the date and time that the output begins. Required if the input data has no start_real column, otherwise ignored}
+\item{time_start}{A POSIXct value (or a value that can be converted to such) identifying the date and time that the output begins. Required if the input data has no start_real column, otherwise ignored.}
 }
 \value{
 A data.table with detection counts for each neuron listed in thresholds

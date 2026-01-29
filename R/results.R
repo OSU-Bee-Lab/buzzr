@@ -1,31 +1,47 @@
-#' Read in raw result files
+#' Read buzzdetect results
 #'
-#' @param path_raw `r DOC_PARAM_PATH_RAW`
+#' This function can read in results at any stage of analysis.
+#' File formats can be .csv or .rds.
+#' File contents can be raw buzzdetect results (.csv with a "start" column and a column for each neuron activation),
+#' unbinned results (a row for each frame, start columns as start_realtime and/or start_filetime, and results columns for activations or for detections),
+#' or binned results (a row for each bin, start columns as bin_realtime and/or bin_filetime, and results columns for detections).
+#' The results file can be the results from one audio file or merged results (as created by [buzzr:read_directory] or [buzzr:bin_directory]).
+#'
+#' NOTE: "start" columns from raw buzzdetect files will be renamed to "start_filetime".
+#' This enables buzzr to discriminate between frames and bins, file-times and real-world-times.
+#'
+#' @param path_raw `r DOC_PARAM_PATH_RESULTS`
 #' @param translate_to_real `r DOC_PARAM_TRANSLATE_TO_REAL`
+#' @param drop_filetime `r DOC_PARAM_DROP_FILETIME`. Ignored if translate_to_real is FALSE.
+#' @param tz `r DOC_PARAM_TZ`. If the results already have a start_realtime or bin_realtime column, this will be ignored.
 #' @export
-read_results <- function(path_in, translate_to_real=T, tz=NA, drop_filetime=T){
-  extension <- tools::file_ext(path_in)
+read_results <- function(path_results, translate_to_real=T, drop_filetime=T, tz=NA){
+  extension <- tools::file_ext(path_results)
   if(extension=='csv'){
-    results <- data.table::fread(path_in)
+    results <- data.table::fread(path_results)
   } else if(extension=='rds'){
-    results <- readRDS(path_in)
+    results <- readRDS(path_results)
   } else if(extension==''){
-    stop(paste0('file extension not recognized for results file ', path_in, '.\n Must be .csv or .rds'))
+    stop('file extension not recognized for results file ', path_results, '.\n Must be .csv or .rds')
   }
 
+  # convert buzzdetect "start" column to buzzr "start_filetime" column
   if((COL_START_RAW %in% names(results))){
     names(results)[names(results)==COL_START_RAW] <- COL_START_FILE
   }
 
   has_real <- (COL_START_REAL %in% names(results)) | (COL_BIN_REAL %in% names(results))
   if(translate_to_real & (!has_real)){
-    file_start <- file_start_time(path_in, tz=tz)
+    file_start <- file_start_time(path_results, tz=tz)
     realcol <- list()
     realcol[[COL_START_REAL]] <-  results[[COL_START_FILE]] + file_start
     realcol <- as.data.frame(realcol)
 
     results <- cbind(realcol, results)
-    if(drop_filetime){results[[COL_START_FILE]] <- NULL}
+    if(drop_filetime){
+      results[[COL_START_FILE]] <- NULL
+      results[[COL_BIN_FILE]] <- NULL
+    }
   }
 
   data.table::setDT(results)
@@ -41,8 +57,16 @@ drop_activations <- function(results){
 }
 
 
+#' Call detections using thresholds
+#'
+#'
+#' @param results `r DOC_PARAM_RESULTS`.
+#' Must have activation_ columns corresponding to the neurons named in thresholds
+#' and must *not* have detections_ column for the same.
+#' @param thresholds `r DOC_PARAM_THRESHOLDS`
+#' @example examples/call_detections.R
 #' @export
-call_detections <- function(results, thresholds, drop=T){
+call_detections <- function(results, thresholds){
   setDT(results)
   results <- data.table::copy(results)  # don't modify in place; users might want to try different thresholds
   cols_detection_out <- paste0(PREFIX_DETECTION, names(thresholds))
@@ -58,10 +82,7 @@ call_detections <- function(results, thresholds, drop=T){
   }
 
   if(length(thresholds)==0){
-    if(drop){
-      results <- drop_activations(results)
-    }
-
+    results <- drop_activations(results)
     return(results)
   }
 
@@ -78,7 +99,7 @@ call_detections <- function(results, thresholds, drop=T){
   }
 
   if(length(thresholds)==0){
-    if(drop){
+    if(drop_activations){
       results <- drop_activations(results)
     }
 
@@ -91,10 +112,8 @@ call_detections <- function(results, thresholds, drop=T){
     results[, (cols_detection_out) := Map(`>`, mget(cols_to_threshold), as.list(thresholds))]
   }
 
-  if(drop){
-    results <- drop_activations(results)
-  }
 
+  results <- drop_activations(results)
   return(results)
 }
 
@@ -120,12 +139,20 @@ cols_sum <- function(colnames_in){
 
 
 
-#' Bin a buzzdetect results file with called detections into bins by time; can re-bin previously binned results
+#' Bin results by time and count detections
+#'
+#' Given a results file, group results into bins by time and sum any detection_ columns.
+#' Can re-bin previously binned results, though this gives weird results if the new bin is not a multiple of the old (e.g., bin(10), then bin(15)).
+#' Optionally, calculate the detection rate for detection_ columns (simply the total detections divided by the total frames).
+#' Generally, calculating detection rate is best as a final step. For example, you may first bin into 1 minute bins to compress the dataset,
+#' but then re-bin by 15 minutes for graphing, re-bin by 1 hour for one model and, re-bin by 1 day for another.
+#'
+#' Drops all activation columns.
 #'
 #' @param thresholds `r DOC_PARAM_THRESHOLDS`
 #' @param binwidth  `r DOC_PARAM_BINWIDTH`
-#' @param time_start `r DOC_PARAM_TIME_START`
-#' @return A data.table with detection counts for each neuron listed in thresholds
+#' @param time_start `r DOC_PARAM_CALCULATE_RATE`
+#' @return A data.table with a bin_ time column (bin_filetime or bin_realtime), the same detection_ columns as the input, and a frames column counting the total frames in the bin.
 #' @export
 bin <- function(results, binwidth, calculate_rate=F){
   binwidth_sec = binwidth*60
@@ -190,17 +217,23 @@ bin <- function(results, binwidth, calculate_rate=F){
 }
 
 
-#' Read and join all result files in a directory, optionally adding columns for parent directories.
+#' Read all buzzdetect results in a directory, recursively
 #'
-#' @param dir_in The directory holding all buzzdetect results to be analyzed.
+#' Applies [buzzr::read_results] to an entire directory, joining results.
+#' optionally adding columns for parent directories.
+#'
+#' @param dir_results `r DOC_PARAM_DIR_RESULTS`
 #' @param translate_to_real `r DOC_PARAM_TRANSLATE_TO_REAL`
 #' @param parent_dir_names `r DOC_PARAM_PARENT_DIR_NAMES`
+#' @param return_filename `r DOC_PARAM_RETURN_FILENAME`
+#' @param return_ident `r DOC_PARAM_RETURN_IDENT`
+#' @param tz `r DOC_PARAM_TZ`
 #' @param results_tag `r DOC_PARAM_RESULTS_TAG`
 #' @export
-read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, return_ident=F, tz=NA, results_tag=TAG_RESULTS){
-  paths_in <- list_matching_tag(dir_in, results_tag)
+read_directory <- function(dir_results, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_ident=F, tz=NA, results_tag='_buzzdetect'){
+  paths_in <- list_matching_tag(dir_results, results_tag)
   if(length(paths_in)==0){
-    msg <- paste0('No results found in directory ', dir_in)
+    msg <- paste0('No results found in directory ', dir_results)
 
     tag_has_extension <- stringr::str_detect(results_tag, stringr::fixed('.'))
     if(tag_has_extension){
@@ -216,17 +249,19 @@ read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_
     FUN = function(path_raw){
       out <- read_results(path_raw, translate_to_real=translate_to_real, drop_filetime=drop_filetime, tz=tz)
       if(!is.null(parent_dir_names)){
-        elements <- path_elements(path_raw, parent_dir_names, return_filename=return_filename) |>
+        # don't return filename, redundant to returning ident
+        elements <- path_elements(path_raw, parent_dir_names, return_filename=F) |>
           as.list() |>
           as.data.frame()
         out <- cbind(elements, out)
       }
 
       if(return_ident){
-        ident <- gsub(dir_in, '', path_raw)
-        ident <- gsub('^/', '', ident)
-        ident <- tools::file_path_sans_ext(ident)
-        ident <- gsub(results_tag, '', ident)
+        ident <- path_raw |>
+          str_remove(dir_results) |>
+          str_remove("^/") |>
+          tools::file_path_sans_ext(ident) |>
+          str_remove(results_tag)
 
         out <- cbind(ident, out)
       }
@@ -240,20 +275,22 @@ read_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_
 }
 
 
-#' Read all buzzdetect results in a directory, apply thresholds to call buzzes, and bin
+#' Read and bin all buzzdetect results in a directory
+#'
+#' Serves as a one-step implementation of [buzzr::read_directory], [buzzr::call_detections], and [buzzr::bin].
+#' See documentation of these functions for details.
 #'
 #' @inheritParams read_directory
 #' @param thresholds `r DOC_PARAM_THRESHOLDS`
 #' @param binwidth `r DOC_PARAM_BINWIDTH`
 #' @return A data.table
 #' @export
-bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_filename=F, return_ident=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5, calculate_rate=F, results_tag=TAG_RESULTS){
+bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_ident=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5, calculate_rate=F, results_tag='_buzzdetect'){
   results <- read_directory(
     dir_in=dir_in,
     translate_to_real=translate_to_real,
     drop_filetime=drop_filetime,
     parent_dir_names=parent_dir_names,
-    return_filename=return_filename,
     return_ident=return_ident,
     tz=tz,
     results_tag = results_tag
@@ -265,45 +302,4 @@ bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_d
   results_bin <- bin(results_called, binwidth=binwidth, calculate_rate = calculate_rate)
 
   return(results_bin)
-}
-
-
-#' Reduce the size of buzzdetect results by binning at 1 minute, dropping irrelevant columns, and saving as rds
-#' If no thresholds value is supplied, exports neuron activations
-#' When binning into minutes and selecting 2/13 neurons, reduces the size of result files to 1/1,000 the original size.
-#'
-#' @export
-# (not production ready; need to test folder deletion; also, specify how much smaller the output files are in documentation)
-trim <- function(dir_in, dir_out, thresholds, translate_to_real, tz=NA, delete_original=F, overwrite_output=F, results_tag=TAG_RESULTS){
-  paths_results <- list_matching_tag(dir_in, TAG_RESULTS)
-  for(path_in in paths_results){
-    path_out <- gsub(dir_in, dir_out, path_in, fixed=T)
-    path_out <- paste0(tools::file_path_sans_ext(path_out), '.rds')
-    if((!overwrite_output) & file.exists(path_out)){next}
-
-    results <- read_results(path_in, translate_to_real=translate_to_real, tz=tz, drop_filetime=T)
-    results_called <- call_detections(results, thresholds=thresholds, drop=T)
-    results_bin <- bin(results_called, binwidth=1, calculate_rate = F)
-    dir.create(dirname(path_out), recursive=T, showWarnings=F)
-    saveRDS(results_bin, path_out)
-  }
-
-  if(delete_original){
-    sapply(paths_results, file.remove)
-
-    output_dirs <- data.frame(dir = list.dirs(dir_in, recursive = T))
-    output_dirs$sequence <- lengths(regmatches(output_dirs$dir, gregexpr('/', output_dirs$dir)))
-    output_dirs <- output_dirs[order(output_dirs$sequence, decreasing = TRUE), ]
-    sapply(output_dirs$dir, unlink)
-
-
-    # Iterate through each folder
-    for(folder in folders){
-      # Check if the folder is empty
-      if(length(dir(folder)) == 0){
-        # Remove the empty folder
-        unlink(folder, recursive = TRUE)
-      }
-    }
-  }
 }

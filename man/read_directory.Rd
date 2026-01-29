@@ -5,7 +5,7 @@
 \title{Read and join all result files in a directory, optionally adding columns for parent directories.}
 \usage{
 read_directory(
-  dir_in,
+  dir_results,
   translate_to_real = T,
   drop_filetime = T,
   parent_dir_names = NULL,
@@ -16,13 +16,15 @@ read_directory(
 )
 }
 \arguments{
-\item{dir_in}{The directory holding all buzzdetect results to be analyzed.}
+\item{dir_results}{The directory holding all buzzdetect results to be read.}
 
-\item{translate_to_real}{Logical value to choose whether or not to translate start column to real-world times}
+\item{translate_to_real}{Logical value to choose whether or not to translate start column to real-world times.}
 
 \item{parent_dir_names}{A vector of strings holding the column names to associate with the parent directories of the file in question. Unnamed directories will not be returned.}
 
-\item{results_tag}{The tag used to identify result files during file matching, should NOT include a file extension. E.g., _buzzdetect instead of _buzzdetect.csv}
+\item{results_tag}{The tag used to identify result files during file matching, should NOT include a file extension. E.g., '_buzzdetect' instead of '_buzzdetect.csv'.}
+
+\item{return_dient}{Whether or not to include an ident column. The ident is the relative path from your results directory to the file, not including the file extension or results tag. For example, if your results directory is models/model_general_v3/output and the result file is './foo/bar/testbuzz_buzzdetect.csv', the ident is 'foo/bar/testbuzz'.}
 }
 \description{
 Read and join all result files in a directory, optionally adding columns for parent directories.

@@ -2,13 +2,15 @@
 % Please edit documentation in R/time.R
 \name{commontime}
 \alias{commontime}
-\title{Set the year, month, and date of input datetimes to 2000-01-01. Used for plotting results from different time periods on a common X axis.}
+\title{Coerce all dates to the same day, preserving time of day}
 \usage{
 commontime(times, tz = Sys.timezone())
 }
 \arguments{
-\item{times}{Vector of POSIXct datetimes}
+\item{times}{A vector of POSIX times.}
 }
 \description{
-Set the year, month, and date of input datetimes to 2000-01-01. Used for plotting results from different time periods on a common X axis.
+For all input times, the date will be coerced to 2000-01-01 and the time zone of choice (defaults to your current time zone).
+This makes for prettier graphing than using time of day as a numeric (e.g., allows ggplot2::scale_x_datetime)
+and allows plotting data from different days on a common X axis.
 }

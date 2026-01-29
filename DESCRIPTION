@@ -1,7 +1,7 @@
 Type: Package
 Package: buzzr
 Title: Tools for Handling buzzdetect Results
-Version: 0.2.0
+Version: 1.0.0
 Author: Luke Hearon
 Maintainer: Luke hearon <hearon.9@osu.edu>
 Description: A package for handling, manipulating, and analyzing output
@@ -10,7 +10,6 @@ License: What license is it under?
 Imports:
     data.table,
     lubridate,
-    simpleboot,
     stringr,
     ggplot2
 Encoding: UTF-8

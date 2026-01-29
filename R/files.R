@@ -1,3 +1,6 @@
+# Non-exported utils for file operations
+
+#' List all files matching a tag (e.g., '_buzzdetect')
 list_matching_tag <- function(dir_in, tag) {
   # Get all file paths
   paths_all <- list.files(
@@ -15,7 +18,6 @@ list_matching_tag <- function(dir_in, tag) {
 }
 
 
-#' @importFrom stringr str_split
 path_elements <- function(filepath, parent_dir_names, return_filename=T) {
   path_parts <- stringr::str_split(filepath, "/", simplify = T)
 

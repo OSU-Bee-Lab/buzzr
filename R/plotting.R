@@ -1,3 +1,24 @@
+#' A simplified scale_x_datetime label that returns only the hour of the day (for use with [buzzr::commontime])
+#' @examples
+#' # ggplot2::scale_x_datetime(labels=buzzr::label_hour())
+#' @returns A *function* that takes POSIX values and returns only their hours. See examples for use.
+#' @export
+label_hour <- function(){
+  label_fn <- function(breaks){
+    strftime(breaks, format = "%I %p", tz='America/New_York') %>%
+      stringr::str_remove('^0') %>%
+      tolower()
+  }
+
+  return(label_fn)
+}
+
+
+#' The buzzdetect color palette
+#'
+#' This is named, discrete version of a magma color palette (magma is frequently used for spectrograms).
+#' See [viridis::magma] for a continuous version.
+#'
 #' @export
 palette <- {
   palette_df <- read.csv('./resources/palette.csv')
@@ -6,7 +27,28 @@ palette <- {
   p
 }
 
+
+#' A ggplot theme for aesthetic plotting of buzzdetect results.
+#'
+#' @param mode Should the theme take on a light or a dark color palette?
+#' @examples
+#' # (some ggplot code) +
+#' # theme_buzzr(mode='light')
+#'
+#' @returns A ggplot2 theme
 #' @export
+theme_buzzr <- function(mode='light'){
+  if(mode=='light'){
+    return(theme_buzzr_light)
+  }
+
+  if (mode == 'dark'){
+    return(theme_buzzr_dark)
+  }
+
+  stop('Theme mode must be light or dark')
+}
+
 theme_buzzr_light <- function(base_size=10){
   ggplot2::theme_minimal(base_size) +
   ggplot2::theme(
@@ -82,8 +124,8 @@ theme_buzzr_light <- function(base_size=10){
   )
 }
 
-#' @export
-theme_buzzr <- function(base_size=11){
+
+theme_buzzr_dark <- function(base_size=11){
   theme_buzzr_light(base_size) +
   ggplot2::theme(
     # Parent text settings
@@ -108,11 +150,4 @@ theme_buzzr <- function(base_size=11){
     #
     strip.text = ggplot2::element_text(color = 'white')
   )
-}
-
-#' @export
-label_hour <- function(breaks){
-  strftime(breaks, format = "%I %p", tz='America/New_York') %>%
-    stringr::str_remove('^0') %>%
-    tolower()
 }

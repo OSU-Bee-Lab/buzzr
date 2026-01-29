@@ -2,15 +2,28 @@
 % Please edit documentation in R/results.R
 \name{read_results}
 \alias{read_results}
-\title{Read in raw result files}
+\title{Read buzzdetect results}
 \usage{
-read_results(path_in, translate_to_real = T, tz = NA, drop_filetime = T)
+read_results(path_results, translate_to_real = T, drop_filetime = T, tz = NA)
 }
 \arguments{
-\item{translate_to_real}{Logical value to choose whether or not to translate start column to real-world times}
+\item{translate_to_real}{Logical value to choose whether or not to translate start column to real-world times.}
 
-\item{path_raw}{The file path to the raw buzzdetect output file. The filetype can be csv or rds.}
+\item{drop_filetime}{Should the column storing the file time (start_filetime or bin_filetime) be removed from the results?. Ignored if translate_to_real is FALSE.}
+
+\item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.. If the results already have a start_realtime or bin_realtime column, this will be ignored.}
+
+\item{path_raw}{The path to any buzzdetect result file that can be read with \link{read_results}.}
 }
 \description{
-Read in raw result files
+This function can read in results at any stage of analysis.
+File formats can be .csv or .rds.
+File contents can be raw buzzdetect results (.csv with a "start" column and a column for each neuron activation),
+unbinned results (a row for each frame, start columns as start_realtime and/or start_filetime, and results columns for activations or for detections),
+or binned results (a row for each bin, start columns as bin_realtime and/or bin_filetime, and results columns for detections).
+The results file can be the results from one audio file or merged results (as created by \link{buzzr:read_directory} or \link{buzzr:bin_directory}).
+}
+\details{
+NOTE: "start" columns from raw buzzdetect files will be renamed to "start_filetime".
+This enables buzzr to discriminate between frames and bins, file-times and real-world-times.
 }
