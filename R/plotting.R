@@ -5,8 +5,8 @@
 #' @export
 label_hour <- function(){
   label_fn <- function(breaks){
-    strftime(breaks, format = "%I %p", tz='America/New_York') %>%
-      stringr::str_remove('^0') %>%
+    strftime(breaks, format = "%I %p", tz='America/New_York') |>
+      stringr::str_remove('^0') |>
       tolower()
   }
 

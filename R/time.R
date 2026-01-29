@@ -53,7 +53,6 @@ posix_to_regex <- function(posix_format) {
 #' @param tz What time zone should the timestamp be interpreted as? See [base::timezones]
 #' @param accept_first_match If multiple formats match, should the time be returned as NA (FALSE) or should the first matching format be accepted (TRUE)?
 #' @return POSIXct vector
-#' @importFrom magrittr %>%
 #' @example examples/file_start_time.R
 #'
 #' @export
@@ -61,18 +60,18 @@ file_start_time <- function(paths, posix_formats, tz, accept_first_match=FALSE){
   regex_patterns <- sapply(posix_formats, posix_to_regex, USE.NAMES=T)
 
   time_from_path <- function(path){
-    filename <- path %>%
-      tools::file_path_sans_ext() %>%
+    filename <- path |>
+      tools::file_path_sans_ext() |>
       basename()
 
     time_matches <- lapply(
       posix_formats,
       FUN = function(posix_format) {
-        filename %>%
-          stringr::str_extract(regex_patterns[[posix_format]]) %>%
+        filename |>
+          stringr::str_extract(regex_patterns[[posix_format]]) |>
           as.POSIXct(format = posix_format, tz=tz)
       }
-    ) %>%
+    ) |>
       # unlist, without coercing to integer
       do.call(c, .)
 
@@ -89,7 +88,7 @@ file_start_time <- function(paths, posix_formats, tz, accept_first_match=FALSE){
     }
 
     if(length(times_unique) > 1){
-      collisions <- time_matches[time_matches %in% times_unique] %>%
+      collisions <- time_matches[time_matches %in% times_unique] |>
         names()
 
       if(accept_first_match){
@@ -108,7 +107,7 @@ file_start_time <- function(paths, posix_formats, tz, accept_first_match=FALSE){
   times <- lapply(
     paths,
     time_from_path
-  ) %>%
+  ) |>
     do.call(c,.)
 
   return(times)
