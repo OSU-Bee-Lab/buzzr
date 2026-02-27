@@ -1,0 +1,30 @@
+# Package index
+
+## All functions
+
+- [`bin()`](https://osu-bee-lab.github.io/buzzr/reference/bin.md) : Bin
+  results by time and count detections
+- [`bin_directory()`](https://osu-bee-lab.github.io/buzzr/reference/bin_directory.md)
+  : Read and bin all buzzdetect results in a directory
+- [`call_detections()`](https://osu-bee-lab.github.io/buzzr/reference/call_detections.md)
+  : Call detections using thresholds
+- [`commontime()`](https://osu-bee-lab.github.io/buzzr/reference/commontime.md)
+  : Coerce all dates to the same day, preserving time of day
+- [`file_start_time()`](https://osu-bee-lab.github.io/buzzr/reference/file_start_time.md)
+  : Extract timestamps from paths
+- [`label_hour()`](https://osu-bee-lab.github.io/buzzr/reference/label_hour.md)
+  : A simplified scale_x_datetime label that returns only the hour of
+  the day (for use with commontime)
+- [`list_matching_tag()`](https://osu-bee-lab.github.io/buzzr/reference/list_matching_tag.md)
+  : List all files matching a tag (e.g., '\_buzzdetect')
+- [`palette`](https://osu-bee-lab.github.io/buzzr/reference/palette.md)
+  : The buzzdetect color palette
+- [`read_directory()`](https://osu-bee-lab.github.io/buzzr/reference/read_directory.md)
+  : Read all buzzdetect results in a directory, recursively
+- [`read_results()`](https://osu-bee-lab.github.io/buzzr/reference/read_results.md)
+  : Read buzzdetect results
+- [`theme_buzzr()`](https://osu-bee-lab.github.io/buzzr/reference/theme_buzzr.md)
+  : A ggplot theme for aesthetic plotting of buzzdetect results.
+- [`time_of_day()`](https://osu-bee-lab.github.io/buzzr/reference/time_of_day.md)
+  : Get the time of day as a 0-1 value (left-inclusive) where 0
+  represents midnight
