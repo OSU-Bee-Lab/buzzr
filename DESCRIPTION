@@ -1,11 +1,12 @@
 Type: Package
 Package: buzzr
-Title: Tools for Handling buzzdetect Results
+Title: Tools for wrangling buzzdetect results
 Version: 1.0.0
 Author: Luke Hearon
 Maintainer: Luke hearon <hearon.9@osu.edu>
 Description: A package for handling, manipulating, and analyzing output
     files from buzzdetect.
+URL: https://OSU-Bee-Lab.github.io/buzzr
 License: MIT + file LICENSE
 Imports:
     data.table,
