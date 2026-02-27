@@ -34,3 +34,9 @@ data. See the walkthrough vignette
   : Get the time of day as a 0-1 value (left-inclusive) where 0
   represents midnight
 
+# Articles
+
+### All vignettes
+
+- [Using buzzr to handle buzzdetect
+  data](https://osu-bee-lab.github.io/buzzr/articles/buzzr.md):
