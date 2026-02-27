@@ -1,0 +1,321 @@
+---
+title: "Using buzzr to handle buzzdetect data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using buzzr to handle buzzdetect data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+This vignette is a comprehensive guide for using buzzr to manipulate buzzdetect result files.
+buzzr is a companion package to [buzzdetect](https://github.com/OSU-Bee-Lab/buzzdetect), a tool for passive acoustic monitoring of pollinators.
+For details about running buzzdetect itself, see the [buzzdetect documentation](https://buzzdetect.readthedocs.io/en/latest/).
+For a broader walkthrough of bioacoustic analysis with buzzdetect and buzzr, see [the walkthrough here](https://lukehearon.com/buzzdetect/walkthrough).
+
+## TL;DR
+The core buzzr functionality is wrapped into a single function, `buzzr::bin_directory`.
+This function reads all buzzdetect results in a folder (recursively),
+translates the file times (audio timestamps in seconds) to date-times (e.g. "January 1, 2000 12:42 PM"),
+applies thresholds to turn neuron activations into detections,
+and bins detections according to their start time.
+
+Here's an example:
+
+```{r tldr}
+df <- buzzr::bin_directory(
+  dir_results=system.file('extdata/five_flowers', package='buzzr'),
+  thresholds = c(ins_buzz=-1.2),
+  posix_formats = '%y%m%d_%H%M',
+  dir_nesting = c('flower','recorder'),
+  tz = 'America/New_York',
+  binwidth = 20
+)
+
+head(df)
+```
+
+
+## Dataset
+For this walkthrough, we will use the buzzdetect results included with this package.
+The results correspond to some of the recordings described in [the buzzdetect manuscript](https://doi.org/10.1093/jisesa/ieaf104).
+Recorders were placed by five flowers in bloom (chicory, mustard, pumpkin, soybean, and watermelon) and allowed to record for 24 hours.
+The resulting audio was analyzed buzzdetect; we'll refer to the resulting dataset as the "Five Flowers" dataset.
+To keep the buzzr version of the dataset light, we have retained only a single recorder from each plant and trimmed down the files.
+Find the full dataset in the [Zenodo repository](https://zenodo.org/records/17857856).
+
+### Locating the dataset
+The path to the Five Flowers dataset on your machine can be retrieved with the `system.file` function.
+Let's have a look.
+
+```{r setup}
+library(buzzr)
+dir_data <- system.file('extdata/five_flowers', package='buzzr')
+
+paths_results <- list.files(
+  dir_data,
+  recursive=T
+)
+
+head(paths_results)
+```
+
+Here we see that the results are stored in folders according to the pattern `flower/recorder_id/HHMMDD_MMSS_buzzdetect.csv`.
+
+### Results file structure
+Let's look at a single results file using base R:
+
+
+```{r onefile_base}
+path_results <- file.path(dir_data, paths_results[1])
+
+df_base <- read.csv(path_results)
+head(df_base)
+```
+
+We have a start column and the activations for a few different neurons.
+Each row is a single frame, which is a 0.96s span of audio for these results.
+
+## Reading results {#reading}
+Result files can be well over a hundred thousand rows long, so `read.csv` is quite slow.
+Let's try buzzr instead, which leverages `data.table::fread`.
+The function we want is `buzzr::read_results`
+
+```{r onefile_buzzr_notime}
+df_buzzr <- buzzr::read_results(path_results)
+head(df_buzzr)
+```
+
+You can see that buzzr renamed the default "start" column to the buzzr convention of "start_filetime".
+This allows buzzr to distinguish between timestamps for file-time (as seconds from the start of file) and timestamps for real-world time (as date-time).
+
+### Using buzzr to interpret date-time
+We can use buzzr to interpret the date-time of a recording from the name of the results file.
+For this, we need several more arguments.
+
+- **posix_formats:** A string (or vector of strings) containing the POSIX format code.
+Our files are saved with a 2-digit year, 2-digit month, 2-digit day, underscore, 24-hour hour, and minute.
+That is, "YYMMDD_HHMM". The way to write this as a POSIX format string is: `%y%m%d_%H%M`.
+
+- **first_match:** If multiple POSIX format strings are supplied and the file matches multiple formats,
+should the first match be used (TRUE) or should NA be returned (FALSE, default)?
+This is won't be needed if you're working with a single file,
+but if you have multiple format (perhaps from using different recorders in the same experiment),
+this allows `read_directory` or `bin_directory` to read all of the results in one go.
+
+- **drop_filetime:** Should the output results retain the start_filetime column alongside start_datetime (FALSE)
+or should it be dropped (TRUE)? Note: this argument is only respected if POSIX formats are given.
+File-time will not be dropped if there is no other time column.
+
+- **tz:** The time zone to use for the POSIX translation. Required if translating results to date-time.
+Should match the time zone of the recordings. Time zones are a real nightmare.
+If you're finding everything is plotting incorrectly, it's probably a time zone issue.
+
+
+Date-time data are unfortunately cumbersome, but you should only have to figure out these settings once per project.
+
+```{r onefile_buzzr_time}
+df_datetime <- buzzr::read_results(
+  path_results,
+  posix_formats = '%y%m%d_%H%M',  # YYMMDD_HHMM
+  first_match = FALSE,  # doesn't matter in this case, since we have only one format
+  drop_filetime = FALSE,  # keep the start_filetime column (by default, it's dropped)
+  tz='America/New_York'  # the time zone these data were collected in
+)
+
+head(df_datetime)
+```
+
+Now we can see we've successfully translated the file-time to a date-time.
+"start_filetime" is present as before (since chose not to drop it), but we also have "start_datetime" holding the date-time.
+Usually you only care about the date-time, but file-time can be useful.
+For example, we could find frames with detected buzzes and use [FFmpeg](https://www.ffmpeg.org/) to extract the audio from the corresponding file times.
+
+### Using buzzr to interpret file structure
+You'll probably find it convenient to organize your recordings according to some schema.
+For example, in this dataset we placed recordings in folders corresponding to the recorder ID and placed those folders into ones corresponding to plant type.
+buzzr lets us extract information from the file path.
+We can do this with two arguments:
+
+- **dir_nesting**: A character vector used to name the directory levels above the results file.
+That is, what does each level above the results represent?
+Each element becomes a column in the output, storing the components of the path for each data file.
+- **return_filename**: should the filename be placed into its own column?
+You probably won't care about this unless you want to pin down a specific problematic recording.
+For example, if you see a large spike of positives at 3:00AM, you may want to investigate.
+
+```{r onefile_nesting}
+df_nesting <- buzzr::read_results(
+  path_results,
+  dir_nesting = c('flower', 'recorder'),
+  return_filename = T
+)
+
+head(df_nesting)
+```
+
+This isn't terribly useful if we're d ealing with a single file,
+but it's very convenient [when we read an entire directory](#full-read).
+However, your file structure **must** be rectangular!
+That is, every file has to have the same level of nesting.
+Having both `foo/bar/results.csv` and `foo/bar/lorem/results.csv` won't work.
+
+## Calling detections  {#detections}
+
+Raw neuron activations are not useful by themselves; a threshold must be applied to convert the activations into discrete detections.
+The threshold at which to call detections depends on the model you're using and how you want to balance the detection sensitivity against the false positive rate.
+We recommend using a threshold with 95% precision (95% of called buzzes are true) as a starting point, but you may want to fine-tune if detections are low or if there are sources of false positives in your audio.
+
+For model_general_v3, a threshold of -1.2 is a good starting point for calling buzzes.
+This threshold should roughly correspond to 95% precision.
+Activations above this value will count as detected instances of buzzing.
+For this vignette, we'll also try detecting planes with a threshold of -2.
+This threshold is arbitrary and untested, but it will let us see how buzzr handles multiple detection columns.
+
+We can call detections by applying the function `buzzr::call_detections` to a results data frame that has neuron activations.
+`call_detections` takes one argument in addition to the results data frame:
+
+- **thresholds**: a named numeric vector with names corresponding to the neurons to be binned and the values corresponding to the desired threshold.
+
+
+```{r onefile_call}
+df_called <- buzzr::call_detections(
+  df_datetime,
+  thresholds = c(
+    ins_buzz = -1.2,
+    mech_plane = -2
+  )
+)
+
+head(df_called)
+```
+
+We can see that we retain our two time columns, but any "activation_" columns named in our thresholds have been replaced with "detections_". Neurons without a threshold have been dropped.
+
+The detections are binary TRUE/FALSE values.
+You may be  interested in the total number of detections, in which case we could simply sum the column.
+
+```{r onefile_sum}
+total_detections <- sum(df_called$detections_ins_buzz)
+print(total_detections)
+```
+
+Across the whole day, we saw `r total_detections |> format(big.mark=',')` detections out of `r nrow(df_called) |> format(big.mark=',')` frames for an average detection rate of `r round(total_detections/nrow(df_called), 2)`.
+
+While total detection rates are valuable in some cases, a more common interest is the change in detection rate over time. For that, we need to bin.
+
+
+## Binning {#binning}
+
+To bin detections by time, we can apply the function `buzzr::bin` to a results data frame that has called detections.
+`bin` only needs two arguments in addition to the data frame:
+
+- **binwidth**: the size of the bin in minutes
+- **calculate_rate**: do you want buzzr to automatically calculate detection rates (detections/frames) for the detection columns? While it might seem like this would always be desired, sometimes you want to modify the binned results multiple times. E.g., first bin with a width of 1 to compress your data, then bin with a width of 15 for graphing and a width of 60 for statistical analysis. In this case, you might as well save the rate calculation for the end.
+
+```{r onefile_bin}
+df_bin <- buzzr::bin(
+  df_called,
+  binwidth=15,  # 15-minute bins
+  calculate_rate = TRUE  # calculate our detection rates for us
+)
+
+head(df_bin)
+```
+
+
+
+You can see that buzzr handled the file-time and the date-time each with no problem and now our detections have been turned from booleans to integers.
+
+
+Let's see what these data look like!
+
+```{r onefile_plot}
+plot(
+  df_bin$bin_datetime,
+  df_bin$detections_ins_buzz
+)
+```
+
+Cool! We see an obvious trend of buzz detections launching up in the early morning, then dropping off before midday.
+There are a few false positives at night, but they're dwarfed by the signal from the daytime.
+
+
+### How buzzr identifies groups
+When binning, buzzr drops columns for frame times, neuron activations, and detection rates.
+Then, for each bin, frame counts and total detections are summed.
+If requested, detection rates are also calculated.
+**Every** remaining column is used as a group for binning.
+This could cause unexpected results if you've created custom columns. 
+
+For example:
+```{r grouping}
+#| message: true
+df_called$newcol <- rep(c('A', 'B'), nrow(df_called)/2)
+
+df_bin_customgroups <- buzzr::bin(
+  df_called,
+  binwidth=15,  # 15-minute bins
+  calculate_rate = TRUE  # calculate our detection rates for us
+)
+```
+
+buzzr prints a message showing all grouping columns just in case the groupings were unintended.
+Here we can see the bins contain half as many frames as we would have expected if we weren't aware of the grouping logic.
+
+```{r}
+head(df_bin_customgroups)
+```
+
+
+## Reading entire directories {#full-read}
+
+### Binning a directory
+All of the above steps can be completed for every file in a directory (and all subdirectories) with a single command: `buzzr::bin_directory`.
+
+For this, we just combine all of the arguments we've seen before.
+
+
+```{r bin_dir}
+df_fullbin <- buzzr::bin_directory(
+  dir_results=dir_data,
+  thresholds = c(ins_buzz=-1.2),
+  posix_formats = '%y%m%d_%H%M',
+  first_match = FALSE,
+  drop_filetime = TRUE,
+  dir_nesting = c('flower','recorder'),
+  return_filename = TRUE,
+  tz = 'America/New_York',
+  binwidth = 20,
+  calculate_rate = TRUE
+)
+
+head(df_fullbin)
+print(unique(df_fullbin$flower))
+```
+
+Rebinning only requires a single command!
+```{r rebin_dir}
+head(bin(df_fullbin, 120))
+```
+
+### Reading a directory
+You may also want to read a directory _without_ binning the results.
+For example you may want to try out multiple different thresholds efficiently,
+or maybe you want to extract all positive frames, or examine the behavior of activation values.
+
+The function for this is `buzzr::read_directory`, and it behaves how you expect given the information above.
+```{r read_dir}
+df_fullread <- buzzr::read_directory(
+  dir_results=dir_data,
+  posix_formats = '%y%m%d_%H%M',
+  first_match = FALSE,
+  drop_filetime = TRUE,
+  dir_nesting = c('flower','recorder'),
+  return_filename = TRUE,
+  tz = 'America/New_York'
+)
+
+nrow(df_fullread)
+```
+
