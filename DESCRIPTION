@@ -1,17 +1,22 @@
 Type: Package
 Package: buzzr
 Title: Tools for Handling buzzdetect Results
-Version: 0.1.0
+Version: 1.0.0
 Author: Luke Hearon
 Maintainer: Luke hearon <hearon.9@osu.edu>
 Description: A package for handling, manipulating, and analyzing output
     files from buzzdetect.
-License: What license is it under?
+License: MIT + file LICENSE
 Imports:
     data.table,
     lubridate,
-    simpleboot,
+    stringr,
     ggplot2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
+Roxygen: list(markdown = TRUE)
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
