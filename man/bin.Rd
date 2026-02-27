@@ -9,12 +9,12 @@ bin(results, binwidth, calculate_rate = F)
 \arguments{
 \item{binwidth}{The desired width of the bin in minutes}
 
-\item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
+\item{calculate_rate}{Should the detection rate for detection_ columns be calculated? Takes total detections, divides by the number of frames, and outputs as a detectionrate_ column.}
 
-\item{time_start}{Should the detection rate for detection_ columns be calculated? Takes total detections, divides by the number of frames, and outputs as a detectionrate_ column.}
+\item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
 }
 \value{
-A data.table with a bin_ time column (bin_filetime or bin_realtime), the same detection_ columns as the input, and a frames column counting the total frames in the bin.
+A data.table with a bin_ time column (bin_filetime or bin_datetime), the same detection_ columns as the input, and a frames column counting the total frames in the bin.
 }
 \description{
 Given a results file, group results into bins by time and sum any detection_ columns.

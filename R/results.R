@@ -1,21 +1,36 @@
+#' @import data.table
+NULL
+
+convert_start_raw <- function(results){
+  # convert buzzdetect "start" column to buzzr "start_filetime" column
+  if((COL_START_RAW %in% names(results))){
+    names(results)[names(results)==COL_START_RAW] <- COL_START_FILETIME
+  }
+
+  return(results)
+}
+
 #' Read buzzdetect results
 #'
 #' This function can read in results at any stage of analysis.
 #' File formats can be .csv or .rds.
 #' File contents can be raw buzzdetect results (.csv with a "start" column and a column for each neuron activation),
-#' unbinned results (a row for each frame, start columns as start_realtime and/or start_filetime, and results columns for activations or for detections),
-#' or binned results (a row for each bin, start columns as bin_realtime and/or bin_filetime, and results columns for detections).
+#' unbinned results (a row for each frame, start columns as start_datetime and/or start_filetime, and results columns for activations or for detections),
+#' or binned results (a row for each bin, start columns as bin_datetime and/or bin_filetime, and results columns for detections).
 #' The results file can be the results from one audio file or merged results (as created by [buzzr:read_directory] or [buzzr:bin_directory]).
 #'
 #' NOTE: "start" columns from raw buzzdetect files will be renamed to "start_filetime".
 #' This enables buzzr to discriminate between frames and bins, file-times and real-world-times.
 #'
-#' @param path_raw `r DOC_PARAM_PATH_RESULTS`
-#' @param translate_to_real `r DOC_PARAM_TRANSLATE_TO_REAL`
-#' @param drop_filetime `r DOC_PARAM_DROP_FILETIME`. Ignored if translate_to_real is FALSE.
-#' @param tz `r DOC_PARAM_TZ`. If the results already have a start_realtime or bin_realtime column, this will be ignored.
+#' @param path_results `r DOC_PARAM_PATH_RESULTS`
+#' @param posix_formats `r DOC_PARAM_POSIX_FORMATS` If NA, leaves results in file time. See [buzzr::file_start_time].
+#' @param drop_filetime `r DOC_PARAM_DROP_FILETIME` Ignored if no POSIX formats are given.
+#' @param first_match `r DOC_PARAM_FIRST_MATCH`
+#' @param tz `r DOC_PARAM_TZ`. If the results already have a start_datetime or bin_datetime column, this will be ignored.
+#' @param dir_nesting `r DOC_PARAM_DIR_NESTING`
+#' @param return_filename `r DOC_PARAM_RETURN_FILENAME`
 #' @export
-read_results <- function(path_results, translate_to_real=T, drop_filetime=T, tz=NA){
+read_results <- function(path_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, tz=NA, dir_nesting=NULL, return_filename=FALSE){
   extension <- tools::file_ext(path_results)
   if(extension=='csv'){
     results <- data.table::fread(path_results)
@@ -25,29 +40,49 @@ read_results <- function(path_results, translate_to_real=T, drop_filetime=T, tz=
     stop('file extension not recognized for results file ', path_results, '.\n Must be .csv or .rds')
   }
 
-  # convert buzzdetect "start" column to buzzr "start_filetime" column
-  if((COL_START_RAW %in% names(results))){
-    names(results)[names(results)==COL_START_RAW] <- COL_START_FILE
-  }
+  results <- convert_start_raw(results)
 
-  has_real <- (COL_START_REAL %in% names(results)) | (COL_BIN_REAL %in% names(results))
-  if(translate_to_real & (!has_real)){
-    file_start <- file_start_time(path_results, tz=tz)
+  has_real <- (COL_START_DATETIME %in% names(results)) | (COL_BIN_DATETIME %in% names(results))
+  if((!is.na(posix_formats)) & (!has_real)){
+    file_start <- file_start_time(path_results, posix_formats=posix_formats, first_match=first_match, tz=tz)
     realcol <- list()
-    realcol[[COL_START_REAL]] <-  results[[COL_START_FILE]] + file_start
+    realcol[[COL_START_DATETIME]] <-  results[[COL_START_FILETIME]] + file_start
     realcol <- as.data.frame(realcol)
 
     results <- cbind(realcol, results)
     if(drop_filetime){
-      results[[COL_START_FILE]] <- NULL
-      results[[COL_BIN_FILE]] <- NULL
+      results[[COL_START_FILETIME]] <- NULL
+      results[[COL_BIN_FILETIME]] <- NULL
     }
+  }
+
+  elements <- c()
+
+  if(!is.null(dir_nesting)){
+    elements <- c(
+      elements,
+      path_elements(path_results, dir_nesting, return_filename=F)
+    )
+  }
+
+  if(return_filename){
+    elements <- c(
+      elements,
+      filename=basename(path_results)
+    )
+  }
+
+  if(length(elements) > 0){
+    elements <- elements |>
+      as.list() |>
+      as.data.frame()
+
+    results <- cbind(elements, results)
   }
 
   data.table::setDT(results)
   return(results)
 }
-
 
 drop_activations <- function(results){
   drop_cols <- names(results)[startsWith(names(results), PREFIX_ACTIVATION)]
@@ -67,7 +102,7 @@ drop_activations <- function(results){
 #' @example examples/call_detections.R
 #' @export
 call_detections <- function(results, thresholds){
-  setDT(results)
+  data.table::setDT(results)
   results <- data.table::copy(results)  # don't modify in place; users might want to try different thresholds
   cols_detection_out <- paste0(PREFIX_DETECTION, names(thresholds))
   cols_already_detected <- cols_detection_out[cols_detection_out %in%  names(results)]
@@ -118,14 +153,15 @@ call_detections <- function(results, thresholds){
 }
 
 
-# where bincols is any known columns to bin by, probably calculated from the time columns
-cols_group <- function(colnames_in, bincols){
-  mask <- !(startsWith(colnames_in, PREFIX_ACTIVATION) |
-      startsWith(colnames_in, PREFIX_DETECTION) |
-      startsWith(colnames_in, PREFIX_DETECTIONRATE) |
-      colnames_in %in% c(COL_START_REAL, COL_START_FILE, COL_BIN_REAL, COL_BIN_FILE, COL_FRAMES))
+cols_group <- function(colnames_in){
+  # group by everything
+  mask <- rep(T, length(colnames_in))
 
-  mask[colnames_in %in% bincols] <- T
+  # except:
+  mask[startsWith(colnames_in, PREFIX_ACTIVATION)] <- F
+  mask[startsWith(colnames_in, PREFIX_DETECTION)] <- F
+  mask[startsWith(colnames_in, PREFIX_DETECTIONRATE)] <- F
+  mask[colnames_in %in% c(COL_START_DATETIME, COL_START_FILETIME, COL_FRAMES)] <- F
 
   return(colnames_in[mask])
 }
@@ -137,6 +173,39 @@ cols_sum <- function(colnames_in){
   return(colnames_in[mask])
 }
 
+
+# floor any existing start time column; error if none present
+floor_start <- function(results, binwidth){
+  binwidth_sec <- binwidth*60
+  results <- convert_start_raw(results)
+
+  cnames <- names(results)
+
+  if(COL_START_RAW %in% cnames){
+    results[[COL_START_RAW]]
+  }
+
+  if(COL_START_FILETIME  %in% cnames){
+    results[[COL_BIN_FILETIME]] <- floor(results[[COL_START_FILETIME]]/(binwidth_sec))*(binwidth_sec)
+  } else if(COL_BIN_FILETIME %in% cnames){
+    results[[COL_BIN_FILETIME]] <- floor(results[[COL_BIN_FILETIME]]/(binwidth_sec))*(binwidth_sec)
+  }
+
+  if(COL_START_DATETIME  %in% cnames){
+    results[[COL_BIN_DATETIME]] <- results[[COL_BIN_DATETIME]] <- lubridate::floor_date(results[[COL_START_DATETIME]], unit = paste0(binwidth_sec, 'aseconds'))
+  } else if(COL_BIN_DATETIME %in% cnames){
+    results[[COL_BIN_DATETIME]] <- results[[COL_BIN_DATETIME]] <- lubridate::floor_date(results[[COL_BIN_DATETIME]], unit = paste0(binwidth_sec, 'aseconds'))
+  }
+
+  if(is.null(results[[COL_BIN_FILETIME]]) & is.null(results[[COL_BIN_DATETIME]])){
+    stop(
+      'No compatible time column found; must have one of: ',
+      paste(COL_START_FILETIME, COL_START_DATETIME, COL_BIN_FILETIME, COL_BIN_DATETIME, sep=', ')
+    )
+  }
+
+  return(results)
+}
 
 
 #' Bin results by time and count detections
@@ -151,47 +220,44 @@ cols_sum <- function(colnames_in){
 #'
 #' @param thresholds `r DOC_PARAM_THRESHOLDS`
 #' @param binwidth  `r DOC_PARAM_BINWIDTH`
-#' @param time_start `r DOC_PARAM_CALCULATE_RATE`
-#' @return A data.table with a bin_ time column (bin_filetime or bin_realtime), the same detection_ columns as the input, and a frames column counting the total frames in the bin.
+#' @param calculate_rate `r DOC_PARAM_CALCULATE_RATE`
+#' @return A data.table with a bin_ time column (bin_filetime or bin_datetime), the same detection_ columns as the input, and a frames column counting the total frames in the bin.
 #' @export
 bin <- function(results, binwidth, calculate_rate=F){
-  binwidth_sec = binwidth*60
-  cnames <- names(results)
-  if(COL_START_FILE  %in% cnames){
-    results[[COL_BIN_FILE]] <- floor(results[[COL_START_FILE]]/(binwidth*60))*(binwidth*60)
-  } else if(COL_BIN_FILE %in% cnames){
-    results[[COL_BIN_FILE]] <- floor(results[[COL_BIN_FILE]]/(binwidth*60))*(binwidth*60)
-  }
+  results <- floor_start(results, binwidth)
 
-  if(COL_START_REAL  %in% cnames){
-    results[[COL_BIN_REAL]] <- results[[COL_BIN_REAL]] <- lubridate::floor_date(results[[COL_START_REAL]], unit = paste0(binwidth_sec, 'aseconds'))
-  } else if(COL_BIN_REAL %in% cnames){
-    results[[COL_BIN_REAL]] <- results[[COL_BIN_REAL]] <- lubridate::floor_date(results[[COL_BIN_REAL]], unit = paste0(binwidth_sec, 'aseconds'))
-  }
+  no_frametimes <- is.null(results[[COL_START_FILETIME]]) & is.null(results[[COL_START_DATETIME]])
+  no_bintimes <- is.null(results[[COL_BIN_FILETIME]]) & is.null(results[[COL_BIN_DATETIME]])
 
-  if(is.null(results[[COL_BIN_FILE]]) & is.null(results[[COL_BIN_REAL]])){
+  if(no_frametimes & no_bintimes){
     stop(
-      'No compatible time column found; must have one of: ',
-      paste(COL_START_FILE, COL_BIN_FILE, COL_START_REAL, COL_BIN_REAL, sep=', ')
+      'No time column present in results. Must have at least one of the following: ',
+      paste(COL_START_FILETIME, COL_START_DATETIME, COL_BIN_FILETIME, COL_BIN_DATETIME, sep=', ')
     )
   }
 
   # if there aren't frames, impute them
   if(is.null(results[[COL_FRAMES]])){
-    # but if there isn't a start column (only bin columns), warn the  user
-    if(is.null(results[[COL_START_FILE]]) & is.null(results[[COL_START_REAL]])){
-      warning('Results have neither a frames column, nor start columns. Assuming each row represents one frame.')
+    # but if the data are already binned, we must be missing the frames column for some reason. Stop.
+    if(no_frametimes){  # only need to check frametimes since at this point either frametimes or bintimes must exist
+      stop('Results appear to be in a binned format, but no \'frames\' column exists. Cannot bin without frame counts.')
+      # I suppose we _could_ bin without frame counts, there's no mathematical reason not to. But it indicates something has gone wrong.
+        # other than the mathematical reason that we may need to calculate detection rates and they could be >1 if we assume frames=1
     }
 
     results[[COL_FRAMES]] <- 1
   }
 
-  bincols <- names(results)[names(results) %in% c(COL_BIN_FILE, COL_BIN_REAL)]
+  groupcols <- cols_group(names(results))
 
-  groupcols <- cols_group(names(results), bincols)
-  sumcols <- cols_sum(names(results))
+  groupcols_custom <- groupcols[!(groupcols%in% c(COL_BIN_FILETIME, COL_BIN_DATETIME))]
+  if(length(groupcols_custom) > 0){message('Grouping time bins using columns: ', paste(groupcols_custom, collapse= ', '))}
 
-  # Group by all columns in group_mask and sum the specified columns
+
+  sumcols <- cols_sum(names(results))  # detections and frames
+  if(all(sumcols=='frames')){warning('No detection columns found in results')}
+
+  # Group by all columns in groupcols and sum the specified columns
   results_bin <- results[
     ,
     c(
@@ -201,7 +267,7 @@ bin <- function(results, binwidth, calculate_rate=F){
     .SDcols = sumcols
   ]
 
-  # Set proper column names for the summed columns
+  # Fix column names for the summed columns
   data.table::setnames(results_bin,
            paste0("V", seq_along(sumcols)),
            sumcols)
@@ -222,23 +288,13 @@ bin <- function(results, binwidth, calculate_rate=F){
 #' Applies [buzzr::read_results] to an entire directory, joining results.
 #' optionally adding columns for parent directories.
 #'
+#' @inheritParams read_results
 #' @param dir_results `r DOC_PARAM_DIR_RESULTS`
-#' @param translate_to_real `r DOC_PARAM_TRANSLATE_TO_REAL`
-#' @param parent_dir_names `r DOC_PARAM_PARENT_DIR_NAMES`
-#' @param return_filename `r DOC_PARAM_RETURN_FILENAME`
-#' @param return_ident `r DOC_PARAM_RETURN_IDENT`
-#' @param tz `r DOC_PARAM_TZ`
-#' @param results_tag `r DOC_PARAM_RESULTS_TAG`
 #' @export
-read_directory <- function(dir_results, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_ident=F, tz=NA, results_tag='_buzzdetect'){
-  paths_in <- list_matching_tag(dir_results, results_tag)
+read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_filename=FALSE, tz=NA){
+  paths_in <- list_matching_tag(dir_results, TAG_RESULTS)
   if(length(paths_in)==0){
     msg <- paste0('No results found in directory ', dir_results)
-
-    tag_has_extension <- stringr::str_detect(results_tag, stringr::fixed('.'))
-    if(tag_has_extension){
-      msg <- paste0(msg, '. If your supplied results_tag contains a file extension, remove it and re-run.\nInput results tag: ', results_tag)
-    }
 
     warning(msg)
     return(data.frame())  # return an empty data frame (doesn't mess up downstream ops like bind_rows and mutate)
@@ -247,26 +303,7 @@ read_directory <- function(dir_results, translate_to_real=T, drop_filetime=T, pa
   results <- lapply(
     X = paths_in,
     FUN = function(path_raw){
-      out <- read_results(path_raw, translate_to_real=translate_to_real, drop_filetime=drop_filetime, tz=tz)
-      if(!is.null(parent_dir_names)){
-        # don't return filename, redundant to returning ident
-        elements <- path_elements(path_raw, parent_dir_names, return_filename=F) |>
-          as.list() |>
-          as.data.frame()
-        out <- cbind(elements, out)
-      }
-
-      if(return_ident){
-        ident <- path_raw |>
-          str_remove(dir_results) |>
-          str_remove("^/") |>
-          tools::file_path_sans_ext(ident) |>
-          str_remove(results_tag)
-
-        out <- cbind(ident, out)
-      }
-
-      return(out)
+      read_results(path_raw, posix_formats = posix_formats, first_match = first_match, drop_filetime=drop_filetime, tz=tz, dir_nesting=dir_nesting, return_filename=return_filename)
     }
   ) |>
     data.table::rbindlist(fill = T)
@@ -285,15 +322,15 @@ read_directory <- function(dir_results, translate_to_real=T, drop_filetime=T, pa
 #' @param binwidth `r DOC_PARAM_BINWIDTH`
 #' @return A data.table
 #' @export
-bin_directory <- function(dir_in, translate_to_real=T, drop_filetime=T, parent_dir_names=NULL, return_ident=F, tz=NA, thresholds=c(ins_buzz=0), binwidth=5, calculate_rate=F, results_tag='_buzzdetect'){
+bin_directory <- function(dir_results, thresholds, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_filename=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE){
   results <- read_directory(
-    dir_in=dir_in,
-    translate_to_real=translate_to_real,
+    dir_results=dir_results,
+    posix_formats = posix_formats,
+    first_match = first_match,
     drop_filetime=drop_filetime,
-    parent_dir_names=parent_dir_names,
-    return_ident=return_ident,
-    tz=tz,
-    results_tag = results_tag
+    dir_nesting=dir_nesting,
+    return_filename=return_filename,
+    tz=tz
   )
 
   if(nrow(results)==0){return(data.frame())}

@@ -17,12 +17,20 @@ commontime <- function(times, tz=Sys.timezone()) {
 #'
 #' @param times `r DOC_PARAM_TIMES`
 #' @export
-time_of_day <- function(times){
+time_of_day <- function(times, time_format='proportion'){
+  if(!(time_format %in% c('proportion', 'hour'))){
+    stop('time_format must be either proportion or hour')
+  }
+
   h <- lubridate::hour(times)
   m <- lubridate::minute(times)
   s <- lubridate::second(times)
 
   tod <- (h/24) + (m/(60*24)) + (s/(60*60*24))
+
+  if(time_format == 'hour'){
+    tod <- tod*24
+  }
 
   return(tod)
 }
@@ -43,20 +51,31 @@ posix_to_regex <- function(posix_format) {
   return(regex_pattern)
 }
 
+# unlist coerces to an integer
+unlist_posix <- function(posixlist){
+  # but do.call freaks if you have one element
+  if(length(posixlist) > 1){
+    posixlist <- posixlist |>
+      do.call(c, .)
+  } else {posixlist <- posixlist[[1]]}
+
+  return(posixlist)
+}
+
 #' Extract timestamps from paths
 #'
 #' This function takes a vector of file paths and a vector of POSIX formats
-#' and attempts to extract the start time of the file
+#' and attempts to extract the start time of the file. See [base::format.POSIXct] for format specifications.
 #'
 #' @param paths Character vector of file paths
-#' @param posix_formats Character vector of posix_formats to try. See [base::format.POSIXct].
-#' @param tz What time zone should the timestamp be interpreted as? See [base::timezones]
-#' @param accept_first_match If multiple formats match, should the time be returned as NA (FALSE) or should the first matching format be accepted (TRUE)?
+#' @param posix_formats `r DOC_PARAM_POSIX_FORMATS`
+#' @param tz `r DOC_PARAM_TZ`
+#' @param first_match `r DOC_PARAM_FIRST_MATCH`
 #' @return POSIXct vector
 #' @example examples/file_start_time.R
 #'
 #' @export
-file_start_time <- function(paths, posix_formats, tz, accept_first_match=FALSE){
+file_start_time <- function(paths, posix_formats, tz, first_match=FALSE){
   regex_patterns <- sapply(posix_formats, posix_to_regex, USE.NAMES=T)
 
   time_from_path <- function(path){
@@ -72,8 +91,8 @@ file_start_time <- function(paths, posix_formats, tz, accept_first_match=FALSE){
           as.POSIXct(format = posix_format, tz=tz)
       }
     ) |>
-      # unlist, without coercing to integer
-      do.call(c, .)
+      unlist_posix()
+
 
     names(time_matches) <- posix_formats
 
@@ -91,7 +110,7 @@ file_start_time <- function(paths, posix_formats, tz, accept_first_match=FALSE){
       collisions <- time_matches[time_matches %in% times_unique] |>
         names()
 
-      if(accept_first_match){
+      if(first_match){
         message('Multiple POSIXct patterns match for file \'', path, '\'. Accepting first: ', collisions[1])
         return(times_unique[[1]])
       } else {
@@ -108,7 +127,7 @@ file_start_time <- function(paths, posix_formats, tz, accept_first_match=FALSE){
     paths,
     time_from_path
   ) |>
-    do.call(c,.)
+    unlist_posix()
 
   return(times)
 }

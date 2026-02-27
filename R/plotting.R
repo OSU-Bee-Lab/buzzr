@@ -39,11 +39,11 @@ palette <- {
 #' @export
 theme_buzzr <- function(mode='light'){
   if(mode=='light'){
-    return(theme_buzzr_light)
+    return(theme_buzzr_light())
   }
 
   if (mode == 'dark'){
-    return(theme_buzzr_dark)
+    return(theme_buzzr_dark())
   }
 
   stop('Theme mode must be light or dark')

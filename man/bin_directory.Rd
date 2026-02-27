@@ -5,32 +5,36 @@
 \title{Read and bin all buzzdetect results in a directory}
 \usage{
 bin_directory(
-  dir_in,
-  translate_to_real = T,
-  drop_filetime = T,
-  parent_dir_names = NULL,
-  return_ident = F,
+  dir_results,
+  thresholds,
+  posix_formats = NA,
+  first_match = FALSE,
+  drop_filetime = TRUE,
+  dir_nesting = NULL,
+  return_filename = FALSE,
   tz = NA,
-  thresholds = c(ins_buzz = 0),
   binwidth = 5,
-  calculate_rate = F,
-  results_tag = "_buzzdetect"
+  calculate_rate = FALSE
 )
 }
 \arguments{
-\item{translate_to_real}{Logical value to choose whether or not to translate start column to real-world times.}
-
-\item{parent_dir_names}{A vector of strings holding the column names to associate with the parent directories of the file in question. Unnamed directories will not be returned.}
-
-\item{return_ident}{Whether or not to include an ident column. The ident is the relative path from your results directory to the file, not including the file extension or results tag. For example, if your results directory is models/model_general_v3/output and the result file is './foo/bar/testbuzz_buzzdetect.csv', the ident is 'foo/bar/testbuzz'.}
-
-\item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.}
+\item{dir_results}{The directory holding all buzzdetect results to be read.}
 
 \item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
 
-\item{binwidth}{The desired width of the bin in minutes}
+\item{posix_formats}{Character vector of POSIX format codes to convert the file name to a start time. If NA, leaves results in file time. See \link{file_start_time}.}
 
-\item{results_tag}{The tag used to identify result files during file matching, should NOT include a file extension. E.g., '_buzzdetect' instead of '_buzzdetect.csv'.}
+\item{first_match}{If multiple formats match, should the time be returned as NA (FALSE) or should the first matching format be accepted (TRUE)?}
+
+\item{drop_filetime}{Should the column storing the file time (start_filetime or bin_filetime) be removed from the results? Ignored if no POSIX formats are given.}
+
+\item{dir_nesting}{A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4').}
+
+\item{return_filename}{A boolean representing whether or not to return the filename as an element/column.}
+
+\item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.. If the results already have a start_datetime or bin_datetime column, this will be ignored.}
+
+\item{binwidth}{The desired width of the bin in minutes}
 }
 \value{
 A data.table

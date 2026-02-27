@@ -4,23 +4,23 @@
 \alias{file_start_time}
 \title{Extract timestamps from paths}
 \usage{
-file_start_time(paths, posix_formats, tz, accept_first_match = FALSE)
+file_start_time(paths, posix_formats, tz, first_match = FALSE)
 }
 \arguments{
 \item{paths}{Character vector of file paths}
 
-\item{posix_formats}{Character vector of posix_formats to try. See \link[base:strptime]{base::format.POSIXct}.}
+\item{posix_formats}{Character vector of POSIX format codes to convert the file name to a start time.}
 
-\item{tz}{What time zone should the timestamp be interpreted as? See \link[base:timezones]{base::timezones}}
+\item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.}
 
-\item{accept_first_match}{If multiple formats match, should the time be returned as NA (FALSE) or should the first matching format be accepted (TRUE)?}
+\item{first_match}{If multiple formats match, should the time be returned as NA (FALSE) or should the first matching format be accepted (TRUE)?}
 }
 \value{
 POSIXct vector
 }
 \description{
 This function takes a vector of file paths and a vector of POSIX formats
-and attempts to extract the start time of the file
+and attempts to extract the start time of the file. See \link[base:strptime]{base::format.POSIXct} for format specifications.
 }
 \examples{
 paths <- c(

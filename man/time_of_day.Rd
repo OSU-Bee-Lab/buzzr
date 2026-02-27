@@ -4,7 +4,7 @@
 \alias{time_of_day}
 \title{Get the time of day as a 0-1 value (left-inclusive) where 0 represents midnight}
 \usage{
-time_of_day(times)
+time_of_day(times, time_format = "proportion")
 }
 \arguments{
 \item{times}{A vector of POSIX times.}
