@@ -1,2 +1,3 @@
 # buzzr
-An R package for wrangling, plotting, and analyzing buzzdetect data
+buzzr is an R package for reading, shaping, and plotting buzzdetect data.
+See the walkthrough vignette
