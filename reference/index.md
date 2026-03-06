@@ -1,30 +1,67 @@
 # Package index
 
+## Core
+
+`bin_directory` is the one-step function that wraps the entire
+processing pipeline into a single function call. The other shaping
+functions are circumstantially usefeul, but `bin_directory` is usually
+the starting point for all analyses.
+
+- [`bin_directory()`](https://osu-bee-lab.github.io/buzzr/reference/bin_directory.md)
+  : Read all buzzdetect result files in a directory (recursively), call
+  detections, and bin.
+
+## Results shaping
+
+Functions to read and manipulate buzzdetect results.
+
+- [`read_results()`](https://osu-bee-lab.github.io/buzzr/reference/read_results.md)
+  : Read a single buzzdetect results file.
+- [`call_detections()`](https://osu-bee-lab.github.io/buzzr/reference/call_detections.md)
+  : Call event detections using activation thresholds.
+- [`bin()`](https://osu-bee-lab.github.io/buzzr/reference/bin.md) : Bin
+  or re-bin results by time, counting detections and frames in each bin.
+- [`read_directory()`](https://osu-bee-lab.github.io/buzzr/reference/read_directory.md)
+  : Read all buzzdetect result files in a directory (recursively).
+
+## Plotting
+
+Utilities for making prettier plots
+
+- [`theme_buzzr()`](https://osu-bee-lab.github.io/buzzr/reference/theme_buzzr.md)
+  : A ggplot theme for aesthetic plotting of buzzdetect results.
+- [`commontime()`](https://osu-bee-lab.github.io/buzzr/reference/commontime.md)
+  : Coerce all dates to the same day, preserving time of day.
+- [`label_hour()`](https://osu-bee-lab.github.io/buzzr/reference/label_hour.md)
+  : A simplified scale_x_datetime label that returns only the hour of
+  the day (for use with commontime).
+- [`palette`](https://osu-bee-lab.github.io/buzzr/reference/palette.md)
+  : The buzzdetect color palette.
+
 ## All functions
 
 - [`bin()`](https://osu-bee-lab.github.io/buzzr/reference/bin.md) : Bin
-  results by time and count detections
+  or re-bin results by time, counting detections and frames in each bin.
 - [`bin_directory()`](https://osu-bee-lab.github.io/buzzr/reference/bin_directory.md)
-  : Read and bin all buzzdetect results in a directory
+  : Read all buzzdetect result files in a directory (recursively), call
+  detections, and bin.
 - [`call_detections()`](https://osu-bee-lab.github.io/buzzr/reference/call_detections.md)
-  : Call detections using thresholds
+  : Call event detections using activation thresholds.
 - [`commontime()`](https://osu-bee-lab.github.io/buzzr/reference/commontime.md)
-  : Coerce all dates to the same day, preserving time of day
+  : Coerce all dates to the same day, preserving time of day.
 - [`file_start_time()`](https://osu-bee-lab.github.io/buzzr/reference/file_start_time.md)
-  : Extract timestamps from paths
+  : Extract date time information from a file's name.
 - [`label_hour()`](https://osu-bee-lab.github.io/buzzr/reference/label_hour.md)
   : A simplified scale_x_datetime label that returns only the hour of
-  the day (for use with commontime)
-- [`list_matching_tag()`](https://osu-bee-lab.github.io/buzzr/reference/list_matching_tag.md)
-  : List all files matching a tag (e.g., '\_buzzdetect')
+  the day (for use with commontime).
 - [`palette`](https://osu-bee-lab.github.io/buzzr/reference/palette.md)
-  : The buzzdetect color palette
+  : The buzzdetect color palette.
 - [`read_directory()`](https://osu-bee-lab.github.io/buzzr/reference/read_directory.md)
-  : Read all buzzdetect results in a directory, recursively
+  : Read all buzzdetect result files in a directory (recursively).
 - [`read_results()`](https://osu-bee-lab.github.io/buzzr/reference/read_results.md)
-  : Read buzzdetect results
+  : Read a single buzzdetect results file.
 - [`theme_buzzr()`](https://osu-bee-lab.github.io/buzzr/reference/theme_buzzr.md)
   : A ggplot theme for aesthetic plotting of buzzdetect results.
 - [`time_of_day()`](https://osu-bee-lab.github.io/buzzr/reference/time_of_day.md)
-  : Get the time of day as a 0-1 value (left-inclusive) where 0
-  represents midnight
+  : Convert a date-time to a time of day as proportion (0,1) or hour
+  (0,24; with decimals).

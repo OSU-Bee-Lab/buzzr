@@ -1,4 +1,4 @@
-# Coerce all dates to the same day, preserving time of day
+# Coerce all dates to the same day, preserving time of day.
 
 For all input times, the date will be coerced to 2000-01-01 and the time
 zone of choice (defaults to your current time zone). This makes for

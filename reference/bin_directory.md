@@ -1,4 +1,4 @@
-# Read and bin all buzzdetect results in a directory
+# Read all buzzdetect result files in a directory (recursively), call detections, and bin.
 
 Serves as a one-step implementation of
 [read_directory](https://osu-bee-lab.github.io/buzzr/reference/read_directory.md),

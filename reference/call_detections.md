@@ -1,6 +1,6 @@
-# Call detections using thresholds
+# Call event detections using activation thresholds.
 
-Call detections using thresholds
+Call event detections using activation thresholds.
 
 ## Usage
 

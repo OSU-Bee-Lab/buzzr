@@ -1,4 +1,4 @@
-# Extract timestamps from paths
+# Extract date time information from a file's name.
 
 This function takes a vector of file paths and a vector of POSIX formats
 and attempts to extract the start time of the file. See

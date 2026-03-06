@@ -31,6 +31,96 @@
     </div>
 
     <div class="section level2">
+      <h2 id="core">Core<a class="anchor" aria-label="anchor" href="#core"></a></h2>
+
+      <div class="section-desc"><p><code>bin_directory</code> is the one-step function that wraps the entire processing pipeline into a single function call. The other shaping functions are circumstantially usefeul, but <code>bin_directory</code> is usually the starting point for all analyses.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="bin_directory.html">bin_directory()</a></code>
+
+        </dt>
+        <dd>Read all buzzdetect result files in a directory (recursively), call detections, and bin.</dd>
+      </dl></div><div class="section level2">
+      <h2 id="results-shaping">Results shaping<a class="anchor" aria-label="anchor" href="#results-shaping"></a></h2>
+
+      <div class="section-desc"><p>Functions to read and manipulate buzzdetect results.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="read_results.html">read_results()</a></code>
+
+        </dt>
+        <dd>Read a single buzzdetect results file.</dd>
+
+        <dt>
+
+          <code><a href="call_detections.html">call_detections()</a></code>
+
+        </dt>
+        <dd>Call event detections using activation thresholds.</dd>
+
+        <dt>
+
+          <code><a href="bin.html">bin()</a></code>
+
+        </dt>
+        <dd>Bin or re-bin results by time, counting detections and frames in each bin.</dd>
+
+        <dt>
+
+          <code><a href="read_directory.html">read_directory()</a></code>
+
+        </dt>
+        <dd>Read all buzzdetect result files in a directory (recursively).</dd>
+      </dl></div><div class="section level2">
+      <h2 id="plotting">Plotting<a class="anchor" aria-label="anchor" href="#plotting"></a></h2>
+
+      <div class="section-desc"><p>Utilities for making prettier plots</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="theme_buzzr.html">theme_buzzr()</a></code>
+
+        </dt>
+        <dd>A ggplot theme for aesthetic plotting of buzzdetect results.</dd>
+
+        <dt>
+
+          <code><a href="commontime.html">commontime()</a></code>
+
+        </dt>
+        <dd>Coerce all dates to the same day, preserving time of day.</dd>
+
+        <dt>
+
+          <code><a href="label_hour.html">label_hour()</a></code>
+
+        </dt>
+        <dd>A simplified scale_x_datetime label that returns only the hour of the day (for use with commontime).</dd>
+
+        <dt>
+
+          <code><a href="palette.html">palette</a></code>
+
+        </dt>
+        <dd>The buzzdetect color palette.</dd>
+      </dl></div><div class="section level2">
       <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
 
 
@@ -45,70 +135,63 @@
           <code><a href="bin.html">bin()</a></code>
 
         </dt>
-        <dd>Bin results by time and count detections</dd>
+        <dd>Bin or re-bin results by time, counting detections and frames in each bin.</dd>
 
         <dt>
 
           <code><a href="bin_directory.html">bin_directory()</a></code>
 
         </dt>
-        <dd>Read and bin all buzzdetect results in a directory</dd>
+        <dd>Read all buzzdetect result files in a directory (recursively), call detections, and bin.</dd>
 
         <dt>
 
           <code><a href="call_detections.html">call_detections()</a></code>
 
         </dt>
-        <dd>Call detections using thresholds</dd>
+        <dd>Call event detections using activation thresholds.</dd>
 
         <dt>
 
           <code><a href="commontime.html">commontime()</a></code>
 
         </dt>
-        <dd>Coerce all dates to the same day, preserving time of day</dd>
+        <dd>Coerce all dates to the same day, preserving time of day.</dd>
 
         <dt>
 
           <code><a href="file_start_time.html">file_start_time()</a></code>
 
         </dt>
-        <dd>Extract timestamps from paths</dd>
+        <dd>Extract date time information from a file's name.</dd>
 
         <dt>
 
           <code><a href="label_hour.html">label_hour()</a></code>
 
         </dt>
-        <dd>A simplified scale_x_datetime label that returns only the hour of the day (for use with commontime)</dd>
-
-        <dt>
-
-          <code><a href="list_matching_tag.html">list_matching_tag()</a></code>
-
-        </dt>
-        <dd>List all files matching a tag (e.g., '_buzzdetect')</dd>
+        <dd>A simplified scale_x_datetime label that returns only the hour of the day (for use with commontime).</dd>
 
         <dt>
 
           <code><a href="palette.html">palette</a></code>
 
         </dt>
-        <dd>The buzzdetect color palette</dd>
+        <dd>The buzzdetect color palette.</dd>
 
         <dt>
 
           <code><a href="read_directory.html">read_directory()</a></code>
 
         </dt>
-        <dd>Read all buzzdetect results in a directory, recursively</dd>
+        <dd>Read all buzzdetect result files in a directory (recursively).</dd>
 
         <dt>
 
           <code><a href="read_results.html">read_results()</a></code>
 
         </dt>
-        <dd>Read buzzdetect results</dd>
+        <dd>Read a single buzzdetect results file.</dd>
 
         <dt>
 
@@ -122,9 +205,10 @@
           <code><a href="time_of_day.html">time_of_day()</a></code>
 
         </dt>
-        <dd>Get the time of day as a 0-1 value (left-inclusive) where 0 represents midnight</dd>
+        <dd>Convert a date-time to a time of day as proportion (0,1) or hour (0,24; with decimals).</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

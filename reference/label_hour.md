@@ -1,8 +1,8 @@
-# A simplified scale_x_datetime label that returns only the hour of the day (for use with [commontime](https://osu-bee-lab.github.io/buzzr/reference/commontime.md))
+# A simplified scale_x_datetime label that returns only the hour of the day (for use with [commontime](https://osu-bee-lab.github.io/buzzr/reference/commontime.md)).
 
 A simplified scale_x_datetime label that returns only the hour of the
 day (for use with
-[commontime](https://osu-bee-lab.github.io/buzzr/reference/commontime.md))
+[commontime](https://osu-bee-lab.github.io/buzzr/reference/commontime.md)).
 
 ## Usage
 

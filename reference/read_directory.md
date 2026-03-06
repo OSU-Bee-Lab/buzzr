@@ -1,4 +1,4 @@
-# Read all buzzdetect results in a directory, recursively
+# Read all buzzdetect result files in a directory (recursively).
 
 Applies
 [read_results](https://osu-bee-lab.github.io/buzzr/reference/read_results.md)

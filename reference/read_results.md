@@ -1,4 +1,4 @@
-# Read buzzdetect results
+# Read a single buzzdetect results file.
 
 This function can read in results at any stage of analysis. File formats
 can be .csv or .rds. File contents can be raw buzzdetect results (.csv

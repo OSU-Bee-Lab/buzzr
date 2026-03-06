@@ -1,4 +1,4 @@
-# Bin results by time and count detections
+# Bin or re-bin results by time, counting detections and frames in each bin.
 
 Given a results file, group results into bins by time and sum any
 detection\_ columns. Can re-bin previously binned results, though this

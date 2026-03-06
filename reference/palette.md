@@ -1,4 +1,4 @@
-# The buzzdetect color palette
+# The buzzdetect color palette.
 
 This is named, discrete version of a magma color palette (magma is
 frequently used for spectrograms). See viridis::magma for a continuous
