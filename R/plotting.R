@@ -1,4 +1,4 @@
-#' A simplified scale_x_datetime label that returns only the hour of the day (for use with [buzzr::commontime])
+#' A simplified scale_x_datetime label that returns only the hour of the day (for use with [buzzr::commontime]).
 #' @examples
 #' # ggplot2::scale_x_datetime(labels=buzzr::label_hour())
 #' @returns A *function* that takes POSIX values and returns only their hours. See examples for use.
@@ -14,7 +14,7 @@ label_hour <- function(){
 }
 
 
-#' The buzzdetect color palette
+#' The buzzdetect color palette.
 #'
 #' This is named, discrete version of a magma color palette (magma is frequently used for spectrograms).
 #' See [viridis::magma] for a continuous version.

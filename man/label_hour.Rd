@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{label_hour}
 \alias{label_hour}
-\title{A simplified scale_x_datetime label that returns only the hour of the day (for use with \link{commontime})}
+\title{A simplified scale_x_datetime label that returns only the hour of the day (for use with \link{commontime}).}
 \usage{
 label_hour()
 }
@@ -10,7 +10,7 @@ label_hour()
 A \emph{function} that takes POSIX values and returns only their hours. See examples for use.
 }
 \description{
-A simplified scale_x_datetime label that returns only the hour of the day (for use with \link{commontime})
+A simplified scale_x_datetime label that returns only the hour of the day (for use with \link{commontime}).
 }
 \examples{
 # ggplot2::scale_x_datetime(labels=buzzr::label_hour())

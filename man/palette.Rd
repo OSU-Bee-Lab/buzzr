@@ -3,7 +3,7 @@
 \docType{data}
 \name{palette}
 \alias{palette}
-\title{The buzzdetect color palette}
+\title{The buzzdetect color palette.}
 \format{
 An object of class \code{character} of length 8.
 }

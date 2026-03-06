@@ -1,8 +1,5 @@
 # Non-exported utils for file operations
-
-#' List all files matching a tag (e.g., '_buzzdetect')
-#' @export
-list_matching_tag <- function(dir_in, tag) {
+list_results <- function(dir_in) {
   # Get all file paths
   paths_all <- list.files(
     dir_in,
@@ -13,7 +10,7 @@ list_matching_tag <- function(dir_in, tag) {
   # Remove extensions
   paths_dropext <- tools::file_path_sans_ext(paths_all)
 
-  paths_matching <- paths_all[endsWith(paths_dropext, tag)]
+  paths_matching <- paths_all[endsWith(paths_dropext, TAG_RESULTS)]
 
   return(paths_matching)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/results.R
 \name{call_detections}
 \alias{call_detections}
-\title{Call detections using thresholds}
+\title{Call event detections using activation thresholds.}
 \usage{
 call_detections(results, thresholds)
 }
@@ -14,7 +14,7 @@ and must \emph{not} have detections_ column for the same.}
 \item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
 }
 \description{
-Call detections using thresholds
+Call event detections using activation thresholds.
 }
 \examples{
 call_detections(

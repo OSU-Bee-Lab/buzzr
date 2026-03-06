@@ -2,7 +2,7 @@
 % Please edit documentation in R/results.R
 \name{bin}
 \alias{bin}
-\title{Bin results by time and count detections}
+\title{Bin or re-bin results by time, counting detections and frames in each bin.}
 \usage{
 bin(results, binwidth, calculate_rate = F)
 }

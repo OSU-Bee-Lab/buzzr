@@ -2,7 +2,7 @@
 % Please edit documentation in R/time.R
 \name{file_start_time}
 \alias{file_start_time}
-\title{Extract timestamps from paths}
+\title{Extract date time information from a file's name.}
 \usage{
 file_start_time(paths, posix_formats, tz, first_match = FALSE)
 }

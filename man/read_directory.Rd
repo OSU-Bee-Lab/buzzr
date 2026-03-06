@@ -2,7 +2,7 @@
 % Please edit documentation in R/results.R
 \name{read_directory}
 \alias{read_directory}
-\title{Read all buzzdetect results in a directory, recursively}
+\title{Read all buzzdetect result files in a directory (recursively).}
 \usage{
 read_directory(
   dir_results,

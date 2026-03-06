@@ -2,3 +2,30 @@ url: https://osu-bee-lab.github.io/buzzr/
 template:
   bootstrap: 5
 
+reference:
+- title: "Core"
+  desc: "`bin_directory` is the one-step function that wraps the entire processing pipeline into a single function call.
+  The other shaping functions are circumstantially usefeul, but `bin_directory` is usually the starting point for all analyses."
+  contents:
+  - bin_directory
+
+- title: "Results shaping"
+  desc: "Functions to read and manipulate buzzdetect results."
+  contents:
+  - read_results
+  - call_detections
+  - bin
+  - read_directory
+
+
+- title: "Plotting"
+  desc: "Utilities for making prettier plots"
+  contents:
+  - theme_buzzr
+  - commontime
+  - label_hour
+  - palette
+
+- title: "All functions"
+  contents:
+  - matches(".")

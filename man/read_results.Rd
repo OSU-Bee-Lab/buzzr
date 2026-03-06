@@ -2,7 +2,7 @@
 % Please edit documentation in R/results.R
 \name{read_results}
 \alias{read_results}
-\title{Read buzzdetect results}
+\title{Read a single buzzdetect results file.}
 \usage{
 read_results(
   path_results,

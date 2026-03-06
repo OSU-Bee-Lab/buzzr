@@ -10,7 +10,7 @@ convert_start_raw <- function(results){
   return(results)
 }
 
-#' Read buzzdetect results
+#' Read a single buzzdetect results file.
 #'
 #' This function can read in results at any stage of analysis.
 #' File formats can be .csv or .rds.
@@ -92,7 +92,7 @@ drop_activations <- function(results){
 }
 
 
-#' Call detections using thresholds
+#' Call event detections using activation thresholds.
 #'
 #'
 #' @param results `r DOC_PARAM_RESULTS`.
@@ -208,7 +208,7 @@ floor_start <- function(results, binwidth){
 }
 
 
-#' Bin results by time and count detections
+#' Bin or re-bin results by time, counting detections and frames in each bin.
 #'
 #' Given a results file, group results into bins by time and sum any detection_ columns.
 #' Can re-bin previously binned results, though this gives weird results if the new bin is not a multiple of the old (e.g., bin(10), then bin(15)).
@@ -283,7 +283,7 @@ bin <- function(results, binwidth, calculate_rate=F){
 }
 
 
-#' Read all buzzdetect results in a directory, recursively
+#' Read all buzzdetect result files in a directory (recursively).
 #'
 #' Applies [buzzr::read_results] to an entire directory, joining results.
 #' optionally adding columns for parent directories.
@@ -292,7 +292,7 @@ bin <- function(results, binwidth, calculate_rate=F){
 #' @param dir_results `r DOC_PARAM_DIR_RESULTS`
 #' @export
 read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_filename=FALSE, tz=NA){
-  paths_in <- list_matching_tag(dir_results, TAG_RESULTS)
+  paths_in <- list_results(dir_results)
   if(length(paths_in)==0){
     msg <- paste0('No results found in directory ', dir_results)
 
@@ -312,7 +312,7 @@ read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, dro
 }
 
 
-#' Read and bin all buzzdetect results in a directory
+#' Read all buzzdetect result files in a directory (recursively), call detections, and bin.
 #'
 #' Serves as a one-step implementation of [buzzr::read_directory], [buzzr::call_detections], and [buzzr::bin].
 #' See documentation of these functions for details.

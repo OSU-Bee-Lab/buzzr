@@ -2,7 +2,7 @@
 % Please edit documentation in R/results.R
 \name{bin_directory}
 \alias{bin_directory}
-\title{Read and bin all buzzdetect results in a directory}
+\title{Read all buzzdetect result files in a directory (recursively), call detections, and bin.}
 \usage{
 bin_directory(
   dir_results,

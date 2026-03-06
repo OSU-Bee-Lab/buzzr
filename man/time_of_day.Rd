@@ -2,7 +2,7 @@
 % Please edit documentation in R/time.R
 \name{time_of_day}
 \alias{time_of_day}
-\title{Get the time of day as a 0-1 value (left-inclusive) where 0 represents midnight}
+\title{Convert a date-time to a time of day as proportion (0,1) or hour (0,24; with decimals).}
 \usage{
 time_of_day(times, time_format = "proportion")
 }
@@ -10,5 +10,6 @@ time_of_day(times, time_format = "proportion")
 \item{times}{A vector of POSIX times.}
 }
 \description{
-Get the time of day as a 0-1 value (left-inclusive) where 0 represents midnight
+Useful for statistical analyses, e.g. modeling the time of peak foraging.
+For plotting, use \link{commontime} and \link{label_hour}.
 }

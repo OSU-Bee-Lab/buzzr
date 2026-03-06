@@ -1,4 +1,4 @@
-#' Coerce all dates to the same day, preserving time of day
+#' Coerce all dates to the same day, preserving time of day.
 #'
 #' For all input times, the date will be coerced to 2000-01-01 and the time zone of choice (defaults to your current time zone).
 #' This makes for prettier graphing than using time of day as a numeric (e.g., allows ggplot2::scale_x_datetime)
@@ -13,7 +13,10 @@ commontime <- function(times, tz=Sys.timezone()) {
   return(times)
 }
 
-#' Get the time of day as a 0-1 value (left-inclusive) where 0 represents midnight
+#' Convert a date-time to a time of day as proportion (0,1) or hour (0,24; with decimals).
+#'
+#' Useful for statistical analyses, e.g. modeling the time of peak foraging.
+#' For plotting, use [buzzr::commontime] and [buzzr::label_hour].
 #'
 #' @param times `r DOC_PARAM_TIMES`
 #' @export
@@ -62,7 +65,7 @@ unlist_posix <- function(posixlist){
   return(posixlist)
 }
 
-#' Extract timestamps from paths
+#' Extract date time information from a file's name.
 #'
 #' This function takes a vector of file paths and a vector of POSIX formats
 #' and attempts to extract the start time of the file. See [base::format.POSIXct] for format specifications.

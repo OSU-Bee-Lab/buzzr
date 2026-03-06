@@ -2,7 +2,7 @@
 % Please edit documentation in R/time.R
 \name{commontime}
 \alias{commontime}
-\title{Coerce all dates to the same day, preserving time of day}
+\title{Coerce all dates to the same day, preserving time of day.}
 \usage{
 commontime(times, tz = Sys.timezone())
 }
