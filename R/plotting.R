@@ -30,10 +30,11 @@ palette <- {
 
 #' A ggplot theme for aesthetic plotting of buzzdetect results.
 #'
+#' @param base_size What should the size of the text elements on the plot be?
 #' @param mode Should the theme take on a light or a dark color palette?
 #' @examples
 #' # (some ggplot code) +
-#' # theme_buzzr(mode='light')
+#' # theme_buzzr(base_size=14, mode='light')
 #'
 #' @returns A ggplot2 theme
 #' @export
