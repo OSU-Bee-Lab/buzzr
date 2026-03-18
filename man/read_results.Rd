@@ -10,8 +10,7 @@ read_results(
   first_match = FALSE,
   drop_filetime = TRUE,
   tz = NA,
-  dir_nesting = NULL,
-  return_filename = FALSE
+  dir_nesting = NULL
 )
 }
 \arguments{
@@ -26,8 +25,6 @@ read_results(
 \item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.. If the results already have a start_datetime or bin_datetime column, this will be ignored.}
 
 \item{dir_nesting}{A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4').}
-
-\item{return_filename}{A boolean representing whether or not to return the filename as an element/column.}
 }
 \description{
 This function can read in results at any stage of analysis.

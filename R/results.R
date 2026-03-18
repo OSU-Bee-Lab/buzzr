@@ -28,9 +28,8 @@ convert_start_raw <- function(results){
 #' @param first_match `r DOC_PARAM_FIRST_MATCH`
 #' @param tz `r DOC_PARAM_TZ`. If the results already have a start_datetime or bin_datetime column, this will be ignored.
 #' @param dir_nesting `r DOC_PARAM_DIR_NESTING`
-#' @param return_filename `r DOC_PARAM_RETURN_FILENAME`
 #' @export
-read_results <- function(path_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, tz=NA, dir_nesting=NULL, return_filename=FALSE){
+read_results <- function(path_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, tz=NA, dir_nesting=NULL){
   extension <- tools::file_ext(path_results)
   if(extension=='csv'){
     results <- data.table::fread(path_results)
@@ -61,14 +60,7 @@ read_results <- function(path_results, posix_formats=NA, first_match=FALSE, drop
   if(!is.null(dir_nesting)){
     elements <- c(
       elements,
-      path_elements(path_results, dir_nesting, return_filename=F)
-    )
-  }
-
-  if(return_filename){
-    elements <- c(
-      elements,
-      filename=basename(path_results)
+      dir_levels(path_results, dir_nesting)
     )
   }
 
@@ -250,7 +242,7 @@ bin <- function(results, binwidth, calculate_rate=F){
 
   groupcols <- cols_group(names(results))
 
-  groupcols_custom <- groupcols[!(groupcols%in% c(COL_BIN_FILETIME, COL_BIN_DATETIME))]
+  groupcols_custom <- groupcols[!(groupcols %in% c(COL_BIN_FILETIME, COL_BIN_DATETIME, COL_IDENT))]
   if(length(groupcols_custom) > 0){message('Grouping time bins using columns: ', paste(groupcols_custom, collapse= ', '))}
 
 
@@ -290,8 +282,9 @@ bin <- function(results, binwidth, calculate_rate=F){
 #'
 #' @inheritParams read_results
 #' @param dir_results `r DOC_PARAM_DIR_RESULTS`
+#' @param return_ident `r DOC_PARAM_RETURN_IDENT`
 #' @export
-read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_filename=FALSE, tz=NA){
+read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA){
   paths_in <- list_results(dir_results)
   if(length(paths_in)==0){
     msg <- paste0('No results found in directory ', dir_results)
@@ -302,8 +295,28 @@ read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, dro
 
   results <- lapply(
     X = paths_in,
-    FUN = function(path_raw){
-      read_results(path_raw, posix_formats = posix_formats, first_match = first_match, drop_filetime=drop_filetime, tz=tz, dir_nesting=dir_nesting, return_filename=return_filename)
+    FUN = function(path_results){
+      df <- read_results(path_results, posix_formats = posix_formats, first_match = first_match, drop_filetime=drop_filetime, tz=tz, dir_nesting=dir_nesting)
+
+      if(return_ident){
+        ident <- path_results |>
+          # no extension
+          tools::file_path_sans_ext() |>
+
+          # no results tag
+          stringr::str_remove(paste0(TAG_RESULTS, '$')) |>
+
+          # remove the data dir
+          stringr::str_remove(paste0('^', stringr::fixed(dir_results))) |>
+
+          # remove any leading slash
+          stringr::str_remove('^/')
+
+        # add as first column
+        df <- cbind(ident=ident, df)
+      }
+
+      return(df)
     }
   ) |>
     data.table::rbindlist(fill = T)
@@ -322,14 +335,14 @@ read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, dro
 #' @param binwidth `r DOC_PARAM_BINWIDTH`
 #' @return A data.table
 #' @export
-bin_directory <- function(dir_results, thresholds, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_filename=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE){
+bin_directory <- function(dir_results, thresholds, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE){
   results <- read_directory(
     dir_results=dir_results,
     posix_formats = posix_formats,
     first_match = first_match,
     drop_filetime=drop_filetime,
     dir_nesting=dir_nesting,
-    return_filename=return_filename,
+    return_ident=return_ident,
     tz=tz
   )
 

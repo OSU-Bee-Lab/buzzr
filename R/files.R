@@ -16,7 +16,7 @@ list_results <- function(dir_in) {
 }
 
 
-path_elements <- function(filepath, dir_nesting, return_filename=T) {
+dir_levels <- function(filepath, dir_nesting) {
   path_parts <- stringr::str_split(filepath, "/", simplify = T)
 
   end <- length(path_parts)
@@ -26,7 +26,7 @@ path_elements <- function(filepath, dir_nesting, return_filename=T) {
 
   names(elements) <- c(dir_nesting, 'filename')
 
-  head(elements, length(elements) - (!return_filename))
+  head(elements, length(elements) - 1)
 }
 
 

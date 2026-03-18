@@ -11,7 +11,7 @@ bin_directory(
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = NULL,
-  return_filename = FALSE,
+  return_ident = FALSE,
   tz = NA,
   binwidth = 5,
   calculate_rate = FALSE
@@ -30,7 +30,7 @@ bin_directory(
 
 \item{dir_nesting}{A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4').}
 
-\item{return_filename}{A boolean representing whether or not to return the filename as an element/column.}
+\item{return_ident}{The 'ident' is the relative path from your data directory to the results file, without the _buzzdetect tag or file extension. Useful for finding corresponding audio files or annotations.}
 
 \item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.. If the results already have a start_datetime or bin_datetime column, this will be ignored.}
 

@@ -7,7 +7,7 @@ NULL
   DOC_PARAM_PATH_RESULTS <- "The path to any buzzdetect result file that can be read with [buzzr::read_results]."
   DOC_PARAM_DIR_RESULTS <- "The directory holding all buzzdetect results to be read."
   DOC_PARAM_DIR_NESTING <- "A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4')."
-  DOC_PARAM_RETURN_FILENAME <- "A boolean representing whether or not to return the filename as an element/column."
+  DOC_PARAM_RETURN_IDENT <- "The 'ident' is the relative path from your data directory to the results file, without the _buzzdetect tag or file extension. Useful for finding corresponding audio files or annotations."
 
   # shaping
   DOC_PARAM_RESULTS <- 'A data frame of buzzdetect results, such as created by [buzzr::read_results].'

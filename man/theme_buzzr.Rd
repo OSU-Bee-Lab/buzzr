@@ -4,9 +4,11 @@
 \alias{theme_buzzr}
 \title{A ggplot theme for aesthetic plotting of buzzdetect results.}
 \usage{
-theme_buzzr(mode = "light")
+theme_buzzr(base_size = 10, mode = "light")
 }
 \arguments{
+\item{base_size}{What should the size of the text elements on the plot be?}
+
 \item{mode}{Should the theme take on a light or a dark color palette?}
 }
 \value{
@@ -17,6 +19,6 @@ A ggplot theme for aesthetic plotting of buzzdetect results.
 }
 \examples{
 # (some ggplot code) +
-# theme_buzzr(mode='light')
+# theme_buzzr(base_size=14, mode='light')
 
 }
