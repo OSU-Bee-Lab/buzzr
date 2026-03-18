@@ -299,18 +299,7 @@ read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, dro
       df <- read_results(path_results, posix_formats = posix_formats, first_match = first_match, drop_filetime=drop_filetime, tz=tz, dir_nesting=dir_nesting)
 
       if(return_ident){
-        ident <- path_results |>
-          # no extension
-          tools::file_path_sans_ext() |>
-
-          # no results tag
-          stringr::str_remove(paste0(TAG_RESULTS, '$')) |>
-
-          # remove the data dir
-          stringr::str_remove(paste0('^', stringr::fixed(dir_results))) |>
-
-          # remove any leading slash
-          stringr::str_remove('^/')
+        ident <- get_ident(path_results, dir_results)
 
         # add as first column
         df <- cbind(ident=ident, df)

@@ -30,4 +30,18 @@ dir_levels <- function(filepath, dir_nesting) {
 }
 
 
+#' @export
+get_ident <- function(path_in, dir_in=''){
+  path_in |>
+    # no extension
+    tools::file_path_sans_ext() |>
 
+    # no results tag
+    stringr::str_remove(paste0(TAG_RESULTS, '$')) |>
+
+    # remove the data dir
+    stringr::str_remove(paste0('^', stringr::fixed(dir_in))) |>
+
+    # remove any leading slash
+    stringr::str_remove('^/')
+}
