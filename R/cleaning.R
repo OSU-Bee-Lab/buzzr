@@ -40,20 +40,36 @@ trim_results <- function(results, activation_digits, neurons_keep=NULL){
 
 
 #' @export
-trim_dir <- function(dir_results, dir_trim, activation_digits, neurons_keep=NULL, overwrite=FALSE, workers=1){
+trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_keep=NULL, if_exists='stop', workers=1){
+  if_exists <- tolower(if_exists)
+  if_exists <- match.arg(if_exists, c('stop', 'skip', 'overwrite'))
+
   paths_results <- list_results(dir_results)
 
   # build output paths by replacing input root with output root
   paths_trim <- file.path(dir_trim, substring(paths_results, nchar(dir_results) + 2))
 
-  # check for existing files before doing any work
-  existing <- paths_trim[file.exists(paths_trim)]
-  if(length(existing) > 0){
-    if(!overwrite){
-      stop('Output files already exist. Set overwrite=TRUE to overwrite:\n', paste(existing, collapse='\n'))
-    } else {
-      warning('Overwriting ', length(existing), ' existing file(s).')
+  paths <- data.frame(input=paths_results, output=paths_trim)
+
+  # handle existing output files
+  paths$exists <- file.exists(paths$output)
+  if(any(paths$exists)){
+    if(if_exists == 'skip'){
+      message('Skipping ', sum(paths$exists), ' file(s) that already exist.')
+      paths <- paths[!paths$exists, ]
+    } else if(if_exists == 'stop'){
+      stop('Output files already exist. Set if_exists to "overwrite" or "skip":\n',
+           paste(paths$output[paths$exists], collapse='\n'))
+    } else if(if_exists == 'overwrite'){
+      warning('Overwriting ', sum(paths$exists), ' existing file(s).')
     }
+  }
+
+  paths$exists <- NULL
+
+  if(nrow(paths) == 0){
+    message('No files to process.')
+    return(invisible(character(0)))
   }
 
   trim_and_write <- function(path_result, path_trim){
@@ -69,12 +85,12 @@ trim_dir <- function(dir_results, dir_trim, activation_digits, neurons_keep=NULL
     cl <- parallel::makeCluster(workers)
     on.exit(parallel::stopCluster(cl))
     parallel::clusterExport(cl, c('trim_results', 'add_activation_tag'), envir=environment())
-    parallel::clusterMap(cl, trim_and_write, paths_results, paths_trim)
+    parallel::clusterMap(cl, trim_and_write, paths$input, paths$output)
   } else {
-    mapply(trim_and_write, paths_results, paths_trim)
+    mapply(trim_and_write, paths$input, paths$output)
   }
 
-  invisible(paths_trim)
+  invisible(paths$output)
 }
 
 
