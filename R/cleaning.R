@@ -45,9 +45,12 @@ trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_kee
   if_exists <- match.arg(if_exists, c('stop', 'skip', 'overwrite'))
 
   paths_results <- list_results(dir_results)
+  idents <- get_ident(paths_results, dir_results)
 
-  # build output paths by replacing input root with output root
-  paths_trim <- file.path(dir_trim, substring(paths_results, nchar(dir_results) + 2))
+  paths_trim <- file.path(
+    dir_trim,
+    paste0(idents, '.rds')
+  )
 
   paths <- data.frame(input=paths_results, output=paths_trim)
 
