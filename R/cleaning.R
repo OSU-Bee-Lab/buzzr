@@ -79,7 +79,11 @@ trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_kee
     # create output directory if needed
     dir.create(dirname(path_trim), recursive=TRUE, showWarnings=FALSE)
 
+    message('DEBUG: troubleshooting github')
     results <- read_results(path_result)
+    message('DEBUG: troubleshooting github')
+    foo <- c()
+
     results_trim <- trim_results(results, activation_digits, neurons_keep)
     saveRDS(results_trim, path_trim)
   }
