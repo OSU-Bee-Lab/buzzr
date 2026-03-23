@@ -17,19 +17,48 @@ read_directory(
 \arguments{
 \item{dir_results}{The directory holding all buzzdetect results to be read.}
 
-\item{posix_formats}{Character vector of POSIX format codes to convert the file name to a start time. If NA, leaves results in file time. See \link{file_start_time}.}
+\item{posix_formats}{Character vector of POSIX format strings (see \link[base:strptime]{base::strptime}) describing the timestamp embedded in each file name (e.g. \code{'\%y\%m\%d_\%H\%M'} for \verb{230809_0600}). Supply multiple strings when recordings from different logger types are mixed in one directory.
+If \code{NA} (default), results are left in file-time. See \link{file_start_time}.}
 
-\item{first_match}{If multiple formats match, should the time be returned as NA (FALSE) or should the first matching format be accepted (TRUE)?}
+\item{first_match}{Controls behaviour when multiple formats produce \emph{different} times for the same file. \code{FALSE} (default) returns \code{NA} with a warning; \code{TRUE} accepts the time from the first matching format with a message.}
 
-\item{drop_filetime}{Should the column storing the file time (start_filetime or bin_filetime) be removed from the results? Ignored if no POSIX formats are given.}
+\item{drop_filetime}{If \code{TRUE} (default), the \code{start_filetime} / \code{bin_filetime} column is removed once \code{start_datetime} / \code{bin_datetime} has been added. Set \code{FALSE} to keep both. Ignored if no POSIX formats are given.}
 
 \item{dir_nesting}{A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4').}
 
-\item{return_ident}{The 'ident' is the relative path from your data directory to the results file, without the _buzzdetect tag or file extension. Useful for finding corresponding audio files or annotations.}
+\item{return_ident}{The 'ident' is the relative path from your data directory to the results file, without the _buzzdetect tag or file extension. Useful for finding corresponding audio files or annotations. Set \code{TRUE} to add an \code{ident}
+column as the first column of the output.}
 
-\item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.. If the results already have a start_datetime or bin_datetime column, this will be ignored.}
+\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values.. Ignored if the results already contain a
+\code{start_datetime} or \code{bin_datetime} column.}
+}
+\value{
+A data.table combining all files, with the same columns as
+\link{read_results} plus an optional \code{ident} column.
 }
 \description{
-Applies \link{read_results} to an entire directory, joining results.
-optionally adding columns for parent directories.
+Applies \link{read_results} to every buzzdetect result file found
+recursively under \code{dir_results} and row-binds the results into a single
+data.table. All arguments are forwarded to \link{read_results}.
+}
+\details{
+Returns an empty \code{data.frame} (with a warning) if no result files are found,
+which allows safe use in pipelines with \link[data.table:rbindlist]{data.table::rbindlist} or similar.
+}
+\examples{
+dir <- system.file('extdata/five_flowers', package = 'buzzr')
+
+# Read all five files and combine into one data.table
+read_directory(
+  dir,
+  posix_formats = '\%y\%m\%d_\%H\%M',
+  tz            = 'America/New_York',
+  dir_nesting   = c('flower', 'recorder')
+)
+
+# Also include the ident column for tracing results back to their source file
+read_directory(dir, return_ident = TRUE)
+}
+\seealso{
+\link{bin_directory} to also apply thresholds and bin in one call.
 }

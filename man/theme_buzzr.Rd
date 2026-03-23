@@ -2,23 +2,45 @@
 % Please edit documentation in R/plotting.R
 \name{theme_buzzr}
 \alias{theme_buzzr}
-\title{A ggplot theme for aesthetic plotting of buzzdetect results.}
+\title{A ggplot2 theme for aesthetic plotting of buzzdetect results.}
 \usage{
 theme_buzzr(base_size = 10, mode = "light")
 }
 \arguments{
-\item{base_size}{What should the size of the text elements on the plot be?}
+\item{base_size}{Numeric. Base font size in points. All text elements scale
+relative to this value. Defaults to \code{10}.}
 
-\item{mode}{Should the theme take on a light or a dark color palette?}
+\item{mode}{Character. Color scheme — \code{'light'} (default) for a white
+background, \code{'dark'} for a deep-purple background suited to presentations
+or spectrograms.}
 }
 \value{
-A ggplot2 theme
+A \link[ggplot2:theme]{ggplot2::theme} object that can be added to any ggplot.
 }
 \description{
-A ggplot theme for aesthetic plotting of buzzdetect results.
+Applies a clean, publication-ready style with horizontal y-axis titles,
+a border around each panel, and suppressed minor gridlines. Available in
+light and dark variants — the dark variant uses the deep purple from
+\link{palette} as the plot background.
 }
 \examples{
-# (some ggplot code) +
-# theme_buzzr(base_size=14, mode='light')
+# Light mode (default) — typical use in a detection-rate time-of-day plot:
+# ggplot(binned, aes(x = commontime(bin_datetime, tz = 'America/New_York'),
+#                    y = detectionrate_ins_buzz, color = flower)) +
+#   geom_line() +
+#   scale_x_datetime(labels = label_hour(tz = 'America/New_York')) +
+#   labs(x = 'Time of day', y = 'Detection\nrate') +
+#   theme_buzzr()
 
+# Dark mode — useful for presentations or pairing with spectrograms:
+# ggplot(binned, aes(x = commontime(bin_datetime, tz = 'America/New_York'),
+#                    y = detectionrate_ins_buzz, color = flower)) +
+#   geom_line() +
+#   scale_x_datetime(labels = label_hour(tz = 'America/New_York')) +
+#   theme_buzzr(base_size = 14, mode = 'dark')
+}
+\seealso{
+\link{label_hour} for a matching x-axis formatter,
+\link{palette} for the buzzdetect color palette,
+\link{commontime} to prepare time-of-day x axes.
 }

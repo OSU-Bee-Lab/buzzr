@@ -2,14 +2,41 @@
 % Please edit documentation in R/time.R
 \name{time_of_day}
 \alias{time_of_day}
-\title{Convert a date-time to a time of day as proportion (0,1) or hour (0,24; with decimals).}
+\title{Convert a date-time to a numeric time of day.}
 \usage{
 time_of_day(times, time_format = "proportion")
 }
 \arguments{
-\item{times}{A vector of POSIX times.}
+\item{times}{A POSIXct vector.}
+
+\item{time_format}{One of \code{'proportion'} (default) or \code{'hour'}.}
+}
+\value{
+A numeric vector of the same length as \code{times}.
 }
 \description{
-Useful for statistical analyses, e.g. modeling the time of peak foraging.
-For plotting, use \link{commontime} and \link{label_hour}.
+Returns the time of day as either a proportion of the 24-hour day
+(\code{0} = midnight, \code{0.5} = noon, \code{1} = next midnight) or as a decimal hour
+(\code{0} = midnight, \code{6.5} = 6:30 AM, \code{23.5} = 11:30 PM). Seconds are included
+in the calculation.
+}
+\details{
+This is useful for statistical analyses — for example, fitting a circular
+model of daily activity or finding the hour of peak buzz detections. For
+plotting, use \link{commontime} and \link{label_hour} instead.
+}
+\examples{
+times <- as.POSIXct(
+  c('2023-08-09 00:00:00', '2023-08-09 06:00:00', '2023-08-09 18:30:00'),
+  tz = 'America/New_York'
+)
+
+# Midnight = 0, 6 AM = 0.25, noon = 0.5
+time_of_day(times)
+
+# As decimal hours: midnight = 0, 6 AM = 6, 6:30 PM = 18.5
+time_of_day(times, time_format = 'hour')
+}
+\seealso{
+\link{commontime} for a POSIXct alternative suitable for plotting.
 }

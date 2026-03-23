@@ -12,22 +12,52 @@ convert_start_raw <- function(results){
 
 #' Read a single buzzdetect results file.
 #'
-#' This function can read in results at any stage of analysis.
-#' File formats can be .csv or .rds.
-#' File contents can be raw buzzdetect results (.csv with a "start" column and a column for each neuron activation),
-#' unbinned results (a row for each frame, start columns as start_datetime and/or start_filetime, and results columns for activations or for detections),
-#' or binned results (a row for each bin, start columns as bin_datetime and/or bin_filetime, and results columns for detections).
-#' The results file can be the results from one audio file or merged results (as created by [buzzr:read_directory] or [buzzr:bin_directory]).
+#' Reads a buzzdetect result file at any stage of analysis using
+#' [data.table::fread] (`.csv`) or [base::readRDS] (`.rds`).
+#' The raw buzzdetect `"start"` column is renamed to `"start_filetime"` so that
+#' buzzr can tell apart file-relative timestamps (seconds from the start of the
+#' audio file) from real-world date-times.
 #'
-#' NOTE: "start" columns from raw buzzdetect files will be renamed to "start_filetime".
-#' This enables buzzr to discriminate between frames and bins, file-times and real-world-times.
+#' Optionally, the recording's start date-time is parsed from the file name and
+#' used to convert `start_filetime` into an absolute `start_datetime` column.
+#' Directory levels above the file can also be extracted into their own columns
+#' via `dir_nesting`, which is particularly useful when combining many files
+#' with [buzzr::read_directory].
 #'
 #' @param path_results `r DOC_PARAM_PATH_RESULTS`
-#' @param posix_formats `r DOC_PARAM_POSIX_FORMATS` If NA, leaves results in file time. See [buzzr::file_start_time].
+#' @param posix_formats `r DOC_PARAM_POSIX_FORMATS`
+#'   If `NA` (default), results are left in file-time. See [buzzr::file_start_time].
 #' @param drop_filetime `r DOC_PARAM_DROP_FILETIME` Ignored if no POSIX formats are given.
 #' @param first_match `r DOC_PARAM_FIRST_MATCH`
-#' @param tz `r DOC_PARAM_TZ`. If the results already have a start_datetime or bin_datetime column, this will be ignored.
+#' @param tz `r DOC_PARAM_TZ`. Ignored if the results already contain a
+#'   `start_datetime` or `bin_datetime` column.
 #' @param dir_nesting `r DOC_PARAM_DIR_NESTING`
+#' @return A data.table with a `start_filetime` or `start_datetime` column,
+#'   one column per neuron activation or detection, and optionally one column
+#'   per level of `dir_nesting`.
+#' @seealso [buzzr::read_directory] to read all files in a folder at once,
+#'   [buzzr::call_detections] to apply detection thresholds,
+#'   [buzzr::bin] to summarise results into time bins.
+#' @examples
+#' path <- system.file(
+#'   'extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv',
+#'   package = 'buzzr'
+#' )
+#'
+#' # Basic read — 'start' column is renamed to 'start_filetime'
+#' read_results(path)
+#'
+#' # Parse real-world date-time from the filename (YYMMDD_HHMM format)
+#' read_results(path, posix_formats = '%y%m%d_%H%M', tz = 'America/New_York')
+#'
+#' # Keep both time columns and label directory levels
+#' read_results(
+#'   path,
+#'   posix_formats  = '%y%m%d_%H%M',
+#'   tz             = 'America/New_York',
+#'   drop_filetime  = FALSE,
+#'   dir_nesting    = c('flower', 'recorder')
+#' )
 #' @export
 read_results <- function(path_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, tz=NA, dir_nesting=NULL){
   extension <- tools::file_ext(path_results)
@@ -86,12 +116,36 @@ drop_activations <- function(results){
 
 #' Call event detections using activation thresholds.
 #'
+#' Converts raw neuron activation values into binary detections by applying a
+#' numeric threshold to each named neuron. Frames where the activation exceeds
+#' the threshold are marked `TRUE`; all others are `FALSE`. All `activation_`
+#' columns are dropped from the output — use [buzzr::bin] afterwards to
+#' summarise detection counts over time.
 #'
-#' @param results `r DOC_PARAM_RESULTS`.
-#' Must have activation_ columns corresponding to the neurons named in thresholds
-#' and must *not* have detections_ column for the same.
+#' The original data frame is never modified; a copy is returned.
+#'
+#' @param results `r DOC_PARAM_RESULTS`. Must contain `activation_` columns for
+#'   each neuron named in `thresholds`.
 #' @param thresholds `r DOC_PARAM_THRESHOLDS`
-#' @example examples/call_detections.R
+#'   Activations *above* the threshold value are counted as detections, so
+#'   thresholds for models that output negative log-likelihoods (such as
+#'   `model_general_v3`) are typically negative (e.g. `-1.2`).
+#' @return A data.table with `detections_` columns replacing the `activation_`
+#'   columns. Each detection column contains logical (`TRUE`/`FALSE`) values.
+#' @seealso [buzzr::bin] to count detections per time bin,
+#'   [buzzr::bin_directory] to run the full pipeline in one call.
+#' @examples
+#' path <- system.file(
+#'   'extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv',
+#'   package = 'buzzr'
+#' )
+#' results <- read_results(path)
+#'
+#' # Single neuron: activations above -1.2 are counted as buzz detections
+#' call_detections(results, thresholds = c(ins_buzz = -1.2))
+#'
+#' # Multiple neurons at once
+#' call_detections(results, thresholds = c(ins_buzz = -1.2, mech_plane = -2.0))
 #' @export
 call_detections <- function(results, thresholds){
   data.table::setDT(results)
@@ -193,20 +247,49 @@ floor_start <- function(results, binwidth){
 }
 
 
-#' Bin or re-bin results by time, counting detections and frames in each bin.
+#' Bin results by time, summing detections and frames per bin.
 #'
-#' Given a results file, group results into bins by time and sum any detection_ columns.
-#' Can re-bin previously binned results, though this gives weird results if the new bin is not a multiple of the old (e.g., bin(10), then bin(15)).
-#' Optionally, calculate the detection rate for detection_ columns (simply the total detections divided by the total frames).
-#' Generally, calculating detection rate is best as a final step. For example, you may first bin into 1 minute bins to compress the dataset,
-#' but then re-bin by 15 minutes for graphing, re-bin by 1 hour for one model and, re-bin by 1 day for another.
+#' Groups frame-level results into fixed-width time bins and sums all
+#' `detections_` columns and the `frames` column within each bin. Any remaining
+#' columns (e.g. from `dir_nesting`) are used as grouping variables, so bins
+#' are computed separately for each unique combination of those columns.
 #'
-#' Drops all activation columns.
+#' Can also re-bin previously binned results. For cleanest results, choose a
+#' new `binwidth` that is a multiple of the original (e.g. re-bin 5-minute bins
+#' into 60-minute bins). Non-multiple re-binning is allowed but produces
+#' boundary artefacts.
 #'
-#' @param thresholds `r DOC_PARAM_THRESHOLDS`
-#' @param binwidth  `r DOC_PARAM_BINWIDTH`
+#' Detection rates (`detectionrate_` columns) are best calculated at the final
+#' binning step. If you plan to re-bin, leave `calculate_rate = FALSE` until
+#' then.
+#'
+#' @param results `r DOC_PARAM_RESULTS`. Must contain at least one time column
+#'   (`start_filetime`, `start_datetime`, `bin_filetime`, or `bin_datetime`)
+#'   and at least one `detections_` column.
+#' @param binwidth `r DOC_PARAM_BINWIDTH`
 #' @param calculate_rate `r DOC_PARAM_CALCULATE_RATE`
-#' @return A data.table with a bin_ time column (bin_filetime or bin_datetime), the same detection_ columns as the input, and a frames column counting the total frames in the bin.
+#' @return A data.table with a `bin_filetime` or `bin_datetime` column, summed
+#'   `detections_` columns, a `frames` column, and optionally `detectionrate_`
+#'   columns. All other input columns are retained as grouping variables.
+#' @seealso [buzzr::call_detections] to produce the `detections_` columns that
+#'   this function expects, [buzzr::frames_expected] to check whether your bins
+#'   contain the right number of frames.
+#' @examples
+#' path <- system.file(
+#'   'extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv',
+#'   package = 'buzzr'
+#' )
+#' results <- read_results(path, posix_formats = '%y%m%d_%H%M', tz = 'America/New_York')
+#' called  <- call_detections(results, thresholds = c(ins_buzz = -1.2))
+#'
+#' # 15-minute bins
+#' bin(called, binwidth = 15)
+#'
+#' # With detection rates
+#' binned <- bin(called, binwidth = 15, calculate_rate = TRUE)
+#'
+#' # Re-bin to 1-hour windows for a coarser view
+#' bin(binned, binwidth = 60)
 #' @export
 bin <- function(results, binwidth, calculate_rate=F){
   results <- floor_start(results, binwidth)
@@ -270,12 +353,33 @@ bin <- function(results, binwidth, calculate_rate=F){
 
 #' Read all buzzdetect result files in a directory (recursively).
 #'
-#' Applies [buzzr::read_results] to an entire directory, joining results.
-#' optionally adding columns for parent directories.
+#' Applies [buzzr::read_results] to every buzzdetect result file found
+#' recursively under `dir_results` and row-binds the results into a single
+#' data.table. All arguments are forwarded to [buzzr::read_results].
+#'
+#' Returns an empty `data.frame` (with a warning) if no result files are found,
+#' which allows safe use in pipelines with [data.table::rbindlist] or similar.
 #'
 #' @inheritParams read_results
 #' @param dir_results `r DOC_PARAM_DIR_RESULTS`
-#' @param return_ident `r DOC_PARAM_RETURN_IDENT`
+#' @param return_ident `r DOC_PARAM_RETURN_IDENT` Set `TRUE` to add an `ident`
+#'   column as the first column of the output.
+#' @return A data.table combining all files, with the same columns as
+#'   [buzzr::read_results] plus an optional `ident` column.
+#' @seealso [buzzr::bin_directory] to also apply thresholds and bin in one call.
+#' @examples
+#' dir <- system.file('extdata/five_flowers', package = 'buzzr')
+#'
+#' # Read all five files and combine into one data.table
+#' read_directory(
+#'   dir,
+#'   posix_formats = '%y%m%d_%H%M',
+#'   tz            = 'America/New_York',
+#'   dir_nesting   = c('flower', 'recorder')
+#' )
+#'
+#' # Also include the ident column for tracing results back to their source file
+#' read_directory(dir, return_ident = TRUE)
 #' @export
 read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA){
   paths_in <- list_results(dir_results)
@@ -307,15 +411,37 @@ read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, dro
 }
 
 
-#' Read all buzzdetect result files in a directory (recursively), call detections, and bin.
+#' Read, threshold, and bin all buzzdetect result files in a directory.
 #'
-#' Serves as a one-step implementation of [buzzr::read_directory], [buzzr::call_detections], and [buzzr::bin].
-#' See documentation of these functions for details.
+#' A convenience wrapper that runs [buzzr::read_directory],
+#' [buzzr::call_detections], and [buzzr::bin] in sequence. All arguments from
+#' those functions are accepted here. See their documentation for details.
+#'
+#' This is the recommended entry point for most analyses: point it at your
+#' results folder, supply your thresholds and time zone, and get back a tidy
+#' binned data.table ready for plotting or modelling.
 #'
 #' @inheritParams read_directory
 #' @param thresholds `r DOC_PARAM_THRESHOLDS`
 #' @param binwidth `r DOC_PARAM_BINWIDTH`
-#' @return A data.table
+#' @param calculate_rate `r DOC_PARAM_CALCULATE_RATE`
+#' @return A data.table with `bin_filetime` or `bin_datetime`, `detections_`
+#'   columns, a `frames` column, and any columns from `dir_nesting` or `ident`.
+#' @seealso [buzzr::read_directory], [buzzr::call_detections], and [buzzr::bin]
+#'   for the individual steps this function wraps,
+#'   [buzzr::frames_expected] to check bins for missing audio coverage.
+#' @examples
+#' dir <- system.file('extdata/five_flowers', package = 'buzzr')
+#'
+#' bin_directory(
+#'   dir_results    = dir,
+#'   thresholds     = c(ins_buzz = -1.2),
+#'   posix_formats  = '%y%m%d_%H%M',
+#'   tz             = 'America/New_York',
+#'   dir_nesting    = c('flower', 'recorder'),
+#'   binwidth       = 20,
+#'   calculate_rate = TRUE
+#' )
 #' @export
 bin_directory <- function(dir_results, thresholds, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE){
   results <- read_directory(

@@ -6,7 +6,7 @@ Author: Luke Hearon
 Maintainer: Luke Hearon <hearon.9@buckeyemail.osu.edu>
 Description: A package for handling, manipulating, and analyzing output
     files from buzzdetect.
-URL: https://OSU-Bee-Lab.github.io/buzzr, https://osu-bee-lab.github.io/buzzr/
+URL: https://OSU-Bee-Lab.github.io/buzzr, https://github.com/OSU-Bee-Lab/buzzdetect
 License: MIT + file LICENSE
 Imports:
     data.table,

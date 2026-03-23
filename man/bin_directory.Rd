@@ -2,7 +2,7 @@
 % Please edit documentation in R/results.R
 \name{bin_directory}
 \alias{bin_directory}
-\title{Read all buzzdetect result files in a directory (recursively), call detections, and bin.}
+\title{Read, threshold, and bin all buzzdetect result files in a directory.}
 \usage{
 bin_directory(
   dir_results,
@@ -20,26 +20,56 @@ bin_directory(
 \arguments{
 \item{dir_results}{The directory holding all buzzdetect results to be read.}
 
-\item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
+\item{thresholds}{A named numeric vector mapping neuron names to detection thresholds (e.g. \code{c(ins_buzz = -1.2)}). Frames whose activation value \emph{exceeds} the threshold are counted as detections. Because \code{model_general_v3} outputs negative log-likelihoods, thresholds are typically negative.}
 
-\item{posix_formats}{Character vector of POSIX format codes to convert the file name to a start time. If NA, leaves results in file time. See \link{file_start_time}.}
+\item{posix_formats}{Character vector of POSIX format strings (see \link[base:strptime]{base::strptime}) describing the timestamp embedded in each file name (e.g. \code{'\%y\%m\%d_\%H\%M'} for \verb{230809_0600}). Supply multiple strings when recordings from different logger types are mixed in one directory.
+If \code{NA} (default), results are left in file-time. See \link{file_start_time}.}
 
-\item{first_match}{If multiple formats match, should the time be returned as NA (FALSE) or should the first matching format be accepted (TRUE)?}
+\item{first_match}{Controls behaviour when multiple formats produce \emph{different} times for the same file. \code{FALSE} (default) returns \code{NA} with a warning; \code{TRUE} accepts the time from the first matching format with a message.}
 
-\item{drop_filetime}{Should the column storing the file time (start_filetime or bin_filetime) be removed from the results? Ignored if no POSIX formats are given.}
+\item{drop_filetime}{If \code{TRUE} (default), the \code{start_filetime} / \code{bin_filetime} column is removed once \code{start_datetime} / \code{bin_datetime} has been added. Set \code{FALSE} to keep both. Ignored if no POSIX formats are given.}
 
 \item{dir_nesting}{A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4').}
 
-\item{return_ident}{The 'ident' is the relative path from your data directory to the results file, without the _buzzdetect tag or file extension. Useful for finding corresponding audio files or annotations.}
+\item{return_ident}{The 'ident' is the relative path from your data directory to the results file, without the _buzzdetect tag or file extension. Useful for finding corresponding audio files or annotations. Set \code{TRUE} to add an \code{ident}
+column as the first column of the output.}
 
-\item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.. If the results already have a start_datetime or bin_datetime column, this will be ignored.}
+\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values.. Ignored if the results already contain a
+\code{start_datetime} or \code{bin_datetime} column.}
 
-\item{binwidth}{The desired width of the bin in minutes}
+\item{binwidth}{Width of each time bin in minutes (e.g. \code{5}, \code{20}, or \code{60}).}
+
+\item{calculate_rate}{If \code{TRUE}, adds a \code{detectionrate_} column for each \code{detections_} column, calculated as detections divided by frames. Values range from 0 to 1.}
 }
 \value{
-A data.table
+A data.table with \code{bin_filetime} or \code{bin_datetime}, \code{detections_}
+columns, a \code{frames} column, and any columns from \code{dir_nesting} or \code{ident}.
 }
 \description{
-Serves as a one-step implementation of \link{read_directory}, \link{call_detections}, and \link{bin}.
-See documentation of these functions for details.
+A convenience wrapper that runs \link{read_directory},
+\link{call_detections}, and \link{bin} in sequence. All arguments from
+those functions are accepted here. See their documentation for details.
+}
+\details{
+This is the recommended entry point for most analyses: point it at your
+results folder, supply your thresholds and time zone, and get back a tidy
+binned data.table ready for plotting or modelling.
+}
+\examples{
+dir <- system.file('extdata/five_flowers', package = 'buzzr')
+
+bin_directory(
+  dir_results    = dir,
+  thresholds     = c(ins_buzz = -1.2),
+  posix_formats  = '\%y\%m\%d_\%H\%M',
+  tz             = 'America/New_York',
+  dir_nesting    = c('flower', 'recorder'),
+  binwidth       = 20,
+  calculate_rate = TRUE
+)
+}
+\seealso{
+\link{read_directory}, \link{call_detections}, and \link{bin}
+for the individual steps this function wraps,
+\link{frames_expected} to check bins for missing audio coverage.
 }
