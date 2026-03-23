@@ -116,7 +116,7 @@ trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_kee
 
   paths_trim <- file.path(
     dir_trim,
-    paste0(idents, '.', output_format)
+    paste0(idents, '_buzzdetect.', output_format)
   )
 
   paths <- data.frame(input=paths_results, output=paths_trim)

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Using buzzr to handle buzzdetect data</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Using buzzr to handle buzzdetect data</h1>
+
+
+
+<p>This vignette is a comprehensive guide for using buzzr to manipulate
+buzzdetect result files. buzzr is a companion package to <a href="https://github.com/OSU-Bee-Lab/buzzdetect">buzzdetect</a>, a tool
+for passive acoustic monitoring of pollinators. For details about
+running buzzdetect itself, see the <a href="https://buzzdetect.readthedocs.io/en/latest/">buzzdetect
+documentation</a>. For a broader walkthrough of bioacoustic analysis
+with buzzdetect and buzzr, see <a href="https://lukehearon.com/buzzdetect/walkthrough">the walkthrough
+here</a>.</p>
+<div id="tldr" class="section level2">
+<h2>TL;DR</h2>
+<p>The core buzzr functionality is wrapped into a single function,
+<code>buzzr::bin_directory</code>. This function reads all buzzdetect
+results in a folder (recursively), translates the file times (audio
+timestamps in seconds) to date-times (e.g. “January 1, 2000 12:42 PM”),
+applies thresholds to turn neuron activations into detections, and bins
+detections according to their start time.</p>
+<p>Here’s an example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>df <span class="ot">&lt;-</span> buzzr<span class="sc">::</span><span class="fu">bin_directory</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  <span class="at">dir_results=</span><span class="fu">system.file</span>(<span class="st">&#39;extdata/five_flowers&#39;</span>, <span class="at">package=</span><span class="st">&#39;buzzr&#39;</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>  <span class="at">thresholds =</span> <span class="fu">c</span>(<span class="at">ins_buzz=</span><span class="sc">-</span><span class="fl">1.2</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>  <span class="at">posix_formats =</span> <span class="st">&#39;%y%m%d_%H%M&#39;</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>  <span class="at">dir_nesting =</span> <span class="fu">c</span>(<span class="st">&#39;flower&#39;</span>,<span class="st">&#39;recorder&#39;</span>),</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>  <span class="at">tz =</span> <span class="st">&#39;America/New_York&#39;</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  <span class="at">binwidth =</span> <span class="dv">20</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## Grouping time bins using columns: flower, recorder</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">head</span>(df)</span></code></pre></div>
+<pre><code>##     flower recorder        bin_datetime detections_ins_buzz frames
+##     &lt;char&gt;   &lt;char&gt;              &lt;POSc&gt;               &lt;int&gt;  &lt;num&gt;
+## 1: chicory    1_104 2025-07-04 00:00:00                   1   1250
+## 2: chicory    1_104 2025-07-04 00:20:00                   4   1250
+## 3: chicory    1_104 2025-07-04 00:40:00                   3   1250
+## 4: chicory    1_104 2025-07-04 01:00:00                   2   1250
+## 5: chicory    1_104 2025-07-04 01:20:00                   0   1250
+## 6: chicory    1_104 2025-07-04 01:40:00                   0   1250</code></pre>
+</div>
+<div id="dataset" class="section level2">
+<h2>Dataset</h2>
+<p>For this walkthrough, we will use the buzzdetect results included
+with this package. The results correspond to some of the recordings
+described in <a href="https://doi.org/10.1093/jisesa/ieaf104">the
+buzzdetect manuscript</a>. Recorders were placed by five flowers in
+bloom (chicory, mustard, pumpkin, soybean, and watermelon) and allowed
+to record for 24 hours. The resulting audio was analyzed buzzdetect;
+we’ll refer to the resulting dataset as the “Five Flowers” dataset. To
+keep the buzzr version of the dataset light, we have retained only a
+single recorder from each plant and trimmed down the files. Find the
+full dataset in the <a href="https://zenodo.org/records/17857856">Zenodo
+repository</a>.</p>
+<div id="locating-the-dataset" class="section level3">
+<h3>Locating the dataset</h3>
+<p>The path to the Five Flowers dataset on your machine can be retrieved
+with the <code>system.file</code> function. Let’s have a look.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(buzzr)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>dir_data <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&#39;extdata/five_flowers&#39;</span>, <span class="at">package=</span><span class="st">&#39;buzzr&#39;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>paths_results <span class="ot">&lt;-</span> <span class="fu">list.files</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  dir_data,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">recursive=</span>T</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="fu">head</span>(paths_results)</span></code></pre></div>
+<pre><code>## [1] &quot;chicory/1_104/250704_0000_buzzdetect.csv&quot;  
+## [2] &quot;mustard/54/240904_0000_buzzdetect.csv&quot;     
+## [3] &quot;pumpkin/1_37/240808_0000_buzzdetect.csv&quot;   
+## [4] &quot;soybean/9/230809_0000_buzzdetect.csv&quot;      
+## [5] &quot;watermelon/1_73/240727_0000_buzzdetect.csv&quot;</code></pre>
+<p>Here we see that the results are stored in folders according to the
+pattern <code>flower/recorder_id/HHMMDD_MMSS_buzzdetect.csv</code>.</p>
+</div>
+<div id="results-file-structure" class="section level3">
+<h3>Results file structure</h3>
+<p>Let’s look at a single results file using base R:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>path_results <span class="ot">&lt;-</span> <span class="fu">file.path</span>(dir_data, paths_results[<span class="dv">1</span>])</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>df_base <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(path_results)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="fu">head</span>(df_base)</span></code></pre></div>
+<pre><code>##   start activation_ins_buzz activation_ambient_rain activation_ins_trill
+## 1  0.00                -1.7                    -2.0                 -1.9
+## 2  0.96                -2.0                    -2.0                 -1.9
+## 3  1.92                -2.1                    -2.8                 -2.8
+## 4  2.88                -2.0                    -2.6                 -2.4
+## 5  3.84                -2.0                    -2.3                 -2.4
+## 6  4.80                -1.8                    -1.5                 -1.6
+##   activation_mech_plane
+## 1                  -2.2
+## 2                  -2.4
+## 3                  -3.4
+## 4                  -3.2
+## 5                  -2.5
+## 6                  -2.3</code></pre>
+<p>We have a start column and the activations for a few different
+neurons. Each row is a single frame, which is a 0.96s span of audio for
+these results.</p>
+</div>
+</div>
+<div id="reading" class="section level2">
+<h2>Reading results</h2>
+<p>Result files can be well over a hundred thousand rows long, so
+<code>read.csv</code> is quite slow. Let’s try buzzr instead, which
+leverages <code>data.table::fread</code>. The function we want is
+<code>buzzr::read_results</code></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>df_buzzr <span class="ot">&lt;-</span> buzzr<span class="sc">::</span><span class="fu">read_results</span>(path_results)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">head</span>(df_buzzr)</span></code></pre></div>
+<pre><code>##    start_filetime activation_ins_buzz activation_ambient_rain
+##             &lt;num&gt;               &lt;num&gt;                   &lt;num&gt;
+## 1:           0.00                -1.7                    -2.0
+## 2:           0.96                -2.0                    -2.0
+## 3:           1.92                -2.1                    -2.8
+## 4:           2.88                -2.0                    -2.6
+## 5:           3.84                -2.0                    -2.3
+## 6:           4.80                -1.8                    -1.5
+##    activation_ins_trill activation_mech_plane
+##                   &lt;num&gt;                 &lt;num&gt;
+## 1:                 -1.9                  -2.2
+## 2:                 -1.9                  -2.4
+## 3:                 -2.8                  -3.4
+## 4:                 -2.4                  -3.2
+## 5:                 -2.4                  -2.5
+## 6:                 -1.6                  -2.3</code></pre>
+<p>You can see that buzzr renamed the default “start” column to the
+buzzr convention of “start_filetime”. This allows buzzr to distinguish
+between timestamps for file-time (as seconds from the start of file) and
+timestamps for real-world time (as date-time).</p>
+<div id="using-buzzr-to-interpret-date-time" class="section level3">
+<h3>Using buzzr to interpret date-time</h3>
+<p>We can use buzzr to interpret the date-time of a recording from the
+name of the results file. For this, we need several more arguments.</p>
+<ul>
+<li><p><strong>posix_formats:</strong> A string (or vector of strings)
+containing the POSIX format code. Our files are saved with a 2-digit
+year, 2-digit month, 2-digit day, underscore, 24-hour hour, and minute.
+That is, “YYMMDD_HHMM”. The way to write this as a POSIX format string
+is: <code>%y%m%d_%H%M</code>.</p></li>
+<li><p><strong>first_match:</strong> If multiple POSIX format strings
+are supplied and the file matches multiple formats, should the first
+match be used (TRUE) or should NA be returned (FALSE, default)? This is
+won’t be needed if you’re working with a single file, but if you have
+multiple format (perhaps from using different recorders in the same
+experiment), this allows <code>read_directory</code> or
+<code>bin_directory</code> to read all of the results in one
+go.</p></li>
+<li><p><strong>drop_filetime:</strong> Should the output results retain
+the start_filetime column alongside start_datetime (FALSE) or should it
+be dropped (TRUE)? Note: this argument is only respected if POSIX
+formats are given. File-time will not be dropped if there is no other
+time column.</p></li>
+<li><p><strong>tz:</strong> The time zone to use for the POSIX
+translation. Required if translating results to date-time. Should match
+the time zone of the recordings. Time zones are a real nightmare. If
+you’re finding everything is plotting incorrectly, it’s probably a time
+zone issue.</p></li>
+</ul>
+<p>Date-time data are unfortunately cumbersome, but you should only have
+to figure out these settings once per project.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>df_datetime <span class="ot">&lt;-</span> buzzr<span class="sc">::</span><span class="fu">read_results</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  path_results,</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="at">posix_formats =</span> <span class="st">&#39;%y%m%d_%H%M&#39;</span>,  <span class="co"># YYMMDD_HHMM</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="at">first_match =</span> <span class="cn">FALSE</span>,  <span class="co"># doesn&#39;t matter in this case, since we have only one format</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="at">drop_filetime =</span> <span class="cn">FALSE</span>,  <span class="co"># keep the start_filetime column (by default, it&#39;s dropped)</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  <span class="at">tz=</span><span class="st">&#39;America/New_York&#39;</span>  <span class="co"># the time zone these data were collected in</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="fu">head</span>(df_datetime)</span></code></pre></div>
+<pre><code>##         start_datetime start_filetime activation_ins_buzz
+##                 &lt;POSc&gt;          &lt;num&gt;               &lt;num&gt;
+## 1: 2025-07-04 00:00:00           0.00                -1.7
+## 2: 2025-07-04 00:00:00           0.96                -2.0
+## 3: 2025-07-04 00:00:01           1.92                -2.1
+## 4: 2025-07-04 00:00:02           2.88                -2.0
+## 5: 2025-07-04 00:00:03           3.84                -2.0
+## 6: 2025-07-04 00:00:04           4.80                -1.8
+##    activation_ambient_rain activation_ins_trill activation_mech_plane
+##                      &lt;num&gt;                &lt;num&gt;                 &lt;num&gt;
+## 1:                    -2.0                 -1.9                  -2.2
+## 2:                    -2.0                 -1.9                  -2.4
+## 3:                    -2.8                 -2.8                  -3.4
+## 4:                    -2.6                 -2.4                  -3.2
+## 5:                    -2.3                 -2.4                  -2.5
+## 6:                    -1.5                 -1.6                  -2.3</code></pre>
+<p>Now we can see we’ve successfully translated the file-time to a
+date-time. “start_filetime” is present as before (since chose not to
+drop it), but we also have “start_datetime” holding the date-time.
+Usually you only care about the date-time, but file-time can be useful.
+For example, we could find frames with detected buzzes and use <a href="https://www.ffmpeg.org/">FFmpeg</a> to extract the audio from the
+corresponding file times.</p>
+</div>
+<div id="using-buzzr-to-interpret-file-structure" class="section level3">
+<h3>Using buzzr to interpret file structure</h3>
+<p>You’ll probably find it convenient to organize your recordings
+according to some schema. For example, in this dataset we placed
+recordings in folders corresponding to the recorder ID and placed those
+folders into ones corresponding to plant type. buzzr lets us extract
+information from the file path. We can do this with two arguments:</p>
+<ul>
+<li><strong>dir_nesting</strong>: A character vector used to name the
+directory levels above the results file. That is, what does each level
+above the results represent? Each element becomes a column in the
+output, storing the components of the path for each data file.</li>
+<li><strong>return_ident</strong>: available in
+<code>read_directory</code> and <code>bin_directory</code>, should the
+file identifier be placed into its own column? The ident is the relative
+path from the results directory to the file, stripped of its extension
+and the <code>_buzzdetect</code> tag. You probably won’t care about this
+unless you want to pin down a specific problematic recording. For
+example, if you see a large spike of positives at 3:00AM, you may want
+to investigate.</li>
+</ul>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>df_nesting <span class="ot">&lt;-</span> buzzr<span class="sc">::</span><span class="fu">read_results</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>  path_results,</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="at">dir_nesting =</span> <span class="fu">c</span>(<span class="st">&#39;flower&#39;</span>, <span class="st">&#39;recorder&#39;</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>)</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="fu">head</span>(df_nesting)</span></code></pre></div>
+<pre><code>##     flower recorder start_filetime activation_ins_buzz activation_ambient_rain
+##     &lt;char&gt;   &lt;char&gt;          &lt;num&gt;               &lt;num&gt;                   &lt;num&gt;
+## 1: chicory    1_104           0.00                -1.7                    -2.0
+## 2: chicory    1_104           0.96                -2.0                    -2.0
+## 3: chicory    1_104           1.92                -2.1                    -2.8
+## 4: chicory    1_104           2.88                -2.0                    -2.6
+## 5: chicory    1_104           3.84                -2.0                    -2.3
+## 6: chicory    1_104           4.80                -1.8                    -1.5
+##    activation_ins_trill activation_mech_plane
+##                   &lt;num&gt;                 &lt;num&gt;
+## 1:                 -1.9                  -2.2
+## 2:                 -1.9                  -2.4
+## 3:                 -2.8                  -3.4
+## 4:                 -2.4                  -3.2
+## 5:                 -2.4                  -2.5
+## 6:                 -1.6                  -2.3</code></pre>
+<p>This isn’t terribly useful if we’re dealing with a single file, but
+it’s very convenient <a href="#full-read">when we read an entire
+directory</a>. However, your file structure <strong>must</strong> be
+rectangular! That is, every file has to have the same level of nesting.
+Having both <code>foo/bar/results.csv</code> and
+<code>foo/bar/lorem/results.csv</code> won’t work.</p>
+</div>
+</div>
+<div id="detections" class="section level2">
+<h2>Calling detections</h2>
+<p>Raw neuron activations are not useful by themselves; a threshold must
+be applied to convert the activations into discrete detections. The
+threshold at which to call detections depends on the model you’re using
+and how you want to balance the detection sensitivity against the false
+positive rate. We recommend using a threshold with 95% precision (95% of
+called buzzes are true) as a starting point, but you may want to
+fine-tune if detections are low or if there are sources of false
+positives in your audio.</p>
+<p>For model_general_v3, a threshold of -1.2 is a good starting point
+for calling buzzes. This threshold should roughly correspond to 95%
+precision. Activations above this value will count as detected instances
+of buzzing. For this vignette, we’ll also try detecting planes with a
+threshold of -2. This threshold is arbitrary and untested, but it will
+let us see how buzzr handles multiple detection columns.</p>
+<p>We can call detections by applying the function
+<code>buzzr::call_detections</code> to a results data frame that has
+neuron activations. <code>call_detections</code> takes one argument in
+addition to the results data frame:</p>
+<ul>
+<li><strong>thresholds</strong>: a named numeric vector with names
+corresponding to the neurons to be binned and the values corresponding
+to the desired threshold.</li>
+</ul>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>df_called <span class="ot">&lt;-</span> buzzr<span class="sc">::</span><span class="fu">call_detections</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  df_datetime,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  <span class="at">thresholds =</span> <span class="fu">c</span>(</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>    <span class="at">ins_buzz =</span> <span class="sc">-</span><span class="fl">1.2</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>    <span class="at">mech_plane =</span> <span class="sc">-</span><span class="dv">2</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>  )</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>)</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="fu">head</span>(df_called)</span></code></pre></div>
+<pre><code>##         start_datetime start_filetime detections_ins_buzz detections_mech_plane
+##                 &lt;POSc&gt;          &lt;num&gt;              &lt;lgcl&gt;                &lt;lgcl&gt;
+## 1: 2025-07-04 00:00:00           0.00               FALSE                 FALSE
+## 2: 2025-07-04 00:00:00           0.96               FALSE                 FALSE
+## 3: 2025-07-04 00:00:01           1.92               FALSE                 FALSE
+## 4: 2025-07-04 00:00:02           2.88               FALSE                 FALSE
+## 5: 2025-07-04 00:00:03           3.84               FALSE                 FALSE
+## 6: 2025-07-04 00:00:04           4.80               FALSE                 FALSE</code></pre>
+<p>We can see that we retain our two time columns, but any “activation_”
+columns named in our thresholds have been replaced with “detections_”.
+Neurons without a threshold have been dropped.</p>
+<p>The detections are binary TRUE/FALSE values. You may be interested in
+the total number of detections, in which case we could simply sum the
+column.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>total_detections <span class="ot">&lt;-</span> <span class="fu">sum</span>(df_called<span class="sc">$</span>detections_ins_buzz)</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">print</span>(total_detections)</span></code></pre></div>
+<pre><code>## [1] 2604</code></pre>
+<p>Across the whole day, we saw 2,604 detections out of 90,000 frames
+for an average detection rate of 0.03.</p>
+<p>While total detection rates are valuable in some cases, a more common
+interest is the change in detection rate over time. For that, we need to
+bin.</p>
+</div>
+<div id="binning" class="section level2">
+<h2>Binning</h2>
+<p>To bin detections by time, we can apply the function
+<code>buzzr::bin</code> to a results data frame that has called
+detections. <code>bin</code> only needs two arguments in addition to the
+data frame:</p>
+<ul>
+<li><strong>binwidth</strong>: the size of the bin in minutes</li>
+<li><strong>calculate_rate</strong>: do you want buzzr to automatically
+calculate detection rates (detections/frames) for the detection columns?
+While it might seem like this would always be desired, sometimes you
+want to modify the binned results multiple times. E.g., first bin with a
+width of 1 to compress your data, then bin with a width of 15 for
+graphing and a width of 60 for statistical analysis. In this case, you
+might as well save the rate calculation for the end.</li>
+</ul>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>df_bin <span class="ot">&lt;-</span> buzzr<span class="sc">::</span><span class="fu">bin</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>  df_called,</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>  <span class="at">binwidth=</span><span class="dv">15</span>,  <span class="co"># 15-minute bins</span></span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>  <span class="at">calculate_rate =</span> <span class="cn">TRUE</span>  <span class="co"># calculate our detection rates for us</span></span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>)</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a><span class="fu">head</span>(df_bin)</span></code></pre></div>
+<pre><code>##    bin_filetime        bin_datetime detections_ins_buzz detections_mech_plane
+##           &lt;num&gt;              &lt;POSc&gt;               &lt;int&gt;                 &lt;int&gt;
+## 1:            0 2025-07-04 00:00:00                   1                    37
+## 2:          900 2025-07-04 00:15:00                   3                    22
+## 3:         1800 2025-07-04 00:30:00                   2                   106
+## 4:         2700 2025-07-04 00:45:00                   2                    60
+## 5:         3600 2025-07-04 01:00:00                   2                    62
+## 6:         4500 2025-07-04 01:15:00                   0                    12
+##    frames detectionrate_ins_buzz detectionrate_mech_plane
+##     &lt;num&gt;                  &lt;num&gt;                    &lt;num&gt;
+## 1:    938            0.001066098               0.03944563
+## 2:    937            0.003201708               0.02347919
+## 3:    938            0.002132196               0.11300640
+## 4:    937            0.002134472               0.06403415
+## 5:    938            0.002132196               0.06609808
+## 6:    937            0.000000000               0.01280683</code></pre>
+<p>You can see that buzzr handled the file-time and the date-time each
+with no problem and now our detections have been turned from booleans to
+integers.</p>
+<p>Let’s see what these data look like!</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>  df_bin<span class="sc">$</span>bin_datetime,</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>  df_bin<span class="sc">$</span>detections_ins_buzz</span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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Q8AQKDsCxoDKDrkVaAgYAgGBmmdAOMf//PPP1UNjaJQdDQFDoDYQqEkG9Pe//92dddZZug3kt7/9rVt88cXdIoss4ohdTyTX0047zf3rX/+qjR6wWhoCrRiBxK0Y1YzHxx9/7LbYYgs311xzuf322083yS688ML6Gz/VH330kbvvvvvcyJEj3eOPP66+i0rRHqzFb775ZmV6pci/0nkiWeL7G/rNb36j+Fa6TlZ+YQjgQmfs2LFqHFzYk+VLndkSmgHJSw/NmjXLPf/8826TTTZpELTw5ZdfdquttprDX3SpqEePHu711193jz32mGvKBQg79HGghmFknz59SlKVjTfe2F188cV1yYDGjRunvr6XWmopN/fcc7s333zTXXjhhW7HHXcsCZaWaWkQYO8mkY2ZFVQtCWNJpf79+3thLJpOnJF5cclKPHkvX0b/yCOPpD5fzATCVPxtt92WmuXdd9/thUGmpmtugk033dQ/99xzzX28ap+bOHGi9u3f/va3qI5i3a7XxCFddM1Oqh+BddZZx7/22mtVXdFUHRDuWHv16uW23nprJy1xV111lWvTpo2Tl8+deOKJ7phjjikrc+3cubN79tlnU8t84okn3NJLL52azhL8D4FffvnFHXfcceoJAe8HgVZffXWHdNu7d29zwRtAsWNREEjVAU2ePFn1KLfccosWyJwSL4ibbbaZKoHRheCQbMkllyxKhdIyOfjggx1MiKCIhxxyiNYNBTRTBXRAxDEbMmSIe/jhh3Walpaf3f8fAijuZ8yYoR+bcJWPDi53R48e7XBOx9SW6Rj9b2QItBSBVAZE7PfFFltMyxGx3M2cOdPtvPPO+vs///mPSkPzzjtvS+uR+XlikVEPvtTdu3d3fLVzaYcddnDjx49v8CLlprHfjRFApwbDQYfWtm1bTUBfs8EYpr7HHnu47bbbTj8AMvVW31CNc7ErhkABCKRNEGUq40Wb7sVBmT/ssMO8OCPzc+bM8RKixx999NEenUylSBigf++99/yECRO8SDw63/3iiy/KUp161AEJM/dbbbWVP/vssxVDkW5V98OP008/3Xfo0MHLypiX6ZiXhQYv5hBlwdoKaR4CtaADSpWA0KTvvvvuDtes0A033KDLekceeaQu8YlCWK9X4h82QIQIwv6HpWKW442ajwCrnHfddZdOrTFnYLVz0KBBOuW6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" /><!-- --></p>
+<p>Cool! We see an obvious trend of buzz detections launching up in the
+early morning, then dropping off before midday. There are a few false
+positives at night, but they’re dwarfed by the signal from the
+daytime.</p>
+<div id="how-buzzr-identifies-groups" class="section level3">
+<h3>How buzzr identifies groups</h3>
+<p>When binning, buzzr drops columns for frame times, neuron
+activations, and detection rates. Then, for each bin, frame counts and
+total detections are summed. If requested, detection rates are also
+calculated. <strong>Every</strong> remaining column is used as a group
+for binning. This could cause unexpected results if you’ve created
+custom columns.</p>
+<p>For example:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>df_called<span class="sc">$</span>newcol <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">&#39;A&#39;</span>, <span class="st">&#39;B&#39;</span>), <span class="fu">nrow</span>(df_called)<span class="sc">/</span><span class="dv">2</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>df_bin_customgroups <span class="ot">&lt;-</span> buzzr<span class="sc">::</span><span class="fu">bin</span>(</span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>  df_called,</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>  <span class="at">binwidth=</span><span class="dv">15</span>,  <span class="co"># 15-minute bins</span></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>  <span class="at">calculate_rate =</span> <span class="cn">TRUE</span>  <span class="co"># calculate our detection rates for us</span></span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## Grouping time bins using columns: newcol</code></pre>
+<p>buzzr prints a message showing all grouping columns just in case the
+groupings were unintended. Here we can see the bins contain half as many
+frames as we would have expected if we weren’t aware of the grouping
+logic.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="fu">head</span>(df_bin_customgroups)</span></code></pre></div>
+<pre><code>##    newcol bin_filetime        bin_datetime detections_ins_buzz
+##    &lt;char&gt;        &lt;num&gt;              &lt;POSc&gt;               &lt;int&gt;
+## 1:      A            0 2025-07-04 00:00:00                   1
+## 2:      B            0 2025-07-04 00:00:00                   0
+## 3:      A          900 2025-07-04 00:15:00                   1
+## 4:      B          900 2025-07-04 00:15:00                   2
+## 5:      B         1800 2025-07-04 00:30:00                   2
+## 6:      A         1800 2025-07-04 00:30:00                   0
+##    detections_mech_plane frames detectionrate_ins_buzz detectionrate_mech_plane
+##                    &lt;int&gt;  &lt;num&gt;                  &lt;num&gt;                    &lt;num&gt;
+## 1:                    16    469            0.002132196               0.03411514
+## 2:                    21    469            0.000000000               0.04477612
+## 3:                    11    469            0.002132196               0.02345416
+## 4:                    11    468            0.004273504               0.02350427
+## 5:                    56    469            0.004264392               0.11940299
+## 6:                    50    469            0.000000000               0.10660981</code></pre>
+</div>
+</div>
+<div id="full-read" class="section level2">
+<h2>Reading entire directories</h2>
+<div id="binning-a-directory" class="section level3">
+<h3>Binning a directory</h3>
+<p>All of the above steps can be completed for every file in a directory
+(and all subdirectories) with a single command:
+<code>buzzr::bin_directory</code>.</p>
+<p>For this, we just combine all of the arguments we’ve seen before.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>df_fullbin <span class="ot">&lt;-</span> buzzr<span class="sc">::</span><span class="fu">bin_directory</span>(</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>  <span class="at">dir_results=</span>dir_data,</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>  <span class="at">thresholds =</span> <span class="fu">c</span>(<span class="at">ins_buzz=</span><span class="sc">-</span><span class="fl">1.2</span>),</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>  <span class="at">posix_formats =</span> <span class="st">&#39;%y%m%d_%H%M&#39;</span>,</span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>  <span class="at">first_match =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a>  <span class="at">drop_filetime =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a>  <span class="at">dir_nesting =</span> <span class="fu">c</span>(<span class="st">&#39;flower&#39;</span>,<span class="st">&#39;recorder&#39;</span>),</span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a>  <span class="at">return_ident =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb26-9"><a href="#cb26-9" tabindex="-1"></a>  <span class="at">tz =</span> <span class="st">&#39;America/New_York&#39;</span>,</span>
+<span id="cb26-10"><a href="#cb26-10" tabindex="-1"></a>  <span class="at">binwidth =</span> <span class="dv">20</span>,</span>
+<span id="cb26-11"><a href="#cb26-11" tabindex="-1"></a>  <span class="at">calculate_rate =</span> <span class="cn">TRUE</span></span>
+<span id="cb26-12"><a href="#cb26-12" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## Grouping time bins using columns: flower, recorder</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">head</span>(df_fullbin)</span></code></pre></div>
+<pre><code>##                        ident  flower recorder        bin_datetime
+##                       &lt;char&gt;  &lt;char&gt;   &lt;char&gt;              &lt;POSc&gt;
+## 1: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:00:00
+## 2: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:20:00
+## 3: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:40:00
+## 4: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 01:00:00
+## 5: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 01:20:00
+## 6: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 01:40:00
+##    detections_ins_buzz frames detectionrate_ins_buzz
+##                  &lt;int&gt;  &lt;num&gt;                  &lt;num&gt;
+## 1:                   1   1250                 0.0008
+## 2:                   4   1250                 0.0032
+## 3:                   3   1250                 0.0024
+## 4:                   2   1250                 0.0016
+## 5:                   0   1250                 0.0000
+## 6:                   0   1250                 0.0000</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">unique</span>(df_fullbin<span class="sc">$</span>flower))</span></code></pre></div>
+<pre><code>## [1] &quot;chicory&quot;    &quot;mustard&quot;    &quot;pumpkin&quot;    &quot;soybean&quot;    &quot;watermelon&quot;</code></pre>
+<p>Rebinning only requires a single command!</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">bin</span>(df_fullbin, <span class="dv">120</span>))</span></code></pre></div>
+<pre><code>## Grouping time bins using columns: flower, recorder</code></pre>
+<pre><code>##                        ident  flower recorder        bin_datetime
+##                       &lt;char&gt;  &lt;char&gt;   &lt;char&gt;              &lt;POSc&gt;
+## 1: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:00:00
+## 2: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 02:00:00
+## 3: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 04:00:00
+## 4: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 06:00:00
+## 5: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 08:00:00
+## 6: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 10:00:00
+##    detections_ins_buzz frames
+##                  &lt;int&gt;  &lt;num&gt;
+## 1:                  10   7500
+## 2:                   7   7500
+## 3:                   1   7500
+## 4:                 878   7500
+## 5:                1460   7500
+## 6:                 111   7500</code></pre>
+</div>
+<div id="reading-a-directory" class="section level3">
+<h3>Reading a directory</h3>
+<p>You may also want to read a directory <em>without</em> binning the
+results. For example you may want to try out multiple different
+thresholds efficiently, or maybe you want to extract all positive
+frames, or examine the behavior of activation values.</p>
+<p>The function for this is <code>buzzr::read_directory</code>, and it
+behaves how you expect given the information above.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a>df_fullread <span class="ot">&lt;-</span> buzzr<span class="sc">::</span><span class="fu">read_directory</span>(</span>
+<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>  <span class="at">dir_results=</span>dir_data,</span>
+<span id="cb35-3"><a href="#cb35-3" tabindex="-1"></a>  <span class="at">posix_formats =</span> <span class="st">&#39;%y%m%d_%H%M&#39;</span>,</span>
+<span id="cb35-4"><a href="#cb35-4" tabindex="-1"></a>  <span class="at">first_match =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb35-5"><a href="#cb35-5" tabindex="-1"></a>  <span class="at">drop_filetime =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb35-6"><a href="#cb35-6" tabindex="-1"></a>  <span class="at">dir_nesting =</span> <span class="fu">c</span>(<span class="st">&#39;flower&#39;</span>,<span class="st">&#39;recorder&#39;</span>),</span>
+<span id="cb35-7"><a href="#cb35-7" tabindex="-1"></a>  <span class="at">return_ident =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb35-8"><a href="#cb35-8" tabindex="-1"></a>  <span class="at">tz =</span> <span class="st">&#39;America/New_York&#39;</span></span>
+<span id="cb35-9"><a href="#cb35-9" tabindex="-1"></a>)</span>
+<span id="cb35-10"><a href="#cb35-10" tabindex="-1"></a></span>
+<span id="cb35-11"><a href="#cb35-11" tabindex="-1"></a><span class="fu">nrow</span>(df_fullread)</span></code></pre></div>
+<pre><code>## [1] 450000</code></pre>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
