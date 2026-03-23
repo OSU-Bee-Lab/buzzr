@@ -1,11 +1,14 @@
 #' A simplified scale_x_datetime label that returns only the hour of the day (for use with [buzzr::commontime]).
+#'
+#' @param tz Time zone string to use when formatting hours (e.g. `'America/New_York'`).
+#' Should match the `tz` argument passed to [buzzr::commontime]. Defaults to your system timezone.
 #' @examples
-#' # ggplot2::scale_x_datetime(labels=buzzr::label_hour())
+#' # ggplot2::scale_x_datetime(labels=buzzr::label_hour(tz='America/New_York'))
 #' @returns A *function* that takes POSIX values and returns only their hours. See examples for use.
 #' @export
-label_hour <- function(){
+label_hour <- function(tz = Sys.timezone()){
   label_fn <- function(breaks){
-    strftime(breaks, format = "%I %p", tz='America/New_York') |>
+    strftime(breaks, format = "%I %p", tz=tz) |>
       stringr::str_remove('^0') |>
       tolower()
   }
@@ -76,13 +79,13 @@ theme_buzzr_light <- function(base_size){
         angle=0,  # read without tilting your head
         hjust=1,  # right align
         vjust=0.5, # vertical center
-        margin=margin(r=base_size)
+        margin=ggplot2::margin(r=base_size)
       ),
 
       axis.title.x = ggplot2::element_text(hjust=0.5),
 
       # Strips (facet_grid, facet_wrap)
-      panel.spacing.y = unit(12, 'pt'),
+      panel.spacing.y = grid::unit(12, 'pt'),
       strip.text.x = ggplot2::element_text(angle=0),
       strip.text.y = ggplot2::element_text(angle=0, hjust=0)
     )

@@ -125,13 +125,6 @@ call_detections <- function(results, thresholds){
     thresholds <- thresholds[!(paste0(PREFIX_ACTIVATION, names(thresholds)) %in% cols_noresults)]
   }
 
-  if(length(thresholds)==0){
-    if(drop_activations){
-      results <- drop_activations(results)
-    }
-
-    return(results)
-  }
 
   cols_to_threshold <- paste0(PREFIX_ACTIVATION, names(thresholds))
   cols_detection_out <- paste0(PREFIX_DETECTION, names(thresholds))
