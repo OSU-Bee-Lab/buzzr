@@ -2,27 +2,59 @@
 % Please edit documentation in R/results.R
 \name{bin}
 \alias{bin}
-\title{Bin or re-bin results by time, counting detections and frames in each bin.}
+\title{Bin results by time, summing detections and frames per bin.}
 \usage{
 bin(results, binwidth, calculate_rate = F)
 }
 \arguments{
-\item{binwidth}{The desired width of the bin in minutes}
+\item{results}{A data frame or data.table of buzzdetect results, such as created by \link{read_results}.. Must contain at least one time column
+(\code{start_filetime}, \code{start_datetime}, \code{bin_filetime}, or \code{bin_datetime})
+and at least one \code{detections_} column.}
 
-\item{calculate_rate}{Should the detection rate for detection_ columns be calculated? Takes total detections, divides by the number of frames, and outputs as a detectionrate_ column.}
+\item{binwidth}{Width of each time bin in minutes (e.g. \code{5}, \code{20}, or \code{60}).}
 
-\item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
+\item{calculate_rate}{If \code{TRUE}, adds a \code{detectionrate_} column for each \code{detections_} column, calculated as detections divided by frames. Values range from 0 to 1.}
 }
 \value{
-A data.table with a bin_ time column (bin_filetime or bin_datetime), the same detection_ columns as the input, and a frames column counting the total frames in the bin.
+A data.table with a \code{bin_filetime} or \code{bin_datetime} column, summed
+\code{detections_} columns, a \code{frames} column, and optionally \code{detectionrate_}
+columns. All other input columns are retained as grouping variables.
 }
 \description{
-Given a results file, group results into bins by time and sum any detection_ columns.
-Can re-bin previously binned results, though this gives weird results if the new bin is not a multiple of the old (e.g., bin(10), then bin(15)).
-Optionally, calculate the detection rate for detection_ columns (simply the total detections divided by the total frames).
-Generally, calculating detection rate is best as a final step. For example, you may first bin into 1 minute bins to compress the dataset,
-but then re-bin by 15 minutes for graphing, re-bin by 1 hour for one model and, re-bin by 1 day for another.
+Groups frame-level results into fixed-width time bins and sums all
+\code{detections_} columns and the \code{frames} column within each bin. Any remaining
+columns (e.g. from \code{dir_nesting}) are used as grouping variables, so bins
+are computed separately for each unique combination of those columns.
 }
 \details{
-Drops all activation columns.
+Can also re-bin previously binned results. For cleanest results, choose a
+new \code{binwidth} that is a multiple of the original (e.g. re-bin 5-minute bins
+into 60-minute bins). Non-multiple re-binning is allowed but produces
+boundary artefacts.
+
+Detection rates (\code{detectionrate_} columns) are best calculated at the final
+binning step. If you plan to re-bin, leave \code{calculate_rate = FALSE} until
+then.
+}
+\examples{
+path <- system.file(
+  'extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv',
+  package = 'buzzr'
+)
+results <- read_results(path, posix_formats = '\%y\%m\%d_\%H\%M', tz = 'America/New_York')
+called  <- call_detections(results, thresholds = c(ins_buzz = -1.2))
+
+# 15-minute bins
+bin(called, binwidth = 15)
+
+# With detection rates
+binned <- bin(called, binwidth = 15, calculate_rate = TRUE)
+
+# Re-bin to 1-hour windows for a coarser view
+bin(binned, binwidth = 60)
+}
+\seealso{
+\link{call_detections} to produce the \code{detections_} columns that
+this function expects, \link{frames_expected} to check whether your bins
+contain the right number of frames.
 }

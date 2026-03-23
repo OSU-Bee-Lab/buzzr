@@ -20,6 +20,19 @@ add_activation_tag <- function(neuron){
 #'   the `activation_` prefix (e.g. `"ins_buzz"` and `"activation_ins_buzz"` are equivalent).
 #'   All other activation columns are dropped. If `NULL` (default), all neurons are kept.
 #' @return A data.table with rounded (and optionally filtered) activation columns.
+#' @seealso [buzzr::trim_directory] to apply this to an entire folder of files.
+#' @examples
+#' path <- system.file(
+#'   'extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv',
+#'   package = 'buzzr'
+#' )
+#' results <- read_results(path)
+#'
+#' # Round all activation columns to 2 decimal places
+#' trim_results(results, activation_digits = 2)
+#'
+#' # Keep only the ins_buzz neuron and round to 1 decimal place
+#' trim_results(results, activation_digits = 1, neurons_keep = 'ins_buzz')
 #' @export
 trim_results <- function(results, activation_digits, neurons_keep=NULL){
   results_trim <- data.table::copy(results)
@@ -69,6 +82,23 @@ trim_results <- function(results, activation_digits, neurons_keep=NULL){
 #' @param workers Number of parallel workers. Defaults to `1` (sequential).
 #'   Parallelism uses [parallel::mcmapply] and may not be supported on all platforms.
 #' @return Invisibly returns a character vector of output file paths.
+#' @seealso [buzzr::trim_results] for the single-file version.
+#' @examples
+#' \dontrun{
+#' dir_in  <- system.file('extdata/five_flowers', package = 'buzzr')
+#' dir_out <- file.path(tempdir(), 'five_flowers_trimmed')
+#'
+#' # Trim all files, rounding to 2 decimal places
+#' trim_directory(dir_in, dir_out, activation_digits = 2)
+#'
+#' # Re-run, keeping only the ins_buzz neuron and overwriting existing files
+#' trim_directory(
+#'   dir_in, dir_out,
+#'   activation_digits = 2,
+#'   neurons_keep = 'ins_buzz',
+#'   if_exists = 'overwrite'
+#' )
+#' }
 #' @export
 trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_keep=NULL, if_exists='stop', workers=1){
   if_exists <- tolower(if_exists)

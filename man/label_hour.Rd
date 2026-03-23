@@ -2,16 +2,43 @@
 % Please edit documentation in R/plotting.R
 \name{label_hour}
 \alias{label_hour}
-\title{A simplified scale_x_datetime label that returns only the hour of the day (for use with \link{commontime}).}
+\title{ggplot2 x-axis label formatter for time-of-day plots.}
 \usage{
-label_hour()
+label_hour(tz = Sys.timezone())
+}
+\arguments{
+\item{tz}{Time zone string (e.g. \code{'America/New_York'}). Defaults to your
+system time zone. Should match the \code{tz} argument passed to
+\link{commontime}.}
 }
 \value{
-A \emph{function} that takes POSIX values and returns only their hours. See examples for use.
+A function that accepts a POSIXct vector and returns a character
+vector of hour labels.
 }
 \description{
-A simplified scale_x_datetime label that returns only the hour of the day (for use with \link{commontime}).
+Returns a labeller function that formats POSIXct values as readable hour
+strings (e.g. \code{"6 am"}, \code{"2 pm"}). Designed for use with
+\link[ggplot2:scale_date]{ggplot2::scale_x_datetime} after converting your time column with
+\link{commontime}.
+}
+\details{
+\strong{Time zone tip:} use the same \code{tz} here as you passed to
+\link{commontime} so that the axis labels match your data.
 }
 \examples{
-# ggplot2::scale_x_datetime(labels=buzzr::label_hour())
+# Typical usage with ggplot2 (not run):
+# ggplot(df, aes(x = commontime(bin_datetime, tz = 'America/New_York'),
+#               y = detectionrate_ins_buzz, color = flower)) +
+#   geom_line() +
+#   scale_x_datetime(labels = label_hour(tz = 'America/New_York')) +
+#   theme_buzzr()
+
+# The labeller itself:
+fmt <- label_hour(tz = 'America/New_York')
+fmt(as.POSIXct('2000-01-01 08:00:00', tz = 'America/New_York'))  # "8 am"
+fmt(as.POSIXct('2000-01-01 14:00:00', tz = 'America/New_York'))  # "2 pm"
+}
+\seealso{
+\link{commontime} to prepare your time column,
+\link{theme_buzzr} for a matching plot theme.
 }

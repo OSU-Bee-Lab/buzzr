@@ -16,25 +16,60 @@ read_results(
 \arguments{
 \item{path_results}{The path to any buzzdetect result file that can be read with \link{read_results}.}
 
-\item{posix_formats}{Character vector of POSIX format codes to convert the file name to a start time. If NA, leaves results in file time. See \link{file_start_time}.}
+\item{posix_formats}{Character vector of POSIX format strings (see \link[base:strptime]{base::strptime}) describing the timestamp embedded in each file name (e.g. \code{'\%y\%m\%d_\%H\%M'} for \verb{230809_0600}). Supply multiple strings when recordings from different logger types are mixed in one directory.
+If \code{NA} (default), results are left in file-time. See \link{file_start_time}.}
 
-\item{first_match}{If multiple formats match, should the time be returned as NA (FALSE) or should the first matching format be accepted (TRUE)?}
+\item{first_match}{Controls behaviour when multiple formats produce \emph{different} times for the same file. \code{FALSE} (default) returns \code{NA} with a warning; \code{TRUE} accepts the time from the first matching format with a message.}
 
-\item{drop_filetime}{Should the column storing the file time (start_filetime or bin_filetime) be removed from the results? Ignored if no POSIX formats are given.}
+\item{drop_filetime}{If \code{TRUE} (default), the \code{start_filetime} / \code{bin_filetime} column is removed once \code{start_datetime} / \code{bin_datetime} has been added. Set \code{FALSE} to keep both. Ignored if no POSIX formats are given.}
 
-\item{tz}{The time zone for the results, as in \link[base:as.POSIXlt]{base::as.POSIXct}.. If the results already have a start_datetime or bin_datetime column, this will be ignored.}
+\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values.. Ignored if the results already contain a
+\code{start_datetime} or \code{bin_datetime} column.}
 
 \item{dir_nesting}{A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4').}
 }
+\value{
+A data.table with a \code{start_filetime} or \code{start_datetime} column,
+one column per neuron activation or detection, and optionally one column
+per level of \code{dir_nesting}.
+}
 \description{
-This function can read in results at any stage of analysis.
-File formats can be .csv or .rds.
-File contents can be raw buzzdetect results (.csv with a "start" column and a column for each neuron activation),
-unbinned results (a row for each frame, start columns as start_datetime and/or start_filetime, and results columns for activations or for detections),
-or binned results (a row for each bin, start columns as bin_datetime and/or bin_filetime, and results columns for detections).
-The results file can be the results from one audio file or merged results (as created by \link{buzzr:read_directory} or \link{buzzr:bin_directory}).
+Reads a buzzdetect result file at any stage of analysis using
+\link[data.table:fread]{data.table::fread} (\code{.csv}) or \link[base:readRDS]{base::readRDS} (\code{.rds}).
+The raw buzzdetect \code{"start"} column is renamed to \code{"start_filetime"} so that
+buzzr can tell apart file-relative timestamps (seconds from the start of the
+audio file) from real-world date-times.
 }
 \details{
-NOTE: "start" columns from raw buzzdetect files will be renamed to "start_filetime".
-This enables buzzr to discriminate between frames and bins, file-times and real-world-times.
+Optionally, the recording's start date-time is parsed from the file name and
+used to convert \code{start_filetime} into an absolute \code{start_datetime} column.
+Directory levels above the file can also be extracted into their own columns
+via \code{dir_nesting}, which is particularly useful when combining many files
+with \link{read_directory}.
+}
+\examples{
+path <- system.file(
+  'extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv',
+  package = 'buzzr'
+)
+
+# Basic read — 'start' column is renamed to 'start_filetime'
+read_results(path)
+
+# Parse real-world date-time from the filename (YYMMDD_HHMM format)
+read_results(path, posix_formats = '\%y\%m\%d_\%H\%M', tz = 'America/New_York')
+
+# Keep both time columns and label directory levels
+read_results(
+  path,
+  posix_formats  = '\%y\%m\%d_\%H\%M',
+  tz             = 'America/New_York',
+  drop_filetime  = FALSE,
+  dir_nesting    = c('flower', 'recorder')
+)
+}
+\seealso{
+\link{read_directory} to read all files in a folder at once,
+\link{call_detections} to apply detection thresholds,
+\link{bin} to summarise results into time bins.
 }

@@ -7,18 +7,42 @@
 call_detections(results, thresholds)
 }
 \arguments{
-\item{results}{A data frame of buzzdetect results, such as created by \link{read_results}..
-Must have activation_ columns corresponding to the neurons named in thresholds
-and must \emph{not} have detections_ column for the same.}
+\item{results}{A data frame or data.table of buzzdetect results, such as created by \link{read_results}.. Must contain \code{activation_} columns for
+each neuron named in \code{thresholds}.}
 
-\item{thresholds}{A named numeric vector with names corresponding to neuron names and values corresponding to the desired detection threshold for that neuron.}
+\item{thresholds}{A named numeric vector mapping neuron names to detection thresholds (e.g. \code{c(ins_buzz = -1.2)}). Frames whose activation value \emph{exceeds} the threshold are counted as detections. Because \code{model_general_v3} outputs negative log-likelihoods, thresholds are typically negative.
+Activations \emph{above} the threshold value are counted as detections, so
+thresholds for models that output negative log-likelihoods (such as
+\code{model_general_v3}) are typically negative (e.g. \code{-1.2}).}
+}
+\value{
+A data.table with \code{detections_} columns replacing the \code{activation_}
+columns. Each detection column contains logical (\code{TRUE}/\code{FALSE}) values.
 }
 \description{
-Call event detections using activation thresholds.
+Converts raw neuron activation values into binary detections by applying a
+numeric threshold to each named neuron. Frames where the activation exceeds
+the threshold are marked \code{TRUE}; all others are \code{FALSE}. All \code{activation_}
+columns are dropped from the output — use \link{bin} afterwards to
+summarise detection counts over time.
+}
+\details{
+The original data frame is never modified; a copy is returned.
 }
 \examples{
-call_detections(
-  results = buzzr::read_results('models/model_general_v3/output/testbuzz_buzzdetect.csv'),
-  thresholds = c(ins_buzz = -1.2, ambient_rain = -1)
+path <- system.file(
+  'extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv',
+  package = 'buzzr'
 )
+results <- read_results(path)
+
+# Single neuron: activations above -1.2 are counted as buzz detections
+call_detections(results, thresholds = c(ins_buzz = -1.2))
+
+# Multiple neurons at once
+call_detections(results, thresholds = c(ins_buzz = -1.2, mech_plane = -2.0))
+}
+\seealso{
+\link{bin} to count detections per time bin,
+\link{bin_directory} to run the full pipeline in one call.
 }

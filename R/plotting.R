@@ -1,10 +1,32 @@
-#' A simplified scale_x_datetime label that returns only the hour of the day (for use with [buzzr::commontime]).
+#' ggplot2 x-axis label formatter for time-of-day plots.
 #'
-#' @param tz Time zone string to use when formatting hours (e.g. `'America/New_York'`).
-#' Should match the `tz` argument passed to [buzzr::commontime]. Defaults to your system timezone.
+#' Returns a labeller function that formats POSIXct values as readable hour
+#' strings (e.g. `"6 am"`, `"2 pm"`). Designed for use with
+#' [ggplot2::scale_x_datetime] after converting your time column with
+#' [buzzr::commontime].
+#'
+#' **Time zone tip:** use the same `tz` here as you passed to
+#' [buzzr::commontime] so that the axis labels match your data.
+#'
+#' @param tz Time zone string (e.g. `'America/New_York'`). Defaults to your
+#'   system time zone. Should match the `tz` argument passed to
+#'   [buzzr::commontime].
+#' @return A function that accepts a POSIXct vector and returns a character
+#'   vector of hour labels.
+#' @seealso [buzzr::commontime] to prepare your time column,
+#'   [buzzr::theme_buzzr] for a matching plot theme.
 #' @examples
-#' # ggplot2::scale_x_datetime(labels=buzzr::label_hour(tz='America/New_York'))
-#' @returns A *function* that takes POSIX values and returns only their hours. See examples for use.
+#' # Typical usage with ggplot2 (not run):
+#' # ggplot(df, aes(x = commontime(bin_datetime, tz = 'America/New_York'),
+#' #               y = detectionrate_ins_buzz, color = flower)) +
+#' #   geom_line() +
+#' #   scale_x_datetime(labels = label_hour(tz = 'America/New_York')) +
+#' #   theme_buzzr()
+#'
+#' # The labeller itself:
+#' fmt <- label_hour(tz = 'America/New_York')
+#' fmt(as.POSIXct('2000-01-01 08:00:00', tz = 'America/New_York'))  # "8 am"
+#' fmt(as.POSIXct('2000-01-01 14:00:00', tz = 'America/New_York'))  # "2 pm"
 #' @export
 label_hour <- function(tz = Sys.timezone()){
   label_fn <- function(breaks){
@@ -19,9 +41,19 @@ label_hour <- function(tz = Sys.timezone()){
 
 #' The buzzdetect color palette.
 #'
-#' This is named, discrete version of a magma color palette (magma is frequently used for spectrograms).
-#' See [viridis::magma] for a continuous version.
+#' A named discrete color palette derived from the magma color scale (which is
+#' also commonly used for spectrograms). Colors range from deep purple through
+#' fuchsia and salmon to a warm off-white.
 #'
+#' Named colors: `black`, `purple_deep`, `purple`, `periwinkle`, `fuchsia`,
+#' `salmon`, `tangerine`, `white_hot`.
+#'
+#' For a continuous magma palette see [viridis::magma].
+#'
+#' @examples
+#' # Access named colors directly
+#' palette['fuchsia']
+#' palette[c('purple', 'salmon')]
 #' @export
 palette <- {
   palette_df <- read.csv('./resources/palette.csv')
@@ -31,15 +63,37 @@ palette <- {
 }
 
 
-#' A ggplot theme for aesthetic plotting of buzzdetect results.
+#' A ggplot2 theme for aesthetic plotting of buzzdetect results.
 #'
-#' @param base_size What should the size of the text elements on the plot be?
-#' @param mode Should the theme take on a light or a dark color palette?
+#' Applies a clean, publication-ready style with horizontal y-axis titles,
+#' a border around each panel, and suppressed minor gridlines. Available in
+#' light and dark variants — the dark variant uses the deep purple from
+#' [buzzr::palette] as the plot background.
+#'
+#' @param base_size Numeric. Base font size in points. All text elements scale
+#'   relative to this value. Defaults to `10`.
+#' @param mode Character. Color scheme — `'light'` (default) for a white
+#'   background, `'dark'` for a deep-purple background suited to presentations
+#'   or spectrograms.
+#' @return A [ggplot2::theme] object that can be added to any ggplot.
+#' @seealso [buzzr::label_hour] for a matching x-axis formatter,
+#'   [buzzr::palette] for the buzzdetect color palette,
+#'   [buzzr::commontime] to prepare time-of-day x axes.
 #' @examples
-#' # (some ggplot code) +
-#' # theme_buzzr(base_size=14, mode='light')
+#' # Light mode (default) — typical use in a detection-rate time-of-day plot:
+#' # ggplot(binned, aes(x = commontime(bin_datetime, tz = 'America/New_York'),
+#' #                    y = detectionrate_ins_buzz, color = flower)) +
+#' #   geom_line() +
+#' #   scale_x_datetime(labels = label_hour(tz = 'America/New_York')) +
+#' #   labs(x = 'Time of day', y = 'Detection\nrate') +
+#' #   theme_buzzr()
 #'
-#' @returns A ggplot2 theme
+#' # Dark mode — useful for presentations or pairing with spectrograms:
+#' # ggplot(binned, aes(x = commontime(bin_datetime, tz = 'America/New_York'),
+#' #                    y = detectionrate_ins_buzz, color = flower)) +
+#' #   geom_line() +
+#' #   scale_x_datetime(labels = label_hour(tz = 'America/New_York')) +
+#' #   theme_buzzr(base_size = 14, mode = 'dark')
 #' @export
 theme_buzzr <- function(base_size=10, mode='light'){
   if(mode=='light'){

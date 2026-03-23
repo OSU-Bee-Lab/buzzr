@@ -7,10 +7,43 @@
 commontime(times, tz = Sys.timezone())
 }
 \arguments{
-\item{times}{A vector of POSIX times.}
+\item{times}{A POSIXct vector.}
+
+\item{tz}{Time zone string (e.g. \code{'America/New_York'}). Defaults to your
+system time zone. Should match the \code{tz} argument passed to
+\link{label_hour}.}
+}
+\value{
+A POSIXct vector of the same length as \code{times}, with the date
+component set to 2000-01-01.
 }
 \description{
-For all input times, the date will be coerced to 2000-01-01 and the time zone of choice (defaults to your current time zone).
-This makes for prettier graphing than using time of day as a numeric (e.g., allows ggplot2::scale_x_datetime)
-and allows plotting data from different days on a common X axis.
+Sets the date of every element in \code{times} to 2000-01-01 while keeping the
+time-of-day unchanged. This lets you overlay recordings from different
+calendar days on a shared x axis using \link[ggplot2:scale_date]{ggplot2::scale_x_datetime} and
+\link{label_hour}. The arbitrary date 2000-01-01 was chosen because it
+is far enough from DST transition dates to avoid edge cases in most time zones.
+}
+\details{
+\strong{Time zone tip:} pass the same \code{tz} here as you pass to
+\link{label_hour} to ensure the hour labels match the data.
+}
+\examples{
+times <- as.POSIXct(
+  c('2023-08-09 06:15:00', '2024-07-27 14:30:00'),
+  tz = 'America/New_York'
+)
+
+# Both dates become 2000-01-01; times of day are preserved
+commontime(times, tz = 'America/New_York')
+
+# Typical ggplot2 usage (not run here):
+# ggplot(df, aes(x = commontime(bin_datetime, tz = 'America/New_York'),
+#               y = detectionrate_ins_buzz, color = flower)) +
+#   geom_line() +
+#   scale_x_datetime(labels = label_hour(tz = 'America/New_York'))
+}
+\seealso{
+\link{label_hour} for the matching x-axis label formatter,
+\link{time_of_day} for a numeric alternative suitable for modelling.
 }

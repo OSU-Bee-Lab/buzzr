@@ -11,7 +11,19 @@ An object of class \code{character} of length 8.
 palette
 }
 \description{
-This is named, discrete version of a magma color palette (magma is frequently used for spectrograms).
-See \link[viridis:reexports]{viridis::magma} for a continuous version.
+A named discrete color palette derived from the magma color scale (which is
+also commonly used for spectrograms). Colors range from deep purple through
+fuchsia and salmon to a warm off-white.
+}
+\details{
+Named colors: \code{black}, \code{purple_deep}, \code{purple}, \code{periwinkle}, \code{fuchsia},
+\code{salmon}, \code{tangerine}, \code{white_hot}.
+
+For a continuous magma palette see \link[viridis:reexports]{viridis::magma}.
+}
+\examples{
+# Access named colors directly
+palette['fuchsia']
+palette[c('purple', 'salmon')]
 }
 \keyword{datasets}
