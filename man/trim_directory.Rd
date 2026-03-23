@@ -9,6 +9,7 @@ trim_directory(
   dir_trim,
   activation_digits,
   neurons_keep = NULL,
+  output_format = "rds",
   if_exists = "stop",
   workers = 1
 )
@@ -23,6 +24,9 @@ trim_directory(
 \item{neurons_keep}{Character vector of neuron names to retain (see \link{trim_results}).
 If \code{NULL} (default), all neurons are kept.}
 
+\item{output_format}{Output file format. One of \code{"rds"} (default) or \code{"csv"}.
+CSV files are written without row names.}
+
 \item{if_exists}{What to do if an output file already exists.
 One of \code{"stop"} (default, throws an error), \code{"skip"} (silently skips existing files),
 or \code{"overwrite"} (overwrites with a warning).}
@@ -35,16 +39,19 @@ Invisibly returns a character vector of output file paths.
 }
 \description{
 Applies \link{trim_results} to every buzzdetect result file found recursively
-in \code{dir_results}, saving each trimmed file as an \code{.rds} in \code{dir_trim} while
-preserving the original directory structure.
+in \code{dir_results}, saving each trimmed file in \code{dir_trim} while preserving the
+original directory structure.
 }
 \examples{
 \dontrun{
 dir_in  <- system.file('extdata/five_flowers', package = 'buzzr')
 dir_out <- file.path(tempdir(), 'five_flowers_trimmed')
 
-# Trim all files, rounding to 2 decimal places
+# Trim all files, rounding to 2 decimal places, saved as .rds
 trim_directory(dir_in, dir_out, activation_digits = 2)
+
+# Save trimmed files as CSV instead
+trim_directory(dir_in, dir_out, activation_digits = 2, output_format = 'csv')
 
 # Re-run, keeping only the ins_buzz neuron and overwriting existing files
 trim_directory(

@@ -138,6 +138,23 @@ test_that("trim_directory if_exists='overwrite' warns and overwrites", {
   )
 })
 
+test_that("trim_directory output_format='csv' creates .csv files without row names", {
+  dir_in <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir_in) == 0, "example data not available")
+
+  dir_out <- file.path(tempdir(), paste0("buzzr_trim_csv_", Sys.getpid()))
+  on.exit(unlink(dir_out, recursive = TRUE))
+
+  paths <- trim_directory(dir_in, dir_out, activation_digits = 2, output_format = "csv")
+
+  expect_true(all(file.exists(paths)))
+  expect_true(all(endsWith(paths, ".csv")))
+
+  # No row names: first column should not be an unnamed integer index
+  df <- read.csv(paths[1])
+  expect_false(names(df)[1] == "")
+})
+
 test_that("trim_directory with neurons_keep only writes kept neurons", {
   dir_in <- system.file("extdata/five_flowers", package = "buzzr")
   skip_if(nchar(dir_in) == 0)

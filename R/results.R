@@ -60,6 +60,10 @@ convert_start_raw <- function(results){
 #' )
 #' @export
 read_results <- function(path_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, tz=NA, dir_nesting=NULL){
+  if(!file.exists(path_results)){
+    stop('File does not exist: ', path_results)
+  }
+
   extension <- tools::file_ext(path_results)
   if(extension=='csv'){
     results <- data.table::fread(path_results)

@@ -68,14 +68,16 @@ trim_results <- function(results, activation_digits, neurons_keep=NULL){
 #' Trim activation columns for all result files in a directory.
 #'
 #' Applies [buzzr::trim_results] to every buzzdetect result file found recursively
-#' in `dir_results`, saving each trimmed file as an `.rds` in `dir_trim` while
-#' preserving the original directory structure.
+#' in `dir_results`, saving each trimmed file in `dir_trim` while preserving the
+#' original directory structure.
 #'
 #' @param dir_results Path to the directory containing buzzdetect result files.
 #' @param dir_trim Path to the output directory. Created automatically if it does not exist.
 #' @param activation_digits Integer. Number of decimal places to round activation values to.
 #' @param neurons_keep Character vector of neuron names to retain (see [buzzr::trim_results]).
 #'   If `NULL` (default), all neurons are kept.
+#' @param output_format Output file format. One of `"rds"` (default) or `"csv"`.
+#'   CSV files are written without row names.
 #' @param if_exists What to do if an output file already exists.
 #'   One of `"stop"` (default, throws an error), `"skip"` (silently skips existing files),
 #'   or `"overwrite"` (overwrites with a warning).
@@ -88,8 +90,11 @@ trim_results <- function(results, activation_digits, neurons_keep=NULL){
 #' dir_in  <- system.file('extdata/five_flowers', package = 'buzzr')
 #' dir_out <- file.path(tempdir(), 'five_flowers_trimmed')
 #'
-#' # Trim all files, rounding to 2 decimal places
+#' # Trim all files, rounding to 2 decimal places, saved as .rds
 #' trim_directory(dir_in, dir_out, activation_digits = 2)
+#'
+#' # Save trimmed files as CSV instead
+#' trim_directory(dir_in, dir_out, activation_digits = 2, output_format = 'csv')
 #'
 #' # Re-run, keeping only the ins_buzz neuron and overwriting existing files
 #' trim_directory(
@@ -100,16 +105,18 @@ trim_results <- function(results, activation_digits, neurons_keep=NULL){
 #' )
 #' }
 #' @export
-trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_keep=NULL, if_exists='stop', workers=1){
+trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_keep=NULL, output_format='rds', if_exists='stop', workers=1){
   if_exists <- tolower(if_exists)
   if_exists <- match.arg(if_exists, c('stop', 'skip', 'overwrite'))
+  output_format <- tolower(output_format)
+  output_format <- match.arg(output_format, c('rds', 'csv'))
 
   paths_results <- list_results(dir_results)
   idents <- get_ident(paths_results, dir_results)
 
   paths_trim <- file.path(
     dir_trim,
-    paste0(idents, '.rds')
+    paste0(idents, '_buzzdetect.', output_format)
   )
 
   paths <- data.frame(input=paths_results, output=paths_trim)
@@ -140,9 +147,12 @@ trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_kee
     dir.create(dirname(path_trim), recursive=TRUE, showWarnings=FALSE)
     results <- read_results(path_result)
 
-
     results_trim <- trim_results(results, activation_digits, neurons_keep)
-    saveRDS(results_trim, path_trim)
+    if(output_format == 'csv'){
+      data.table::fwrite(results_trim, path_trim)
+    } else {
+      saveRDS(results_trim, path_trim)
+    }
   }
 
   if(workers > 1){
