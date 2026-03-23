@@ -1,10 +1,11 @@
-# Read all buzzdetect result files in a directory (recursively), call detections, and bin.
+# Read, threshold, and bin all buzzdetect result files in a directory.
 
-Serves as a one-step implementation of
+A convenience wrapper that runs
 [read_directory](https://osu-bee-lab.github.io/buzzr/reference/read_directory.md),
 [call_detections](https://osu-bee-lab.github.io/buzzr/reference/call_detections.md),
-and [bin](https://osu-bee-lab.github.io/buzzr/reference/bin.md). See
-documentation of these functions for details.
+and [bin](https://osu-bee-lab.github.io/buzzr/reference/bin.md) in
+sequence. All arguments from those functions are accepted here. See
+their documentation for details.
 
 ## Usage
 
@@ -31,26 +32,32 @@ bin_directory(
 
 - thresholds:
 
-  A named numeric vector with names corresponding to neuron names and
-  values corresponding to the desired detection threshold for that
-  neuron.
+  A named numeric vector mapping neuron names to detection thresholds
+  (e.g. `c(ins_buzz = -1.2)`). Frames whose activation value *exceeds*
+  the threshold are counted as detections. Because `model_general_v3`
+  outputs negative log-likelihoods, thresholds are typically negative.
 
 - posix_formats:
 
-  Character vector of POSIX format codes to convert the file name to a
-  start time. If NA, leaves results in file time. See
+  Character vector of POSIX format strings (see
+  [base::strptime](https://rdrr.io/r/base/strptime.html)) describing the
+  timestamp embedded in each file name (e.g. `'%y%m%d_%H%M'` for
+  `230809_0600`). Supply multiple strings when recordings from different
+  logger types are mixed in one directory. If `NA` (default), results
+  are left in file-time. See
   [file_start_time](https://osu-bee-lab.github.io/buzzr/reference/file_start_time.md).
 
 - first_match:
 
-  If multiple formats match, should the time be returned as NA (FALSE)
-  or should the first matching format be accepted (TRUE)?
+  Controls behaviour when multiple formats produce *different* times for
+  the same file. `FALSE` (default) returns `NA` with a warning; `TRUE`
+  accepts the time from the first matching format with a message.
 
 - drop_filetime:
 
-  Should the column storing the file time (start_filetime or
-  bin_filetime) be removed from the results? Ignored if no POSIX formats
-  are given.
+  If `TRUE` (default), the `start_filetime` / `bin_filetime` column is
+  removed once `start_datetime` / `bin_datetime` has been added. Set
+  `FALSE` to keep both. Ignored if no POSIX formats are given.
 
 - dir_nesting:
 
@@ -66,19 +73,88 @@ bin_directory(
 
   The 'ident' is the relative path from your data directory to the
   results file, without the \_buzzdetect tag or file extension. Useful
-  for finding corresponding audio files or annotations.
+  for finding corresponding audio files or annotations. Set `TRUE` to
+  add an `ident` column as the first column of the output.
 
 - tz:
 
-  The time zone for the results, as in
-  [base::as.POSIXct](https://rdrr.io/r/base/as.POSIXlt.html).. If the
-  results already have a start_datetime or bin_datetime column, this
-  will be ignored.
+  Time zone string passed to
+  [base::as.POSIXct](https://rdrr.io/r/base/as.POSIXlt.html) (e.g.
+  `'America/New_York'`). See
+  [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
+  values.. Ignored if the results already contain a `start_datetime` or
+  `bin_datetime` column.
 
 - binwidth:
 
-  The desired width of the bin in minutes
+  Width of each time bin in minutes (e.g. `5`, `20`, or `60`).
+
+- calculate_rate:
+
+  If `TRUE`, adds a `detectionrate_` column for each `detections_`
+  column, calculated as detections divided by frames. Values range from
+  0 to 1.
 
 ## Value
 
-A data.table
+A data.table with `bin_filetime` or `bin_datetime`, `detections_`
+columns, a `frames` column, and any columns from `dir_nesting` or
+`ident`.
+
+## Details
+
+This is the recommended entry point for most analyses: point it at your
+results folder, supply your thresholds and time zone, and get back a
+tidy binned data.table ready for plotting or modelling.
+
+## See also
+
+[read_directory](https://osu-bee-lab.github.io/buzzr/reference/read_directory.md),
+[call_detections](https://osu-bee-lab.github.io/buzzr/reference/call_detections.md),
+and [bin](https://osu-bee-lab.github.io/buzzr/reference/bin.md) for the
+individual steps this function wraps,
+[frames_expected](https://osu-bee-lab.github.io/buzzr/reference/frames_expected.md)
+to check bins for missing audio coverage.
+
+## Examples
+
+``` r
+dir <- system.file('extdata/five_flowers', package = 'buzzr')
+
+bin_directory(
+  dir_results    = dir,
+  thresholds     = c(ins_buzz = -1.2),
+  posix_formats  = '%y%m%d_%H%M',
+  tz             = 'America/New_York',
+  dir_nesting    = c('flower', 'recorder'),
+  binwidth       = 20,
+  calculate_rate = TRUE
+)
+#> Grouping time bins using columns: flower, recorder
+#>          flower recorder        bin_datetime detections_ins_buzz frames
+#>          <char>   <char>              <POSc>               <int>  <num>
+#>   1:    chicory    1_104 2025-07-04 00:00:00                   1   1250
+#>   2:    chicory    1_104 2025-07-04 00:20:00                   4   1250
+#>   3:    chicory    1_104 2025-07-04 00:40:00                   3   1250
+#>   4:    chicory    1_104 2025-07-04 01:00:00                   2   1250
+#>   5:    chicory    1_104 2025-07-04 01:20:00                   0   1250
+#>  ---                                                                   
+#> 356: watermelon     1_73 2024-07-27 22:20:00                   1   1250
+#> 357: watermelon     1_73 2024-07-27 22:40:00                   0   1250
+#> 358: watermelon     1_73 2024-07-27 23:00:00                   2   1250
+#> 359: watermelon     1_73 2024-07-27 23:20:00                   1   1250
+#> 360: watermelon     1_73 2024-07-27 23:40:00                   0   1250
+#>      detectionrate_ins_buzz
+#>                       <num>
+#>   1:                 0.0008
+#>   2:                 0.0032
+#>   3:                 0.0024
+#>   4:                 0.0016
+#>   5:                 0.0000
+#>  ---                       
+#> 356:                 0.0008
+#> 357:                 0.0000
+#> 358:                 0.0016
+#> 359:                 0.0008
+#> 360:                 0.0000
+```

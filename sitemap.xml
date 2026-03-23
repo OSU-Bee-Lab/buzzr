@@ -4,13 +4,17 @@
 <url><loc>https://osu-bee-lab.github.io/buzzr/LICENSE.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/articles/buzzr.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/articles/index.html</loc></url>
+<url><loc>https://osu-bee-lab.github.io/buzzr/articles/time-interpretation.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/authors.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/index.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/bin.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/bin_directory.html</loc></url>
+<url><loc>https://osu-bee-lab.github.io/buzzr/reference/buzzr-package.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/call_detections.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/commontime.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/file_start_time.html</loc></url>
+<url><loc>https://osu-bee-lab.github.io/buzzr/reference/frames_expected.html</loc></url>
+<url><loc>https://osu-bee-lab.github.io/buzzr/reference/get_ident.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/index.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/label_hour.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/palette.html</loc></url>
@@ -18,5 +22,7 @@
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/read_results.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/theme_buzzr.html</loc></url>
 <url><loc>https://osu-bee-lab.github.io/buzzr/reference/time_of_day.html</loc></url>
+<url><loc>https://osu-bee-lab.github.io/buzzr/reference/trim_directory.html</loc></url>
+<url><loc>https://osu-bee-lab.github.io/buzzr/reference/trim_results.html</loc></url>
 </urlset>
 

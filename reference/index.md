@@ -8,8 +8,7 @@ functions are circumstantially usefeul, but `bin_directory` is usually
 the starting point for all analyses.
 
 - [`bin_directory()`](https://osu-bee-lab.github.io/buzzr/reference/bin_directory.md)
-  : Read all buzzdetect result files in a directory (recursively), call
-  detections, and bin.
+  : Read, threshold, and bin all buzzdetect result files in a directory.
 
 ## Results shaping
 
@@ -20,7 +19,7 @@ Functions to read and manipulate buzzdetect results.
 - [`call_detections()`](https://osu-bee-lab.github.io/buzzr/reference/call_detections.md)
   : Call event detections using activation thresholds.
 - [`bin()`](https://osu-bee-lab.github.io/buzzr/reference/bin.md) : Bin
-  or re-bin results by time, counting detections and frames in each bin.
+  results by time, summing detections and frames per bin.
 - [`read_directory()`](https://osu-bee-lab.github.io/buzzr/reference/read_directory.md)
   : Read all buzzdetect result files in a directory (recursively).
 
@@ -29,31 +28,32 @@ Functions to read and manipulate buzzdetect results.
 Utilities for making prettier plots
 
 - [`theme_buzzr()`](https://osu-bee-lab.github.io/buzzr/reference/theme_buzzr.md)
-  : A ggplot theme for aesthetic plotting of buzzdetect results.
+  : A ggplot2 theme for aesthetic plotting of buzzdetect results.
 - [`commontime()`](https://osu-bee-lab.github.io/buzzr/reference/commontime.md)
   : Coerce all dates to the same day, preserving time of day.
 - [`label_hour()`](https://osu-bee-lab.github.io/buzzr/reference/label_hour.md)
-  : A simplified scale_x_datetime label that returns only the hour of
-  the day (for use with commontime).
+  : ggplot2 x-axis label formatter for time-of-day plots.
 - [`palette`](https://osu-bee-lab.github.io/buzzr/reference/palette.md)
   : The buzzdetect color palette.
 
 ## All functions
 
 - [`bin()`](https://osu-bee-lab.github.io/buzzr/reference/bin.md) : Bin
-  or re-bin results by time, counting detections and frames in each bin.
+  results by time, summing detections and frames per bin.
 - [`bin_directory()`](https://osu-bee-lab.github.io/buzzr/reference/bin_directory.md)
-  : Read all buzzdetect result files in a directory (recursively), call
-  detections, and bin.
+  : Read, threshold, and bin all buzzdetect result files in a directory.
 - [`call_detections()`](https://osu-bee-lab.github.io/buzzr/reference/call_detections.md)
   : Call event detections using activation thresholds.
 - [`commontime()`](https://osu-bee-lab.github.io/buzzr/reference/commontime.md)
   : Coerce all dates to the same day, preserving time of day.
 - [`file_start_time()`](https://osu-bee-lab.github.io/buzzr/reference/file_start_time.md)
   : Extract date time information from a file's name.
+- [`frames_expected()`](https://osu-bee-lab.github.io/buzzr/reference/frames_expected.md)
+  : Calculate the expected number of frames in a time bin.
+- [`get_ident()`](https://osu-bee-lab.github.io/buzzr/reference/get_ident.md)
+  : Extract the identifier (ident) from a buzzdetect result file path.
 - [`label_hour()`](https://osu-bee-lab.github.io/buzzr/reference/label_hour.md)
-  : A simplified scale_x_datetime label that returns only the hour of
-  the day (for use with commontime).
+  : ggplot2 x-axis label formatter for time-of-day plots.
 - [`palette`](https://osu-bee-lab.github.io/buzzr/reference/palette.md)
   : The buzzdetect color palette.
 - [`read_directory()`](https://osu-bee-lab.github.io/buzzr/reference/read_directory.md)
@@ -61,7 +61,10 @@ Utilities for making prettier plots
 - [`read_results()`](https://osu-bee-lab.github.io/buzzr/reference/read_results.md)
   : Read a single buzzdetect results file.
 - [`theme_buzzr()`](https://osu-bee-lab.github.io/buzzr/reference/theme_buzzr.md)
-  : A ggplot theme for aesthetic plotting of buzzdetect results.
+  : A ggplot2 theme for aesthetic plotting of buzzdetect results.
 - [`time_of_day()`](https://osu-bee-lab.github.io/buzzr/reference/time_of_day.md)
-  : Convert a date-time to a time of day as proportion (0,1) or hour
-  (0,24; with decimals).
+  : Convert a date-time to a numeric time of day.
+- [`trim_directory()`](https://osu-bee-lab.github.io/buzzr/reference/trim_directory.md)
+  : Trim activation columns for all result files in a directory.
+- [`trim_results()`](https://osu-bee-lab.github.io/buzzr/reference/trim_results.md)
+  : Trim activation columns in a results data frame.

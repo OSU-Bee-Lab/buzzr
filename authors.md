@@ -6,6 +6,9 @@
 
 ## Citation
 
+Source:
+[`DESCRIPTION`](https://github.com/OSU-Bee-Lab/buzzdetect/blob/main/DESCRIPTION)
+
 Hearon L (2026). *buzzr: Tools for wrangling buzzdetect results*. R
 package version 1.1.0, <https://OSU-Bee-Lab.github.io/buzzr>.
 

@@ -1,9 +1,6 @@
 # Extract date time information from a file's name.
 
-This function takes a vector of file paths and a vector of POSIX formats
-and attempts to extract the start time of the file. See
-[base::format.POSIXct](https://rdrr.io/r/base/strptime.html) for format
-specifications.
+Extract recording start date-times from file names.
 
 ## Usage
 
@@ -15,52 +12,89 @@ file_start_time(paths, posix_formats, tz, first_match = FALSE)
 
 - paths:
 
-  Character vector of file paths
+  Character vector of file paths.
 
 - posix_formats:
 
-  Character vector of POSIX format codes to convert the file name to a
-  start time.
+  Character vector of POSIX format strings (see
+  [base::strptime](https://rdrr.io/r/base/strptime.html)) describing the
+  timestamp embedded in each file name (e.g. `'%y%m%d_%H%M'` for
+  `230809_0600`). Supply multiple strings when recordings from different
+  logger types are mixed in one directory. See
+  [base::strptime](https://rdrr.io/r/base/strptime.html) for format
+  codes.
 
 - tz:
 
-  The time zone for the results, as in
-  [base::as.POSIXct](https://rdrr.io/r/base/as.POSIXlt.html).
+  Time zone string passed to
+  [base::as.POSIXct](https://rdrr.io/r/base/as.POSIXlt.html) (e.g.
+  `'America/New_York'`). See
+  [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
+  values.
 
 - first_match:
 
-  If multiple formats match, should the time be returned as NA (FALSE)
-  or should the first matching format be accepted (TRUE)?
+  Controls behaviour when multiple formats produce *different* times for
+  the same file. `FALSE` (default) returns `NA` with a warning; `TRUE`
+  accepts the time from the first matching format with a message.
 
 ## Value
 
-POSIXct vector
+A POSIXct vector the same length as `paths`.
+
+## Details
+
+Parses date-time information embedded in file names using one or more
+POSIX format strings (see
+[base::strptime](https://rdrr.io/r/base/strptime.html) for format
+codes). The file extension and `_buzzdetect` suffix are stripped before
+matching, so the format string should describe only the timestamp
+portion of the base name.
+
+When a single format unambiguously matches, its parsed time is returned.
+When multiple formats match the same file *with the same result*, the
+duplicate is silently ignored. When they produce *different* times, the
+behaviour depends on `first_match`:
+
+- `FALSE` (default): returns `NA` with a warning listing the conflicting
+  formats.
+
+- `TRUE`: returns the time from the first matching format with a
+  message.
+
+If no format matches, `NA` is returned with a warning.
+
+## See also
+
+[read_results](https://osu-bee-lab.github.io/buzzr/reference/read_results.md)
+which calls this internally when `posix_formats` is supplied.
 
 ## Examples
 
 ``` r
-paths <- c(
-  # April 6th, 2022, 1:34PM
-  'foo/bar/220406_1334_buzzdetect.csv',
-
-  # March 12th, 1924, 1:42PM
-  'bar/lorem/19240312_134200_buzzdetect.csv',
-
-  # August 25th, 2024, 8:19 AM
-  'bar/lorem/20240825_081900_buzzdetect.csv'
+# Single file, single format (YYMMDD_HHMM)
+file_start_time(
+  'soybean/9/230809_0000_buzzdetect.csv',
+  posix_formats = '%y%m%d_%H%M',
+  tz = 'America/New_York'
 )
+#> [1] "2023-08-09 EDT"
 
-# YYYYMMDD_HHMMSS vs YYMMDDHHMM; these formats will conflict with one another
-posix_formats <- c('%Y%m%d_%H%M%S', '%y%m%d_%H%M')
+# Multiple files in one call
+paths <- c(
+  'soybean/9/230809_0000_buzzdetect.csv',
+  'chicory/1_104/250704_0000_buzzdetect.csv'
+)
+file_start_time(paths, posix_formats = '%y%m%d_%H%M', tz = 'America/New_York')
+#> [1] "2023-08-09 EDT" "2025-07-04 EDT"
 
-
-file_start_time(paths, posix_formats, tz='America/New_York', accept_first_match=FALSE)
-#> Error in file_start_time(paths, posix_formats, tz = "America/New_York",     accept_first_match = FALSE): unused argument (accept_first_match = FALSE)
-# the second date will match both formats with different times, throwing a warning and returning NA
-# the third date will match both formats, but the times are identical. It silently ignores the duplication.
-
-file_start_time(paths, posix_formats, tz='America/New_York', accept_first_match=TRUE)
-#> Error in file_start_time(paths, posix_formats, tz = "America/New_York",     accept_first_match = TRUE): unused argument (accept_first_match = TRUE)
-# note that if we put the two-year format first, it would override the 4-year format
-# and interpret the timestamp of our second file as 2024 instead of 1924!
+# Two formats for two recorder types in the same experiment;
+# first_match = FALSE returns NA (with a warning) if both match a file
+file_start_time(
+  paths,
+  posix_formats = c('%y%m%d_%H%M', '%Y%m%d_%H%M%S'),
+  tz = 'America/New_York',
+  first_match = FALSE
+)
+#> [1] "2023-08-09 EDT" "2025-07-04 EDT"
 ```

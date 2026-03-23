@@ -33,11 +33,18 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="articles/buzzr.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/time-interpretation.html">Interpreting time in buzzr</a></li>
+  </ul>
+</li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/OSU-Bee-Lab/buzzdetect/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -51,7 +58,14 @@
 <p>buzzr is an R package for reading, shaping, and plotting results from <a href="https://github.com/OSU-Bee-Lab/buzzdetect" class="external-link">buzzdetect</a>. See <a href="https://osu-bee-lab.github.io/buzzr/articles/buzzr.html">the walkthrough vignette</a> for a detailed introduction!</p>
 <p>buzzr is not yet hosted on CRAN, so it cannot be installed with the usual <code>install.packages</code> call. Instead, install the package <code>devtools</code> (which can be installed via <code>install.packages</code>), then run the command <code>devtools::install_github(repo='OSU-Bee-Lab/buzzr')</code>.</p>
 </div>
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/OSU-Bee-Lab/buzzdetect/" class="external-link">Browse source code</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
