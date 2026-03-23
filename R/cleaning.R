@@ -7,6 +7,19 @@ add_activation_tag <- function(neuron){
 }
 
 
+#' Trim activation columns in a results data frame.
+#'
+#' Rounds all `activation_` columns to the specified number of decimal places.
+#' Optionally retains only the neurons named in `neurons_keep`, dropping all others.
+#' This is useful for reducing file size before archiving or sharing results.
+#' The original data frame is not modified.
+#'
+#' @param results A data frame or data.table with `activation_` columns.
+#' @param activation_digits Integer. Number of decimal places to round activation values to.
+#' @param neurons_keep Character vector of neuron names to retain. Names may include or omit
+#'   the `activation_` prefix (e.g. `"ins_buzz"` and `"activation_ins_buzz"` are equivalent).
+#'   All other activation columns are dropped. If `NULL` (default), all neurons are kept.
+#' @return A data.table with rounded (and optionally filtered) activation columns.
 #' @export
 trim_results <- function(results, activation_digits, neurons_keep=NULL){
   results_trim <- data.table::copy(results)
@@ -39,6 +52,23 @@ trim_results <- function(results, activation_digits, neurons_keep=NULL){
 }
 
 
+#' Trim activation columns for all result files in a directory.
+#'
+#' Applies [buzzr::trim_results] to every buzzdetect result file found recursively
+#' in `dir_results`, saving each trimmed file as an `.rds` in `dir_trim` while
+#' preserving the original directory structure.
+#'
+#' @param dir_results Path to the directory containing buzzdetect result files.
+#' @param dir_trim Path to the output directory. Created automatically if it does not exist.
+#' @param activation_digits Integer. Number of decimal places to round activation values to.
+#' @param neurons_keep Character vector of neuron names to retain (see [buzzr::trim_results]).
+#'   If `NULL` (default), all neurons are kept.
+#' @param if_exists What to do if an output file already exists.
+#'   One of `"stop"` (default, throws an error), `"skip"` (silently skips existing files),
+#'   or `"overwrite"` (overwrites with a warning).
+#' @param workers Number of parallel workers. Defaults to `1` (sequential).
+#'   Parallelism uses [parallel::mcmapply] and may not be supported on all platforms.
+#' @return Invisibly returns a character vector of output file paths.
 #' @export
 trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_keep=NULL, if_exists='stop', workers=1){
   if_exists <- tolower(if_exists)
@@ -86,10 +116,8 @@ trim_directory <- function(dir_results, dir_trim, activation_digits, neurons_kee
   }
 
   if(workers > 1){
-    cl <- parallel::makeCluster(workers)
-    on.exit(parallel::stopCluster(cl))
-    parallel::clusterExport(cl, c('trim_results', 'add_activation_tag'), envir=environment())
-    parallel::clusterMap(cl, trim_and_write, paths$input, paths$output)
+    parallel::mcmapply(trim_and_write, paths$input, paths$output,
+                       SIMPLIFY = FALSE, mc.cores = workers)
   } else {
     mapply(trim_and_write, paths$input, paths$output)
   }

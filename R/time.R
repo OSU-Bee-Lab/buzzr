@@ -58,8 +58,7 @@ posix_to_regex <- function(posix_format) {
 unlist_posix <- function(posixlist){
   # but do.call freaks if you have one element
   if(length(posixlist) > 1){
-    posixlist <- posixlist |>
-      do.call(c, .)
+    posixlist <- do.call(c, posixlist)
   } else {posixlist <- posixlist[[1]]}
 
   return(posixlist)
