@@ -3,8 +3,8 @@
 Applies
 [trim_results](https://osu-bee-lab.github.io/buzzr/reference/trim_results.md)
 to every buzzdetect result file found recursively in `dir_results`,
-saving each trimmed file as an `.rds` in `dir_trim` while preserving the
-original directory structure.
+saving each trimmed file in `dir_trim` while preserving the original
+directory structure.
 
 ## Usage
 
@@ -14,6 +14,7 @@ trim_directory(
   dir_trim,
   activation_digits,
   neurons_keep = NULL,
+  output_format = "rds",
   if_exists = "stop",
   workers = 1
 )
@@ -39,6 +40,11 @@ trim_directory(
   Character vector of neuron names to retain (see
   [trim_results](https://osu-bee-lab.github.io/buzzr/reference/trim_results.md)).
   If `NULL` (default), all neurons are kept.
+
+- output_format:
+
+  Output file format. One of `"rds"` (default) or `"csv"`. CSV files are
+  written without row names.
 
 - if_exists:
 
@@ -68,8 +74,11 @@ if (FALSE) { # \dontrun{
 dir_in  <- system.file('extdata/five_flowers', package = 'buzzr')
 dir_out <- file.path(tempdir(), 'five_flowers_trimmed')
 
-# Trim all files, rounding to 2 decimal places
+# Trim all files, rounding to 2 decimal places, saved as .rds
 trim_directory(dir_in, dir_out, activation_digits = 2)
+
+# Save trimmed files as CSV instead
+trim_directory(dir_in, dir_out, activation_digits = 2, output_format = 'csv')
 
 # Re-run, keeping only the ins_buzz neuron and overwriting existing files
 trim_directory(

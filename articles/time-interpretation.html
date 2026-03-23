@@ -95,7 +95,7 @@ buzzr reads this using the same POSIX format codes as base R’s
 <tbody>
 <tr class="odd">
 <td>
-<code>230809_0000</code> (YYMMDD_HHMM)</td>
+<code>230809_0600</code> (YYMMDD_HHMM)</td>
 <td><code>'%y%m%d_%H%M'</code></td>
 </tr>
 <tr class="even">
@@ -113,35 +113,35 @@ buzzr reads this using the same POSIX format codes as base R’s
 Let’s parse a single file:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
-<span>  <span class="st">'extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv'</span>,</span>
+<span>  <span class="st">'extdata/five_flowers_snip/soybean/53/230809_0600_buzzdetect.csv'</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">'buzzr'</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Without posix_formats: time stays as file-time (seconds from file start)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/read_results.html">read_results</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    start_filetime activation_ins_buzz activation_ambient_rain</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;               &lt;num&gt;                   &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:           0.00                -1.2                    -1.3</span></span>
-<span><span class="co">#&gt; 2:           0.96                -2.0                    -2.1</span></span>
-<span><span class="co">#&gt; 3:           1.92                -2.1                    -2.8</span></span>
-<span><span class="co">#&gt;    activation_ins_trill activation_mech_plane</span></span>
-<span><span class="co">#&gt;                   &lt;num&gt;                 &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:                 -1.7                  -1.7</span></span>
-<span><span class="co">#&gt; 2:                 -2.7                  -2.6</span></span>
-<span><span class="co">#&gt; 3:                 -3.0                  -2.9</span></span>
+<span><span class="co">#&gt;    start_filetime activation_ins_trill activation_mech_plane</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;                &lt;num&gt;                 &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:           0.00                 -2.8                  -2.3</span></span>
+<span><span class="co">#&gt; 2:           0.96                 -2.5                  -2.7</span></span>
+<span><span class="co">#&gt; 3:           1.92                 -2.2                  -2.4</span></span>
+<span><span class="co">#&gt;    activation_ambient_rain activation_ins_buzz</span></span>
+<span><span class="co">#&gt;                      &lt;num&gt;               &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:                    -2.4                -2.2</span></span>
+<span><span class="co">#&gt; 2:                    -2.5                -2.3</span></span>
+<span><span class="co">#&gt; 3:                    -2.4                -2.4</span></span>
 <span></span>
 <span><span class="co"># With posix_formats: file-time is converted to an absolute date-time</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/read_results.html">read_results</a></span><span class="op">(</span><span class="va">path</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         start_datetime activation_ins_buzz activation_ambient_rain</span></span>
-<span><span class="co">#&gt;                 &lt;POSc&gt;               &lt;num&gt;                   &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 2023-08-09 00:00:00                -1.2                    -1.3</span></span>
-<span><span class="co">#&gt; 2: 2023-08-09 00:00:00                -2.0                    -2.1</span></span>
-<span><span class="co">#&gt; 3: 2023-08-09 00:00:01                -2.1                    -2.8</span></span>
-<span><span class="co">#&gt;    activation_ins_trill activation_mech_plane</span></span>
-<span><span class="co">#&gt;                   &lt;num&gt;                 &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:                 -1.7                  -1.7</span></span>
-<span><span class="co">#&gt; 2:                 -2.7                  -2.6</span></span>
-<span><span class="co">#&gt; 3:                 -3.0                  -2.9</span></span></code></pre></div>
+<span><span class="co">#&gt;         start_datetime activation_ins_trill activation_mech_plane</span></span>
+<span><span class="co">#&gt;                 &lt;POSc&gt;                &lt;num&gt;                 &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 2023-08-09 06:00:00                 -2.8                  -2.3</span></span>
+<span><span class="co">#&gt; 2: 2023-08-09 06:00:00                 -2.5                  -2.7</span></span>
+<span><span class="co">#&gt; 3: 2023-08-09 06:00:01                 -2.2                  -2.4</span></span>
+<span><span class="co">#&gt;    activation_ambient_rain activation_ins_buzz</span></span>
+<span><span class="co">#&gt;                      &lt;num&gt;               &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:                    -2.4                -2.2</span></span>
+<span><span class="co">#&gt; 2:                    -2.5                -2.3</span></span>
+<span><span class="co">#&gt; 3:                    -2.4                -2.4</span></span></code></pre></div>
 <p>The <code>_buzzdetect</code> suffix and file extension are stripped
 before matching, so your format string only needs to describe the
 timestamp part of the name.</p>
@@ -149,15 +149,51 @@ timestamp part of the name.</p>
 want the recording’s start time without reading the full file:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">path</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 EDT"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT"</span></span></code></pre></div>
 <p>It works on a vector of paths too:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/five_flowers'</span>, package <span class="op">=</span> <span class="st">'buzzr'</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/five_flowers_snip'</span>, package <span class="op">=</span> <span class="st">'buzzr'</span><span class="op">)</span></span>
 <span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">dir</span>, pattern <span class="op">=</span> <span class="st">'_buzzdetect'</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">paths</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2025-07-04 EDT" "2024-09-04 EDT" "2024-08-08 EDT" "2023-08-09 EDT"</span></span>
-<span><span class="co">#&gt; [5] "2024-07-27 EDT"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "2025-07-04 06:00:00 EDT" "2025-07-04 07:00:00 EDT"</span></span>
+<span><span class="co">#&gt;  [3] "2025-07-04 08:00:00 EDT" "2025-07-04 09:00:00 EDT"</span></span>
+<span><span class="co">#&gt;  [5] "2025-07-04 10:00:00 EDT" "2025-07-04 11:00:00 EDT"</span></span>
+<span><span class="co">#&gt;  [7] "2025-07-04 12:00:00 EDT" "2025-07-04 13:00:00 EDT"</span></span>
+<span><span class="co">#&gt;  [9] "2025-07-04 14:00:00 EDT" "2025-07-04 15:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [11] "2025-07-04 16:00:00 EDT" "2025-07-04 17:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [13] "2025-07-04 18:00:00 EDT" "2025-07-04 19:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [15] "2025-07-04 20:00:00 EDT" "2024-09-04 06:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [17] "2024-09-04 07:00:00 EDT" "2024-09-04 08:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [19] "2024-09-04 09:00:00 EDT" "2024-09-04 10:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [21] "2024-09-04 11:00:00 EDT" "2024-09-04 12:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [23] "2024-09-04 13:00:00 EDT" "2024-09-04 14:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [25] "2024-09-04 15:00:00 EDT" "2024-09-04 16:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [27] "2024-09-04 17:00:00 EDT" "2024-09-04 18:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [29] "2024-09-04 19:00:00 EDT" "2024-09-04 20:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [31] "2024-08-08 06:00:00 EDT" "2024-08-08 07:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [33] "2024-08-08 08:00:00 EDT" "2024-08-08 09:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [35] "2024-08-08 10:00:00 EDT" "2024-08-08 11:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [37] "2024-08-08 12:00:00 EDT" "2024-08-08 13:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [39] "2024-08-08 14:00:00 EDT" "2024-08-08 15:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [41] "2024-08-08 16:00:00 EDT" "2024-08-08 17:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [43] "2024-08-08 18:00:00 EDT" "2024-08-08 19:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [45] "2024-08-08 20:00:00 EDT" "2023-08-09 06:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [47] "2023-08-09 07:00:00 EDT" "2023-08-09 08:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [49] "2023-08-09 09:00:00 EDT" "2023-08-09 10:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [51] "2023-08-09 11:00:00 EDT" "2023-08-09 12:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [53] "2023-08-09 13:00:00 EDT" "2023-08-09 14:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [55] "2023-08-09 15:00:00 EDT" "2023-08-09 16:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [57] "2023-08-09 17:00:00 EDT" "2023-08-09 18:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [59] "2023-08-09 19:00:00 EDT" "2023-08-09 20:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [61] "2024-07-27 06:00:00 EDT" "2024-07-27 07:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [63] "2024-07-27 08:00:00 EDT" "2024-07-27 09:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [65] "2024-07-27 10:00:00 EDT" "2024-07-27 11:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [67] "2024-07-27 12:00:00 EDT" "2024-07-27 13:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [69] "2024-07-27 14:00:00 EDT" "2024-07-27 15:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [71] "2024-07-27 16:00:00 EDT" "2024-07-27 17:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [73] "2024-07-27 18:00:00 EDT" "2024-07-27 19:00:00 EDT"</span></span>
+<span><span class="co">#&gt; [75] "2024-07-27 20:00:00 EDT"</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -169,9 +205,9 @@ analyse data collected in a different zone.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Same file, two different time zones — note the hour difference</span></span>
 <span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">path</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 EDT"</span></span>
+<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT"</span></span>
 <span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">path</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/Chicago'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 CDT"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 CDT"</span></span></code></pre></div>
 <p>Use <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> to browse valid time zone strings.</p>
 <hr>
 </div>
@@ -191,16 +227,16 @@ analyse data collected in a different zone.</p>
 <span>  <span class="op">)</span>,</span>
 <span>  <span class="fl">3</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;         start_datetime start_filetime activation_ins_buzz</span></span>
-<span><span class="co">#&gt;                 &lt;POSc&gt;          &lt;num&gt;               &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 2023-08-09 00:00:00           0.00                -1.2</span></span>
-<span><span class="co">#&gt; 2: 2023-08-09 00:00:00           0.96                -2.0</span></span>
-<span><span class="co">#&gt; 3: 2023-08-09 00:00:01           1.92                -2.1</span></span>
-<span><span class="co">#&gt;    activation_ambient_rain activation_ins_trill activation_mech_plane</span></span>
-<span><span class="co">#&gt;                      &lt;num&gt;                &lt;num&gt;                 &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:                    -1.3                 -1.7                  -1.7</span></span>
-<span><span class="co">#&gt; 2:                    -2.1                 -2.7                  -2.6</span></span>
-<span><span class="co">#&gt; 3:                    -2.8                 -3.0                  -2.9</span></span></code></pre></div>
+<span><span class="co">#&gt;         start_datetime start_filetime activation_ins_trill</span></span>
+<span><span class="co">#&gt;                 &lt;POSc&gt;          &lt;num&gt;                &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 2023-08-09 06:00:00           0.00                 -2.8</span></span>
+<span><span class="co">#&gt; 2: 2023-08-09 06:00:00           0.96                 -2.5</span></span>
+<span><span class="co">#&gt; 3: 2023-08-09 06:00:01           1.92                 -2.2</span></span>
+<span><span class="co">#&gt;    activation_mech_plane activation_ambient_rain activation_ins_buzz</span></span>
+<span><span class="co">#&gt;                    &lt;num&gt;                   &lt;num&gt;               &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:                  -2.3                    -2.4                -2.2</span></span>
+<span><span class="co">#&gt; 2:                  -2.7                    -2.5                -2.3</span></span>
+<span><span class="co">#&gt; 3:                  -2.4                    -2.4                -2.4</span></span></code></pre></div>
 <p>File-time is useful if you want to extract audio clips later
 (e.g. using FFmpeg to cut from a specific second in the source
 file).</p>
@@ -317,7 +353,7 @@ is the same. <code><a href="../reference/commontime.html">commontime()</a></code
 to the same arbitrary day (2000-01-01) while preserving the time of
 day:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/five_flowers'</span>, package <span class="op">=</span> <span class="st">'buzzr'</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/five_flowers_snip'</span>, package <span class="op">=</span> <span class="st">'buzzr'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">binned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bin_directory.html">bin_directory</a></span><span class="op">(</span></span>
 <span>  dir_results   <span class="op">=</span> <span class="va">dir</span>,</span>
@@ -332,11 +368,11 @@ day:</p>
 <span></span>
 <span><span class="co"># Dates vary across the five recordings; commontime collapses them</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">bin_datetime</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 00:00:00 EDT" "2025-07-04 23:40:00 EDT"</span></span>
+<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT" "2025-07-04 20:00:00 EDT"</span></span>
 <span></span>
 <span><span class="va">binned</span><span class="op">$</span><span class="va">time_of_day</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/commontime.html">commontime</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">bin_datetime</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">time_of_day</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2000-01-01 00:00:00 EST" "2000-01-01 23:40:00 EST"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "2000-01-01 06:00:00 EST" "2000-01-01 20:00:00 EST"</span></span></code></pre></div>
 <p>Now all five flowers share the same x axis, regardless of which day
 they were recorded:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -385,11 +421,11 @@ functions:</p>
 <span>       by <span class="op">=</span> <span class="va">flower</span><span class="op">]</span></span>
 <span><span class="co">#&gt;        flower peak_hour</span></span>
 <span><span class="co">#&gt;        &lt;char&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    chicory  8.333333</span></span>
-<span><span class="co">#&gt; 2:    mustard 10.333333</span></span>
-<span><span class="co">#&gt; 3:    pumpkin 13.000000</span></span>
-<span><span class="co">#&gt; 4:    soybean 13.333333</span></span>
-<span><span class="co">#&gt; 5: watermelon 10.666667</span></span></code></pre></div>
+<span><span class="co">#&gt; 1:    chicory         9</span></span>
+<span><span class="co">#&gt; 2:    mustard        11</span></span>
+<span><span class="co">#&gt; 3:    pumpkin         8</span></span>
+<span><span class="co">#&gt; 4:    soybean        13</span></span>
+<span><span class="co">#&gt; 5: watermelon        13</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
