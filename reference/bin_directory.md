@@ -16,7 +16,7 @@ bin_directory(
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = NULL,
-  return_filename = FALSE,
+  return_ident = FALSE,
   tz = NA,
   binwidth = 5,
   calculate_rate = FALSE
@@ -62,10 +62,11 @@ bin_directory(
   site column (holding the value 'siteA') and a recorder column (holding
   the value 'recorder_4').
 
-- return_filename:
+- return_ident:
 
-  A boolean representing whether or not to return the filename as an
-  element/column.
+  The 'ident' is the relative path from your data directory to the
+  results file, without the \_buzzdetect tag or file extension. Useful
+  for finding corresponding audio files or annotations.
 
 - tz:
 

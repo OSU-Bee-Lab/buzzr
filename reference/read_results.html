@@ -59,8 +59,7 @@ The results file can be the results from one audio file or merged results (as cr
 <span>  first_match <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  drop_filetime <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  tz <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  dir_nesting <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  return_filename <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  dir_nesting <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -90,10 +89,6 @@ The results file can be the results from one audio file or merged results (as cr
 
 <dt id="arg-dir-nesting">dir_nesting<a class="anchor" aria-label="anchor" href="#arg-dir-nesting"></a></dt>
 <dd><p>A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4').</p></dd>
-
-
-<dt id="arg-return-filename">return_filename<a class="anchor" aria-label="anchor" href="#arg-return-filename"></a></dt>
-<dd><p>A boolean representing whether or not to return the filename as an element/column.</p></dd>
 
 </dl></div>
     <div class="section level2">

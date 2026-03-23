@@ -19,8 +19,7 @@ read_results(
   first_match = FALSE,
   drop_filetime = TRUE,
   tz = NA,
-  dir_nesting = NULL,
-  return_filename = FALSE
+  dir_nesting = NULL
 )
 ```
 
@@ -64,11 +63,6 @@ read_results(
   data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a
   site column (holding the value 'siteA') and a recorder column (holding
   the value 'recorder_4').
-
-- return_filename:
-
-  A boolean representing whether or not to return the filename as an
-  element/column.
 
 ## Details
 

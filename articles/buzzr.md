@@ -233,51 +233,45 @@ the file path. We can do this with two arguments:
   above the results file. That is, what does each level above the
   results represent? Each element becomes a column in the output,
   storing the components of the path for each data file.
-- **return_filename**: should the filename be placed into its own
-  column? You probably won’t care about this unless you want to pin down
-  a specific problematic recording. For example, if you see a large
-  spike of positives at 3:00AM, you may want to investigate.
+- **return_ident**: available in `read_directory` and `bin_directory`,
+  should the file identifier be placed into its own column? The ident is
+  the relative path from the results directory to the file, stripped of
+  its extension and the `_buzzdetect` tag. You probably won’t care about
+  this unless you want to pin down a specific problematic recording. For
+  example, if you see a large spike of positives at 3:00AM, you may want
+  to investigate.
 
 ``` r
 df_nesting <- buzzr::read_results(
   path_results,
-  dir_nesting = c('flower', 'recorder'),
-  return_filename = T
+  dir_nesting = c('flower', 'recorder')
 )
 
 head(df_nesting)
 ```
 
-    ##     flower recorder                   filename start_filetime
-    ##     <char>   <char>                     <char>          <num>
-    ## 1: chicory    1_104 250704_0000_buzzdetect.csv           0.00
-    ## 2: chicory    1_104 250704_0000_buzzdetect.csv           0.96
-    ## 3: chicory    1_104 250704_0000_buzzdetect.csv           1.92
-    ## 4: chicory    1_104 250704_0000_buzzdetect.csv           2.88
-    ## 5: chicory    1_104 250704_0000_buzzdetect.csv           3.84
-    ## 6: chicory    1_104 250704_0000_buzzdetect.csv           4.80
-    ##    activation_ins_buzz activation_ambient_rain activation_ins_trill
-    ##                  <num>                   <num>                <num>
-    ## 1:                -1.7                    -2.0                 -1.9
-    ## 2:                -2.0                    -2.0                 -1.9
-    ## 3:                -2.1                    -2.8                 -2.8
-    ## 4:                -2.0                    -2.6                 -2.4
-    ## 5:                -2.0                    -2.3                 -2.4
-    ## 6:                -1.8                    -1.5                 -1.6
-    ##    activation_mech_plane
-    ##                    <num>
-    ## 1:                  -2.2
-    ## 2:                  -2.4
-    ## 3:                  -3.4
-    ## 4:                  -3.2
-    ## 5:                  -2.5
-    ## 6:                  -2.3
+    ##     flower recorder start_filetime activation_ins_buzz activation_ambient_rain
+    ##     <char>   <char>          <num>               <num>                   <num>
+    ## 1: chicory    1_104           0.00                -1.7                    -2.0
+    ## 2: chicory    1_104           0.96                -2.0                    -2.0
+    ## 3: chicory    1_104           1.92                -2.1                    -2.8
+    ## 4: chicory    1_104           2.88                -2.0                    -2.6
+    ## 5: chicory    1_104           3.84                -2.0                    -2.3
+    ## 6: chicory    1_104           4.80                -1.8                    -1.5
+    ##    activation_ins_trill activation_mech_plane
+    ##                   <num>                 <num>
+    ## 1:                 -1.9                  -2.2
+    ## 2:                 -1.9                  -2.4
+    ## 3:                 -2.8                  -3.4
+    ## 4:                 -2.4                  -3.2
+    ## 5:                 -2.4                  -2.5
+    ## 6:                 -1.6                  -2.3
 
-This isn’t terribly useful if we’re d ealing with a single file, but
-it’s very convenient [when we read an entire directory](#full-read).
-However, your file structure **must** be rectangular! That is, every
-file has to have the same level of nesting. Having both
-`foo/bar/results.csv` and `foo/bar/lorem/results.csv` won’t work.
+This isn’t terribly useful if we’re dealing with a single file, but it’s
+very convenient [when we read an entire directory](#full-read). However,
+your file structure **must** be rectangular! That is, every file has to
+have the same level of nesting. Having both `foo/bar/results.csv` and
+`foo/bar/lorem/results.csv` won’t work.
 
 ## Calling detections
 
@@ -477,27 +471,27 @@ df_fullbin <- buzzr::bin_directory(
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = c('flower','recorder'),
-  return_filename = TRUE,
+  return_ident = TRUE,
   tz = 'America/New_York',
   binwidth = 20,
   calculate_rate = TRUE
 )
 ```
 
-    ## Grouping time bins using columns: flower, recorder, filename
+    ## Grouping time bins using columns: flower, recorder
 
 ``` r
 head(df_fullbin)
 ```
 
-    ##     flower recorder                   filename        bin_datetime
-    ##     <char>   <char>                     <char>              <POSc>
-    ## 1: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 00:00:00
-    ## 2: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 00:20:00
-    ## 3: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 00:40:00
-    ## 4: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 01:00:00
-    ## 5: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 01:20:00
-    ## 6: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 01:40:00
+    ##                        ident  flower recorder        bin_datetime
+    ##                       <char>  <char>   <char>              <POSc>
+    ## 1: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:00:00
+    ## 2: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:20:00
+    ## 3: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:40:00
+    ## 4: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 01:00:00
+    ## 5: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 01:20:00
+    ## 6: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 01:40:00
     ##    detections_ins_buzz frames detectionrate_ins_buzz
     ##                  <int>  <num>                  <num>
     ## 1:                   1   1250                 0.0008
@@ -519,16 +513,16 @@ Rebinning only requires a single command!
 head(bin(df_fullbin, 120))
 ```
 
-    ## Grouping time bins using columns: flower, recorder, filename
+    ## Grouping time bins using columns: flower, recorder
 
-    ##     flower recorder                   filename        bin_datetime
-    ##     <char>   <char>                     <char>              <POSc>
-    ## 1: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 00:00:00
-    ## 2: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 02:00:00
-    ## 3: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 04:00:00
-    ## 4: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 06:00:00
-    ## 5: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 08:00:00
-    ## 6: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 10:00:00
+    ##                        ident  flower recorder        bin_datetime
+    ##                       <char>  <char>   <char>              <POSc>
+    ## 1: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:00:00
+    ## 2: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 02:00:00
+    ## 3: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 04:00:00
+    ## 4: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 06:00:00
+    ## 5: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 08:00:00
+    ## 6: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 10:00:00
     ##    detections_ins_buzz frames
     ##                  <int>  <num>
     ## 1:                  10   7500
@@ -556,7 +550,7 @@ df_fullread <- buzzr::read_directory(
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = c('flower','recorder'),
-  return_filename = TRUE,
+  return_ident = TRUE,
   tz = 'America/New_York'
 )
 

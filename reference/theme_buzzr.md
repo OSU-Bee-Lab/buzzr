@@ -5,10 +5,14 @@ A ggplot theme for aesthetic plotting of buzzdetect results.
 ## Usage
 
 ``` r
-theme_buzzr(mode = "light")
+theme_buzzr(base_size = 10, mode = "light")
 ```
 
 ## Arguments
+
+- base_size:
+
+  What should the size of the text elements on the plot be?
 
 - mode:
 
@@ -22,5 +26,5 @@ A ggplot2 theme
 
 ``` r
 # (some ggplot code) +
-# theme_buzzr(mode='light')
+# theme_buzzr(base_size=14, mode='light')
 ```

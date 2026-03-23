@@ -48,7 +48,7 @@ See documentation of these functions for details.</p>
 <span>  first_match <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  drop_filetime <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  dir_nesting <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  return_filename <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  return_ident <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  tz <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  binwidth <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  calculate_rate <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -83,8 +83,8 @@ See documentation of these functions for details.</p>
 <dd><p>A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4').</p></dd>
 
 
-<dt id="arg-return-filename">return_filename<a class="anchor" aria-label="anchor" href="#arg-return-filename"></a></dt>
-<dd><p>A boolean representing whether or not to return the filename as an element/column.</p></dd>
+<dt id="arg-return-ident">return_ident<a class="anchor" aria-label="anchor" href="#arg-return-ident"></a></dt>
+<dd><p>The 'ident' is the relative path from your data directory to the results file, without the _buzzdetect tag or file extension. Useful for finding corresponding audio files or annotations.</p></dd>
 
 
 <dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>

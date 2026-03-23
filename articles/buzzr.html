@@ -271,44 +271,39 @@ directory levels above the results file. That is, what does each level
 above the results represent? Each element becomes a column in the
 output, storing the components of the path for each data file.</li>
 <li>
-<strong>return_filename</strong>: should the filename be placed into
-its own column? You probably won’t care about this unless you want to
-pin down a specific problematic recording. For example, if you see a
-large spike of positives at 3:00AM, you may want to investigate.</li>
+<strong>return_ident</strong>: available in
+<code>read_directory</code> and <code>bin_directory</code>, should the
+file identifier be placed into its own column? The ident is the relative
+path from the results directory to the file, stripped of its extension
+and the <code>_buzzdetect</code> tag. You probably won’t care about this
+unless you want to pin down a specific problematic recording. For
+example, if you see a large spike of positives at 3:00AM, you may want
+to investigate.</li>
 </ul>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df_nesting</span> <span class="op">&lt;-</span> <span class="fu">buzzr</span><span class="fu">::</span><span class="fu"><a href="../reference/read_results.html">read_results</a></span><span class="op">(</span></span>
 <span>  <span class="va">path_results</span>,</span>
-<span>  dir_nesting <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'flower'</span>, <span class="st">'recorder'</span><span class="op">)</span>,</span>
-<span>  return_filename <span class="op">=</span> <span class="cn">T</span></span>
+<span>  dir_nesting <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'flower'</span>, <span class="st">'recorder'</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df_nesting</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##     flower recorder                   filename start_filetime</span></span>
-<span><span class="co">##     &lt;char&gt;   &lt;char&gt;                     &lt;char&gt;          &lt;num&gt;</span></span>
-<span><span class="co">## 1: chicory    1_104 250704_0000_buzzdetect.csv           0.00</span></span>
-<span><span class="co">## 2: chicory    1_104 250704_0000_buzzdetect.csv           0.96</span></span>
-<span><span class="co">## 3: chicory    1_104 250704_0000_buzzdetect.csv           1.92</span></span>
-<span><span class="co">## 4: chicory    1_104 250704_0000_buzzdetect.csv           2.88</span></span>
-<span><span class="co">## 5: chicory    1_104 250704_0000_buzzdetect.csv           3.84</span></span>
-<span><span class="co">## 6: chicory    1_104 250704_0000_buzzdetect.csv           4.80</span></span>
-<span><span class="co">##    activation_ins_buzz activation_ambient_rain activation_ins_trill</span></span>
-<span><span class="co">##                  &lt;num&gt;                   &lt;num&gt;                &lt;num&gt;</span></span>
-<span><span class="co">## 1:                -1.7                    -2.0                 -1.9</span></span>
-<span><span class="co">## 2:                -2.0                    -2.0                 -1.9</span></span>
-<span><span class="co">## 3:                -2.1                    -2.8                 -2.8</span></span>
-<span><span class="co">## 4:                -2.0                    -2.6                 -2.4</span></span>
-<span><span class="co">## 5:                -2.0                    -2.3                 -2.4</span></span>
-<span><span class="co">## 6:                -1.8                    -1.5                 -1.6</span></span>
-<span><span class="co">##    activation_mech_plane</span></span>
-<span><span class="co">##                    &lt;num&gt;</span></span>
-<span><span class="co">## 1:                  -2.2</span></span>
-<span><span class="co">## 2:                  -2.4</span></span>
-<span><span class="co">## 3:                  -3.4</span></span>
-<span><span class="co">## 4:                  -3.2</span></span>
-<span><span class="co">## 5:                  -2.5</span></span>
-<span><span class="co">## 6:                  -2.3</span></span></code></pre>
-<p>This isn’t terribly useful if we’re d ealing with a single file, but
+<pre><code><span><span class="co">##     flower recorder start_filetime activation_ins_buzz activation_ambient_rain</span></span>
+<span><span class="co">##     &lt;char&gt;   &lt;char&gt;          &lt;num&gt;               &lt;num&gt;                   &lt;num&gt;</span></span>
+<span><span class="co">## 1: chicory    1_104           0.00                -1.7                    -2.0</span></span>
+<span><span class="co">## 2: chicory    1_104           0.96                -2.0                    -2.0</span></span>
+<span><span class="co">## 3: chicory    1_104           1.92                -2.1                    -2.8</span></span>
+<span><span class="co">## 4: chicory    1_104           2.88                -2.0                    -2.6</span></span>
+<span><span class="co">## 5: chicory    1_104           3.84                -2.0                    -2.3</span></span>
+<span><span class="co">## 6: chicory    1_104           4.80                -1.8                    -1.5</span></span>
+<span><span class="co">##    activation_ins_trill activation_mech_plane</span></span>
+<span><span class="co">##                   &lt;num&gt;                 &lt;num&gt;</span></span>
+<span><span class="co">## 1:                 -1.9                  -2.2</span></span>
+<span><span class="co">## 2:                 -1.9                  -2.4</span></span>
+<span><span class="co">## 3:                 -2.8                  -3.4</span></span>
+<span><span class="co">## 4:                 -2.4                  -3.2</span></span>
+<span><span class="co">## 5:                 -2.4                  -2.5</span></span>
+<span><span class="co">## 6:                 -1.6                  -2.3</span></span></code></pre>
+<p>This isn’t terribly useful if we’re dealing with a single file, but
 it’s very convenient <a href="#full-read">when we read an entire
 directory</a>. However, your file structure <strong>must</strong> be
 rectangular! That is, every file has to have the same level of nesting.
@@ -495,22 +490,22 @@ logic.</p>
 <span>  first_match <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  drop_filetime <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  dir_nesting <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'flower'</span>,<span class="st">'recorder'</span><span class="op">)</span>,</span>
-<span>  return_filename <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  return_ident <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  tz <span class="op">=</span> <span class="st">'America/New_York'</span>,</span>
 <span>  binwidth <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  calculate_rate <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Grouping time bins using columns: flower, recorder, filename</span></span></code></pre>
+<pre><code><span><span class="co">## Grouping time bins using columns: flower, recorder</span></span></code></pre>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df_fullbin</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##     flower recorder                   filename        bin_datetime</span></span>
-<span><span class="co">##     &lt;char&gt;   &lt;char&gt;                     &lt;char&gt;              &lt;POSc&gt;</span></span>
-<span><span class="co">## 1: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 00:00:00</span></span>
-<span><span class="co">## 2: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 00:20:00</span></span>
-<span><span class="co">## 3: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 00:40:00</span></span>
-<span><span class="co">## 4: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 01:00:00</span></span>
-<span><span class="co">## 5: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 01:20:00</span></span>
-<span><span class="co">## 6: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 01:40:00</span></span>
+<pre><code><span><span class="co">##                        ident  flower recorder        bin_datetime</span></span>
+<span><span class="co">##                       &lt;char&gt;  &lt;char&gt;   &lt;char&gt;              &lt;POSc&gt;</span></span>
+<span><span class="co">## 1: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:00:00</span></span>
+<span><span class="co">## 2: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:20:00</span></span>
+<span><span class="co">## 3: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:40:00</span></span>
+<span><span class="co">## 4: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 01:00:00</span></span>
+<span><span class="co">## 5: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 01:20:00</span></span>
+<span><span class="co">## 6: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 01:40:00</span></span>
 <span><span class="co">##    detections_ins_buzz frames detectionrate_ins_buzz</span></span>
 <span><span class="co">##                  &lt;int&gt;  &lt;num&gt;                  &lt;num&gt;</span></span>
 <span><span class="co">## 1:                   1   1250                 0.0008</span></span>
@@ -525,15 +520,15 @@ logic.</p>
 <p>Rebinning only requires a single command!</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/bin.html">bin</a></span><span class="op">(</span><span class="va">df_fullbin</span>, <span class="fl">120</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Grouping time bins using columns: flower, recorder, filename</span></span></code></pre>
-<pre><code><span><span class="co">##     flower recorder                   filename        bin_datetime</span></span>
-<span><span class="co">##     &lt;char&gt;   &lt;char&gt;                     &lt;char&gt;              &lt;POSc&gt;</span></span>
-<span><span class="co">## 1: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 00:00:00</span></span>
-<span><span class="co">## 2: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 02:00:00</span></span>
-<span><span class="co">## 3: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 04:00:00</span></span>
-<span><span class="co">## 4: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 06:00:00</span></span>
-<span><span class="co">## 5: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 08:00:00</span></span>
-<span><span class="co">## 6: chicory    1_104 250704_0000_buzzdetect.csv 2025-07-04 10:00:00</span></span>
+<pre><code><span><span class="co">## Grouping time bins using columns: flower, recorder</span></span></code></pre>
+<pre><code><span><span class="co">##                        ident  flower recorder        bin_datetime</span></span>
+<span><span class="co">##                       &lt;char&gt;  &lt;char&gt;   &lt;char&gt;              &lt;POSc&gt;</span></span>
+<span><span class="co">## 1: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 00:00:00</span></span>
+<span><span class="co">## 2: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 02:00:00</span></span>
+<span><span class="co">## 3: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 04:00:00</span></span>
+<span><span class="co">## 4: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 06:00:00</span></span>
+<span><span class="co">## 5: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 08:00:00</span></span>
+<span><span class="co">## 6: chicory/1_104/250704_0000 chicory    1_104 2025-07-04 10:00:00</span></span>
 <span><span class="co">##    detections_ins_buzz frames</span></span>
 <span><span class="co">##                  &lt;int&gt;  &lt;num&gt;</span></span>
 <span><span class="co">## 1:                  10   7500</span></span>
@@ -559,7 +554,7 @@ behaves how you expect given the information above.</p>
 <span>  first_match <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  drop_filetime <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  dir_nesting <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'flower'</span>,<span class="st">'recorder'</span><span class="op">)</span>,</span>
-<span>  return_filename <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  return_ident <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  tz <span class="op">=</span> <span class="st">'America/New_York'</span></span>
 <span><span class="op">)</span></span>
 <span></span>
