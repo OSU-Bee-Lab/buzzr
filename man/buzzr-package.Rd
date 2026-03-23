@@ -6,31 +6,42 @@
 \alias{buzzr-package}
 \title{buzzr: Tools for wrangling buzzdetect results}
 \description{
-buzzr provides a pipeline for reading, thresholding, and summarising output
-files from \href{https://github.com/OSU-Bee-Lab/buzzdetect}{buzzdetect}, a deep
-learning tool for detecting insect buzz-pollination in passive acoustic
-recordings.
+buzzr provides a pipeline for turning raw \href{https://github.com/OSU-Bee-Lab/buzzdetect}{buzzdetect}
+results into plotable, modelable, useful results.
 }
-\section{Typical workflow}{
+\section{Do it the easy way}{
 
+
+Run \link{bin_directory} to automate all of the steps below.
+}
+
+\section{Step-by-step workflow}{
+
+
+A step-by-step workflow can be nice if you're still working out your pipeline.
+For example, maybe you want to tune your threshold, so you don't want \link{bin_directory} to
+re-read all of the results every time. First \link{read_directory},
+then try out a bunch of different thresholds to \link{call_detections}.
 
 \strong{1. Read results}
 
-Point \link{read_results} or \link{read_directory} at your buzzdetect
-output. Supply a POSIX format string (e.g. \code{'\%y\%m\%d_\%H\%M'}) to parse
-real-world date-times from file names, and \code{dir_nesting} to turn directory
-levels (e.g. site, recorder) into columns.
+Point \link{read_directory} at the output folder from buzzdetect.
+Optionally, let buzzr convert file times to real-world date times
+by supplying a POSIX format string (e.g. \code{'\%y\%m\%d_\%H\%M'}) and time zone.
+Tell buzzr how to understand your data organization by turning path
+levels (e.g. ./year/site/recorder/foo_buzzdetect.csv) into columns.
 
 \strong{2. Call detections}
 
 Pass the raw activation values through \link{call_detections} with a named
-threshold vector (e.g. \code{c(ins_buzz = -1.2)}). Frames whose activation exceeds
-the threshold become \code{TRUE} in a \code{detections_} column.
+threshold vector (e.g. \code{c(ins_buzz = -1.2)}).
+This produces a \code{detections_} column for each named neuron, where the
+value is \code{TRUE} if its activation exceeds your threshold for that frame.
 
 \strong{3. Bin by time}
 
-Summarise frame-level detections into fixed-width time bins with \link{bin}
-or \link{bin_directory}. Set \code{calculate_rate = TRUE} to add a
+Bin frame-level detections into fixed-width time bins with \link{bin}
+Set \code{calculate_rate = TRUE} to add a
 \code{detectionrate_} column (detections / frames).
 
 \strong{4. Plot}
@@ -45,12 +56,20 @@ For a complete worked example see \code{vignette('buzzr')}.
 \section{Key functions}{
 
 \describe{
-\item{\link{bin_directory}}{Read, threshold, and bin an entire results folder in one call.}
+\item{\link{bin_directory}}{One-stop-shop. Read, threshold, and bin an entire results folder in one call.}
 \item{\link{read_results}}{Read a single buzzdetect CSV or RDS result file.}
 \item{\link{call_detections}}{Apply activation thresholds to produce binary detections.}
 \item{\link{bin}}{Aggregate frame-level results into time bins.}
 \item{\link{commontime}}{Collapse dates onto a shared time-of-day axis for plotting.}
 \item{\link{theme_buzzr}}{A ggplot2 theme styled for buzzdetect result plots.}
+
+}
+}
+
+\section{Useful tools}{
+
+\describe{
+\item{\link{trim_directory}}{Dataset too big? Drop unnecessary detail and save as compressed RDS objects (faster to read, too!)}
 }
 }
 
@@ -58,7 +77,7 @@ For a complete worked example see \code{vignette('buzzr')}.
 Useful links:
 \itemize{
   \item \url{https://OSU-Bee-Lab.github.io/buzzr}
-  \item \url{https://osu-bee-lab.github.io/buzzr/}
+  \item \url{https://github.com/OSU-Bee-Lab/buzzdetect}
 }
 
 }
