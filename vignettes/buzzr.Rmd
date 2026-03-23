@@ -140,21 +140,21 @@ We can do this with two arguments:
 - **dir_nesting**: A character vector used to name the directory levels above the results file.
 That is, what does each level above the results represent?
 Each element becomes a column in the output, storing the components of the path for each data file.
-- **return_filename**: should the filename be placed into its own column?
+- **return_ident**: available in `read_directory` and `bin_directory`, should the file identifier be placed into its own column?
+The ident is the relative path from the results directory to the file, stripped of its extension and the `_buzzdetect` tag.
 You probably won't care about this unless you want to pin down a specific problematic recording.
 For example, if you see a large spike of positives at 3:00AM, you may want to investigate.
 
 ```{r onefile_nesting}
 df_nesting <- buzzr::read_results(
   path_results,
-  dir_nesting = c('flower', 'recorder'),
-  return_filename = T
+  dir_nesting = c('flower', 'recorder')
 )
 
 head(df_nesting)
 ```
 
-This isn't terribly useful if we're d ealing with a single file,
+This isn't terribly useful if we're dealing with a single file,
 but it's very convenient [when we read an entire directory](#full-read).
 However, your file structure **must** be rectangular!
 That is, every file has to have the same level of nesting.
@@ -284,7 +284,7 @@ df_fullbin <- buzzr::bin_directory(
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = c('flower','recorder'),
-  return_filename = TRUE,
+  return_ident = TRUE,
   tz = 'America/New_York',
   binwidth = 20,
   calculate_rate = TRUE
@@ -312,7 +312,7 @@ df_fullread <- buzzr::read_directory(
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = c('flower','recorder'),
-  return_filename = TRUE,
+  return_ident = TRUE,
   tz = 'America/New_York'
 )
 
