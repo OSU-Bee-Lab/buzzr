@@ -59,6 +59,8 @@ Utilities for making prettier plots
   : Call event detections using activation thresholds.
 - [`commontime()`](https://osu-bee-lab.github.io/buzzr/reference/commontime.md)
   : Coerce all dates to the same day, preserving time of day.
+- [`evaluate_log()`](https://osu-bee-lab.github.io/buzzr/reference/evaluate_log.md)
+  : Summarize a buzzdetect log file
 - [`file_start_time()`](https://osu-bee-lab.github.io/buzzr/reference/file_start_time.md)
   : Extract date time information from a file's name.
 - [`frames_expected()`](https://osu-bee-lab.github.io/buzzr/reference/frames_expected.md)
