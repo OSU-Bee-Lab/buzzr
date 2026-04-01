@@ -55,8 +55,27 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="buzzr">buzzr<a class="anchor" aria-label="anchor" href="#buzzr"></a>
 </h1></div>
-<p>buzzr is an R package for reading, shaping, and plotting results from <a href="https://github.com/OSU-Bee-Lab/buzzdetect" class="external-link">buzzdetect</a>. See <a href="https://osu-bee-lab.github.io/buzzr/articles/buzzr.html">the walkthrough vignette</a> for a detailed introduction!</p>
-<p>buzzr is not yet hosted on CRAN, so it cannot be installed with the usual <code>install.packages</code> call. Instead, install the package <code>devtools</code> (which can be installed via <code>install.packages</code>), then run the command <code>devtools::install_github(repo='OSU-Bee-Lab/buzzr')</code>.</p>
+<p>buzzr is an R companion package to <a href="https://github.com/OSU-Bee-Lab/buzzdetect" class="external-link">buzzdetect</a>, a passive acoustic monitoring tool for pollinators. It provides a tidy pipeline for reading, thresholding, binning, and plotting buzzdetect results.</p>
+<p>See <a href="https://osu-bee-lab.github.io/buzzr/articles/buzzr.html">the walkthrough vignette</a> for a full introduction.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>buzzr is not yet on CRAN. Install via <code>devtools</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'devtools'</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">'OSU-Bee-Lab/buzzr'</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="key-features">Key features<a class="anchor" aria-label="anchor" href="#key-features"></a>
+</h2>
+<ul>
+<li><p><strong>One-shot. </strong> <code><a href="reference/bin_directory.html">bin_directory()</a></code> combines most preprocessing operations into a single function call. Point it at your results, pull the trigger, and you’re halfway to plotting and modeling.</p></li>
+<li><p><strong>Structure is data.</strong> If your results are grouped into folders by site, treatment, etc., that metadata can be interpreted from the file structure. The <code>dir_nesting</code> argument decodes folder structure into columns.</p></li>
+<li><p><strong>Names are data.</strong> <code><a href="reference/file_start_time.html">file_start_time()</a></code> extracts recording start times from file names using POSIX format strings</p></li>
+<li><p><strong>Shrink your footprint.</strong> <code><a href="reference/trim_directory.html">trim_directory()</a></code> rounds activation values and drops unwanted neurons across an entire results folder. The output file or folders can be less than 4% the size of the raw buzzdetect results.</p></li>
+<li><p><strong>Vroom vroom.</strong> Squeeze every last drop of performance out of buzzdetect using <code><a href="reference/evaluate_log.html">evaluate_log()</a></code> to calculate your analysis rate and identify bottlenecks.</p></li>
+</ul>
+</div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>

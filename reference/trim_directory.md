@@ -3,15 +3,14 @@
 Applies
 [trim_results](https://osu-bee-lab.github.io/buzzr/reference/trim_results.md)
 to every buzzdetect result file found recursively in `dir_results`,
-saving each trimmed file in `dir_trim` while preserving the original
-directory structure.
+saving the trimmed output to `path_out`.
 
 ## Usage
 
 ``` r
 trim_directory(
   dir_results,
-  dir_trim,
+  path_out,
   activation_digits,
   neurons_keep = NULL,
   output_format = "rds",
@@ -26,10 +25,11 @@ trim_directory(
 
   Path to the directory containing buzzdetect result files.
 
-- dir_trim:
+- path_out:
 
-  Path to the output directory. Created automatically if it does not
-  exist.
+  Path to the output file (`.rds` or `.csv`) or output directory.
+  Directories are created automatically if they do not exist. When a
+  file path is given, its extension overrides `output_format`.
 
 - activation_digits:
 
@@ -43,8 +43,8 @@ trim_directory(
 
 - output_format:
 
-  Output file format. One of `"rds"` (default) or `"csv"`. CSV files are
-  written without row names.
+  Output file format when `path_out` is a directory. One of `"rds"`
+  (default) or `"csv"`. Ignored when `path_out` is a file path.
 
 - if_exists:
 
@@ -56,11 +56,21 @@ trim_directory(
 
   Number of parallel workers. Defaults to `1` (sequential). Parallelism
   uses [parallel::mcmapply](https://rdrr.io/r/parallel/mclapply.html)
-  and may not be supported on all platforms.
+  and may not be supported on all platforms. Ignored when `path_out` is
+  a single file.
 
 ## Value
 
-Invisibly returns a character vector of output file paths.
+Invisibly returns the output file path(s).
+
+## Details
+
+If `path_out` ends in `.rds` or `.csv`, all results are read via
+[read_directory](https://osu-bee-lab.github.io/buzzr/reference/read_directory.md)
+(with `return_ident = TRUE`), trimmed, and written to that single file
+(overriding `output_format`). Otherwise, `path_out` is treated as an
+output directory and files are written there preserving the original
+directory structure.
 
 ## See also
 
@@ -74,11 +84,14 @@ if (FALSE) { # \dontrun{
 dir_in  <- system.file('extdata/five_flowers', package = 'buzzr')
 dir_out <- file.path(tempdir(), 'five_flowers_trimmed')
 
-# Trim all files, rounding to 2 decimal places, saved as .rds
+# Trim all files, rounding to 2 decimal places, saved as .rds in a directory
 trim_directory(dir_in, dir_out, activation_digits = 2)
 
-# Save trimmed files as CSV instead
-trim_directory(dir_in, dir_out, activation_digits = 2, output_format = 'csv')
+# Combine all results into a single .rds file
+trim_directory(dir_in, file.path(tempdir(), 'trimmed.rds'), activation_digits = 2)
+
+# Combine all results into a single CSV
+trim_directory(dir_in, file.path(tempdir(), 'trimmed.csv'), activation_digits = 2)
 
 # Re-run, keeping only the ins_buzz neuron and overwriting existing files
 trim_directory(
