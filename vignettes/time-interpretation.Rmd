@@ -62,7 +62,7 @@ file_start_time(path, posix_formats = '%y%m%d_%H%M', tz = 'America/New_York')
 It works on a vector of paths too:
 
 ```{r file-start-time-vector}
-dir <- system.file('extdata/five_flowers_snip', package = 'buzzr')
+dir <- system.file('extdata/five_flowers_snip/chicory', package = 'buzzr')
 paths <- list.files(dir, pattern = '_buzzdetect', recursive = TRUE, full.names = TRUE)
 
 file_start_time(paths, posix_formats = '%y%m%d_%H%M', tz = 'America/New_York')

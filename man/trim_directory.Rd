@@ -6,7 +6,7 @@
 \usage{
 trim_directory(
   dir_results,
-  dir_trim,
+  path_out,
   activation_digits,
   neurons_keep = NULL,
   output_format = "rds",
@@ -17,41 +17,53 @@ trim_directory(
 \arguments{
 \item{dir_results}{Path to the directory containing buzzdetect result files.}
 
-\item{dir_trim}{Path to the output directory. Created automatically if it does not exist.}
+\item{path_out}{Path to the output file (\code{.rds} or \code{.csv}) or output directory.
+Directories are created automatically if they do not exist.
+When a file path is given, its extension overrides \code{output_format}.}
 
 \item{activation_digits}{Integer. Number of decimal places to round activation values to.}
 
 \item{neurons_keep}{Character vector of neuron names to retain (see \link{trim_results}).
 If \code{NULL} (default), all neurons are kept.}
 
-\item{output_format}{Output file format. One of \code{"rds"} (default) or \code{"csv"}.
-CSV files are written without row names.}
+\item{output_format}{Output file format when \code{path_out} is a directory.
+One of \code{"rds"} (default) or \code{"csv"}. Ignored when \code{path_out} is a file path.}
 
 \item{if_exists}{What to do if an output file already exists.
 One of \code{"stop"} (default, throws an error), \code{"skip"} (silently skips existing files),
 or \code{"overwrite"} (overwrites with a warning).}
 
 \item{workers}{Number of parallel workers. Defaults to \code{1} (sequential).
-Parallelism uses \link[parallel:mclapply]{parallel::mcmapply} and may not be supported on all platforms.}
+Parallelism uses \link[parallel:mclapply]{parallel::mcmapply} and may not be supported on all platforms.
+Ignored when \code{path_out} is a single file.}
 }
 \value{
-Invisibly returns a character vector of output file paths.
+Invisibly returns the output file path(s).
 }
 \description{
 Applies \link{trim_results} to every buzzdetect result file found recursively
-in \code{dir_results}, saving each trimmed file in \code{dir_trim} while preserving the
-original directory structure.
+in \code{dir_results}, saving the trimmed output to \code{path_out}.
+}
+\details{
+If \code{path_out} ends in \code{.rds} or \code{.csv}, all results are read via
+\link{read_directory} (with \code{return_ident = TRUE}), trimmed, and written to
+that single file (overriding \code{output_format}). Otherwise, \code{path_out} is treated
+as an output directory and files are written there preserving the original
+directory structure.
 }
 \examples{
 \dontrun{
 dir_in  <- system.file('extdata/five_flowers', package = 'buzzr')
 dir_out <- file.path(tempdir(), 'five_flowers_trimmed')
 
-# Trim all files, rounding to 2 decimal places, saved as .rds
+# Trim all files, rounding to 2 decimal places, saved as .rds in a directory
 trim_directory(dir_in, dir_out, activation_digits = 2)
 
-# Save trimmed files as CSV instead
-trim_directory(dir_in, dir_out, activation_digits = 2, output_format = 'csv')
+# Combine all results into a single .rds file
+trim_directory(dir_in, file.path(tempdir(), 'trimmed.rds'), activation_digits = 2)
+
+# Combine all results into a single CSV
+trim_directory(dir_in, file.path(tempdir(), 'trimmed.csv'), activation_digits = 2)
 
 # Re-run, keeping only the ins_buzz neuron and overwriting existing files
 trim_directory(

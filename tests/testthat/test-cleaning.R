@@ -174,3 +174,65 @@ test_that("trim_directory with neurons_keep only writes kept neurons", {
   expect_true("activation_ins_buzz" %in% act_cols)
   expect_false("activation_mech_plane" %in% act_cols)
 })
+
+test_that("trim_directory writes a single .rds file when path_out ends in .rds", {
+  dir_in <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir_in) == 0)
+
+  out_file <- file.path(tempdir(), paste0("buzzr_trim_single_", Sys.getpid(), ".rds"))
+  on.exit(unlink(out_file))
+
+  result <- trim_directory(dir_in, out_file, activation_digits = 2)
+
+  expect_equal(result, out_file)
+  expect_true(file.exists(out_file))
+  df <- readRDS(out_file)
+  expect_s3_class(df, "data.frame")
+  expect_true("ident" %in% names(df))
+})
+
+test_that("trim_directory writes a single .csv file when path_out ends in .csv", {
+  dir_in <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir_in) == 0)
+
+  out_file <- file.path(tempdir(), paste0("buzzr_trim_single_", Sys.getpid(), ".csv"))
+  on.exit(unlink(out_file))
+
+  result <- trim_directory(dir_in, out_file, activation_digits = 2)
+
+  expect_equal(result, out_file)
+  expect_true(file.exists(out_file))
+  df <- read.csv(out_file)
+  expect_gt(nrow(df), 0)
+})
+
+test_that("trim_directory single-file if_exists='stop' errors when file exists", {
+  dir_in <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir_in) == 0)
+
+  out_file <- file.path(tempdir(), paste0("buzzr_trim_single_stop_", Sys.getpid(), ".rds"))
+  on.exit(unlink(out_file))
+
+  trim_directory(dir_in, out_file, activation_digits = 2)
+
+  expect_error(
+    trim_directory(dir_in, out_file, activation_digits = 2, if_exists = "stop"),
+    "already exists"
+  )
+})
+
+test_that("trim_directory single-file if_exists='skip' returns path with message", {
+  dir_in <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir_in) == 0)
+
+  out_file <- file.path(tempdir(), paste0("buzzr_trim_single_skip_", Sys.getpid(), ".rds"))
+  on.exit(unlink(out_file))
+
+  trim_directory(dir_in, out_file, activation_digits = 2)
+
+  expect_message(
+    result <- trim_directory(dir_in, out_file, activation_digits = 2, if_exists = "skip"),
+    "Skipping"
+  )
+  expect_equal(result, out_file)
+})
