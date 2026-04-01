@@ -15,7 +15,7 @@ devtools::install_github('OSU-Bee-Lab/buzzr')
 
 ## Key features
 
-- **One-shot. ** `bin_directory()` combines most preprocessing operations into a single function call. Point it at your results, pull the trigger, and you're halfway to plotting and modeling.
+- **One-shot.** `bin_directory()` combines most preprocessing operations into a single function call. Point it at your results, pull the trigger, and you're halfway to plotting and modeling.
 
 - **Structure is data.** If your results are grouped into folders by site, treatment, etc., that metadata can be interpreted from the file structure. The `dir_nesting` argument decodes folder structure into columns. 
 
