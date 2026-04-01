@@ -1,8 +1,27 @@
 # buzzr
-buzzr is an R package for reading, shaping, and plotting results from [buzzdetect](https://github.com/OSU-Bee-Lab/buzzdetect).
-See [the walkthrough vignette](https://osu-bee-lab.github.io/buzzr/articles/buzzr.html) for a detailed introduction!
 
-buzzr is not yet hosted on CRAN, so it cannot be installed with the usual `install.packages` call.
-Instead, install the package `devtools` (which can be installed via `install.packages`),
-then run the command `devtools::install_github(repo='OSU-Bee-Lab/buzzr')`.
+buzzr is an R companion package to [buzzdetect](https://github.com/OSU-Bee-Lab/buzzdetect), a passive acoustic monitoring tool for pollinators. It provides a tidy pipeline for reading, thresholding, binning, and plotting buzzdetect results.
+
+See [the walkthrough vignette](https://osu-bee-lab.github.io/buzzr/articles/buzzr.html) for a full introduction.
+
+## Installation
+
+buzzr is not yet on CRAN. Install via `devtools`:
+
+```r
+install.packages('devtools')
+devtools::install_github('OSU-Bee-Lab/buzzr')
+```
+
+## Key features
+
+- **One-shot. ** `bin_directory()` combines most preprocessing operations into a single function call. Point it at your results, pull the trigger, and you're halfway to plotting and modeling.
+
+- **Structure is data.** If your results are grouped into folders by site, treatment, etc., that metadata can be interpreted from the file structure. The `dir_nesting` argument decodes folder structure into columns. 
+
+- **Names are data.** `file_start_time()` extracts recording start times from file names using POSIX format strings
+
+- **Shrink your footprint.** `trim_directory()` rounds activation values and drops unwanted neurons across an entire results folder. The output file or folders can be less than 4% the size of the raw buzzdetect results.
+
+- **Vroom vroom.** Squeeze every last drop of performance out of buzzdetect using `evaluate_log()` to calculate your analysis rate and identify bottlenecks.
 
