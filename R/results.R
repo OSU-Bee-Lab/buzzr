@@ -69,8 +69,8 @@ read_results <- function(path_results, posix_formats=NA, first_match=FALSE, drop
     results <- data.table::fread(path_results)
   } else if(extension=='rds'){
     results <- readRDS(path_results)
-  } else if(extension==''){
-    stop('file extension not recognized for results file ', path_results, '.\n Must be .csv or .rds')
+  } else {
+    stop('file extension not supported for results file ', path_results, '.\n Must be .csv or .rds')
   }
 
   results <- convert_start_raw(results)
