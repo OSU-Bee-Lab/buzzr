@@ -59,7 +59,8 @@ those functions are accepted here. See their documentation for details.</p>
 <span>  return_ident <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  tz <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  binwidth <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  calculate_rate <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  calculate_rate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  workers <span class="op">=</span> <span class="fl">2</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -72,7 +73,10 @@ those functions are accepted here. See their documentation for details.</p>
 
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
-<dd><p>A named numeric vector mapping neuron names to detection thresholds (e.g. <code>c(ins_buzz = -1.2)</code>). Frames whose activation value <em>exceeds</em> the threshold are counted as detections. Because <code>model_general_v3</code> outputs negative log-likelihoods, thresholds are typically negative.</p></dd>
+<dd><p>A named numeric vector mapping neuron names to detection thresholds (e.g. <code>c(ins_buzz = -1.2)</code>). Frames whose activation value <em>exceeds</em> the threshold are counted as detections. Because <code>model_general_v3</code> outputs negative log-likelihoods, thresholds are typically negative.
+Activations <em>above</em> the threshold value are counted as detections, so
+thresholds for models that output negative log-likelihoods (such as
+<code>model_general_v3</code>) are typically negative (e.g. <code>-1.2</code>).</p></dd>
 
 
 <dt id="arg-posix-formats">posix_formats<a class="anchor" aria-label="anchor" href="#arg-posix-formats"></a></dt>
@@ -109,6 +113,10 @@ column as the first column of the output.</p></dd>
 <dt id="arg-calculate-rate">calculate_rate<a class="anchor" aria-label="anchor" href="#arg-calculate-rate"></a></dt>
 <dd><p>If <code>TRUE</code>, adds a <code>detectionrate_</code> column for each <code>detections_</code> column, calculated as detections divided by frames. Values range from 0 to 1.</p></dd>
 
+
+<dt id="arg-workers">workers<a class="anchor" aria-label="anchor" href="#arg-workers"></a></dt>
+<dd><p>Number of parallel workers to use when processing results. Set to <code>Inf</code> to use all available cores. Note that because data.table already uses multiple threads, you may want to set fewer workers than there are cores on your machine. Overridden by MC_CORES environmental variable if set.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -141,7 +149,6 @@ for the individual steps this function wraps,
 <span class="r-in"><span>  binwidth       <span class="op">=</span> <span class="fl">20</span>,</span></span>
 <span class="r-in"><span>  calculate_rate <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Grouping time bins using columns: flower, recorder</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          flower recorder        bin_datetime detections_ins_buzz frames</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;char&gt;   &lt;char&gt;              &lt;POSc&gt;               &lt;int&gt;  &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1:    chicory    1_104 2025-07-04 00:00:00                   1   1250</span>

@@ -393,7 +393,6 @@ binned <- bin_directory(
   binwidth       = 20,
   calculate_rate = TRUE
 )
-#> Grouping time bins using columns: flower, recorder
 
 # Dates vary across the five recordings; commontime collapses them
 range(binned$bin_datetime)

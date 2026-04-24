@@ -31,11 +31,7 @@ df <- buzzr::bin_directory(
   tz = 'America/New_York',
   binwidth = 20
 )
-```
 
-    ## Grouping time bins using columns: flower, recorder
-
-``` r
 head(df)
 ```
 
@@ -476,11 +472,7 @@ df_fullbin <- buzzr::bin_directory(
   binwidth = 20,
   calculate_rate = TRUE
 )
-```
 
-    ## Grouping time bins using columns: flower, recorder
-
-``` r
 head(df_fullbin)
 ```
 

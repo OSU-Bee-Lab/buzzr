@@ -56,7 +56,8 @@ data.table. All arguments are forwarded to <a href="read_results.html">read_resu
 <span>  drop_filetime <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  dir_nesting <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  return_ident <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  tz <span class="op">=</span> <span class="cn">NA</span></span>
+<span>  tz <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  workers <span class="op">=</span> <span class="fl">2</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -93,6 +94,10 @@ column as the first column of the output.</p></dd>
 <dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
 <dd><p>Time zone string passed to <a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">base::as.POSIXct</a> (e.g. <code>'America/New_York'</code>). See <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for valid values.. Ignored if the results already contain a
 <code>start_datetime</code> or <code>bin_datetime</code> column.</p></dd>
+
+
+<dt id="arg-workers">workers<a class="anchor" aria-label="anchor" href="#arg-workers"></a></dt>
+<dd><p>Number of parallel workers to use when processing results. Set to <code>Inf</code> to use all available cores. Note that because data.table already uses multiple threads, you may want to set fewer workers than there are cores on your machine. Overridden by MC_CORES environmental variable if set.</p></dd>
 
 </dl></div>
     <div class="section level2">

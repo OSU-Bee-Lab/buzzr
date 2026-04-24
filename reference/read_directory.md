@@ -17,7 +17,8 @@ read_directory(
   drop_filetime = TRUE,
   dir_nesting = NULL,
   return_ident = FALSE,
-  tz = NA
+  tz = NA,
+  workers = 2
 )
 ```
 
@@ -74,6 +75,14 @@ read_directory(
   [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
   values.. Ignored if the results already contain a `start_datetime` or
   `bin_datetime` column.
+
+- workers:
+
+  Number of parallel workers to use when processing results. Set to
+  `Inf` to use all available cores. Note that because data.table already
+  uses multiple threads, you may want to set fewer workers than there
+  are cores on your machine. Overridden by MC_CORES environmental
+  variable if set.
 
 ## Value
 

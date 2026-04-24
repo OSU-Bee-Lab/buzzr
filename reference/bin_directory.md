@@ -20,7 +20,8 @@ bin_directory(
   return_ident = FALSE,
   tz = NA,
   binwidth = 5,
-  calculate_rate = FALSE
+  calculate_rate = FALSE,
+  workers = 2
 )
 ```
 
@@ -36,6 +37,9 @@ bin_directory(
   (e.g. `c(ins_buzz = -1.2)`). Frames whose activation value *exceeds*
   the threshold are counted as detections. Because `model_general_v3`
   outputs negative log-likelihoods, thresholds are typically negative.
+  Activations *above* the threshold value are counted as detections, so
+  thresholds for models that output negative log-likelihoods (such as
+  `model_general_v3`) are typically negative (e.g. `-1.2`).
 
 - posix_formats:
 
@@ -95,6 +99,14 @@ bin_directory(
   column, calculated as detections divided by frames. Values range from
   0 to 1.
 
+- workers:
+
+  Number of parallel workers to use when processing results. Set to
+  `Inf` to use all available cores. Note that because data.table already
+  uses multiple threads, you may want to set fewer workers than there
+  are cores on your machine. Overridden by MC_CORES environmental
+  variable if set.
+
 ## Value
 
 A data.table with `bin_filetime` or `bin_datetime`, `detections_`
@@ -130,7 +142,6 @@ bin_directory(
   binwidth       = 20,
   calculate_rate = TRUE
 )
-#> Grouping time bins using columns: flower, recorder
 #>          flower recorder        bin_datetime detections_ins_buzz frames
 #>          <char>   <char>              <POSc>               <int>  <num>
 #>   1:    chicory    1_104 2025-07-04 00:00:00                   1   1250

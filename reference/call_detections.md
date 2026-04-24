@@ -1,11 +1,11 @@
 # Call event detections using activation thresholds.
 
 Converts raw neuron activation values into binary detections by applying
-a numeric threshold to each named neuron. Frames where the activation
-exceeds the threshold are marked `TRUE`; all others are `FALSE`. All
-`activation_` columns are dropped from the output — use
-[bin](https://osu-bee-lab.github.io/buzzr/reference/bin.md) afterwards
-to summarise detection counts over time.
+a numeric threshold to each neuron named in the `thresholds` argument.
+Frames where the activation exceeds the threshold are marked `TRUE`; all
+others are `FALSE`. All `activation_` columns are dropped from the
+output — use [bin](https://osu-bee-lab.github.io/buzzr/reference/bin.md)
+afterwards to summarise detection counts over time.
 
 ## Usage
 
