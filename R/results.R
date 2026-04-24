@@ -26,7 +26,7 @@ convert_start_raw <- function(results){
 #'
 #' @param path_results `r DOC_PARAM_PATH_RESULTS`
 #' @param posix_formats `r DOC_PARAM_POSIX_FORMATS`
-#'   If `NA` (default), results are left in file-time. See [buzzr::file_start_time].
+#'   If `NULL` (default), results are left in file-time. See [buzzr::file_start_time].
 #' @param drop_filetime `r DOC_PARAM_DROP_FILETIME` Ignored if no POSIX formats are given.
 #' @param first_match `r DOC_PARAM_FIRST_MATCH`
 #' @param tz `r DOC_PARAM_TZ`. Ignored if the results already contain a
@@ -59,7 +59,7 @@ convert_start_raw <- function(results){
 #'   dir_nesting    = c('flower', 'recorder')
 #' )
 #' @export
-read_results <- function(path_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, tz=NA, dir_nesting=NULL){
+read_results <- function(path_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, tz=NA, dir_nesting=NULL){
   if(!file.exists(path_results)){
     stop('File does not exist: ', path_results)
   }
@@ -76,7 +76,7 @@ read_results <- function(path_results, posix_formats=NA, first_match=FALSE, drop
   results <- convert_start_raw(results)
 
   has_real <- (COL_START_DATETIME %in% names(results)) | (COL_BIN_DATETIME %in% names(results))
-  if((!is.na(posix_formats)) & (!has_real)){
+  if((!is.null(posix_formats)) & (!has_real)){
     file_start <- file_start_time(path_results, posix_formats=posix_formats, first_match=first_match, tz=tz)
     realcol <- list()
     realcol[[COL_START_DATETIME]] <-  results[[COL_START_FILETIME]] + file_start
@@ -121,8 +121,9 @@ drop_activations <- function(results){
 #' Call event detections using activation thresholds.
 #'
 #' Converts raw neuron activation values into binary detections by applying a
-#' numeric threshold to each named neuron. Frames where the activation exceeds
-#' the threshold are marked `TRUE`; all others are `FALSE`. All `activation_`
+#' numeric threshold to each neuron named in the `thresholds` argument.
+#' Frames where the activation exceeds the threshold are marked `TRUE`;
+#' all others are `FALSE`. All `activation_`
 #' columns are dropped from the output — use [buzzr::bin] afterwards to
 #' summarise detection counts over time.
 #'
@@ -224,10 +225,6 @@ floor_start <- function(results, binwidth){
 
   cnames <- names(results)
 
-  if(COL_START_RAW %in% cnames){
-    results[[COL_START_RAW]]
-  }
-
   if(COL_START_FILETIME  %in% cnames){
     results[[COL_BIN_FILETIME]] <- floor(results[[COL_START_FILETIME]]/(binwidth_sec))*(binwidth_sec)
   } else if(COL_BIN_FILETIME %in% cnames){
@@ -235,9 +232,9 @@ floor_start <- function(results, binwidth){
   }
 
   if(COL_START_DATETIME  %in% cnames){
-    results[[COL_BIN_DATETIME]] <- results[[COL_BIN_DATETIME]] <- lubridate::floor_date(results[[COL_START_DATETIME]], unit = paste0(binwidth_sec, 'aseconds'))
+    results[[COL_BIN_DATETIME]] <- lubridate::floor_date(results[[COL_START_DATETIME]], unit = paste0(binwidth_sec, 'aseconds'))
   } else if(COL_BIN_DATETIME %in% cnames){
-    results[[COL_BIN_DATETIME]] <- results[[COL_BIN_DATETIME]] <- lubridate::floor_date(results[[COL_BIN_DATETIME]], unit = paste0(binwidth_sec, 'aseconds'))
+    results[[COL_BIN_DATETIME]] <- lubridate::floor_date(results[[COL_BIN_DATETIME]], unit = paste0(binwidth_sec, 'aseconds'))
   }
 
   if(is.null(results[[COL_BIN_FILETIME]]) & is.null(results[[COL_BIN_DATETIME]])){
@@ -354,6 +351,49 @@ bin <- function(results, binwidth, calculate_rate=F){
   return(results_bin)
 }
 
+# read_results can't return ident because it doesn't know the dir_results to make the relative path
+# idents aren't realistically valuable in single-file reads, so this is a helper function for directory-level functions (read_directory and bin_directory)
+# not exported
+read_file <- function(
+    path_results,
+    posix_formats  = NULL,
+    first_match    = FALSE,
+    drop_filetime  = TRUE,
+    tz             = NA,
+    dir_nesting    = NULL,
+    return_ident   = FALSE,
+    dir_results    = NULL,
+    thresholds     = NULL,
+    binwidth       = NULL,
+    calculate_rate = FALSE
+) {
+  results <- read_results(
+    path_results,
+    posix_formats = posix_formats,
+    first_match   = first_match,
+    drop_filetime = drop_filetime,
+    tz            = tz,
+    dir_nesting   = dir_nesting
+  )
+
+  if (return_ident) {
+    if(is.null(dir_results)){
+      stop('dir_results must be provided when return_ident is TRUE')
+    }
+    ident    <- get_ident(path_results, dir_results)
+    results  <- cbind(ident = ident, results)
+  }
+
+  if (!is.null(thresholds)) {
+    results <- call_detections(results, thresholds)
+    if (!is.null(binwidth)) {
+      results <- bin(results, binwidth = binwidth, calculate_rate = calculate_rate)
+    }
+  }
+
+  return(results)
+}
+
 
 #' Read all buzzdetect result files in a directory (recursively).
 #'
@@ -368,6 +408,7 @@ bin <- function(results, binwidth, calculate_rate=F){
 #' @param dir_results `r DOC_PARAM_DIR_RESULTS`
 #' @param return_ident `r DOC_PARAM_RETURN_IDENT` Set `TRUE` to add an `ident`
 #'   column as the first column of the output.
+#' @param workers `r DOC_PARAM_WORKERS`
 #' @return A data.table combining all files, with the same columns as
 #'   [buzzr::read_results] plus an optional `ident` column.
 #' @seealso [buzzr::bin_directory] to also apply thresholds and bin in one call.
@@ -385,34 +426,40 @@ bin <- function(results, binwidth, calculate_rate=F){
 #' # Also include the ident column for tracing results back to their source file
 #' read_directory(dir, return_ident = TRUE)
 #' @export
-read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA){
-  paths_in <- list_results(dir_results)
-  if(length(paths_in)==0){
+read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, workers=2){
+  paths_results <- list_results(dir_results)
+  if(length(paths_results)==0){
     msg <- paste0('No results found in directory ', dir_results)
-
     warning(msg)
-    return(data.frame())  # return an empty data frame (doesn't mess up downstream ops like bind_rows and mutate)
+    return(data.frame())
   }
 
-  results <- lapply(
-    X = paths_in,
+  results_dir <- parallel::mclapply(
+    X = paths_results,
     FUN = function(path_results){
-      df <- read_results(path_results, posix_formats = posix_formats, first_match = first_match, drop_filetime=drop_filetime, tz=tz, dir_nesting=dir_nesting)
-
-      if(return_ident){
-        ident <- get_ident(path_results, dir_results)
-
-        # add as first column
-        df <- cbind(ident=ident, df)
-      }
-
-      return(df)
-    }
+      read_file(
+          path_results   = path_results,
+          posix_formats  = posix_formats,
+          first_match    = first_match,
+          drop_filetime  = drop_filetime,
+          tz             = tz,
+          dir_nesting    = dir_nesting,
+          return_ident   = return_ident,
+          dir_results    = dir_results,
+          thresholds     = NULL,
+          binwidth       = NULL,
+          calculate_rate = FALSE
+      ) 
+    },
+    mc.cores = workers
   ) |>
     data.table::rbindlist(fill = T)
 
-  return(results)
+  if(nrow(results_dir)==0){return(data.frame())}
+
+  return(results_dir)
 }
+
 
 
 #' Read, threshold, and bin all buzzdetect result files in a directory.
@@ -426,9 +473,8 @@ read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, dro
 #' binned data.table ready for plotting or modelling.
 #'
 #' @inheritParams read_directory
-#' @param thresholds `r DOC_PARAM_THRESHOLDS`
-#' @param binwidth `r DOC_PARAM_BINWIDTH`
-#' @param calculate_rate `r DOC_PARAM_CALCULATE_RATE`
+#' @inheritParams call_detections
+#' @inheritParams bin
 #' @return A data.table with `bin_filetime` or `bin_datetime`, `detections_`
 #'   columns, a `frames` column, and any columns from `dir_nesting` or `ident`.
 #' @seealso [buzzr::read_directory], [buzzr::call_detections], and [buzzr::bin]
@@ -447,21 +493,36 @@ read_directory <- function(dir_results, posix_formats=NA, first_match=FALSE, dro
 #'   calculate_rate = TRUE
 #' )
 #' @export
-bin_directory <- function(dir_results, thresholds, posix_formats=NA, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE){
-  results <- read_directory(
-    dir_results=dir_results,
-    posix_formats = posix_formats,
-    first_match = first_match,
-    drop_filetime=drop_filetime,
-    dir_nesting=dir_nesting,
-    return_ident=return_ident,
-    tz=tz
-  )
+bin_directory <- function(dir_results, thresholds, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE, workers=2){
+  paths_results <- list_results(dir_results)
+  if(length(paths_results)==0){
+    msg <- paste0('No results found in directory ', dir_results)
+    warning(msg)
+    return(data.frame()) 
+  }
 
-  if(nrow(results)==0){return(data.frame())}
+  results_bin_dir <- parallel::mclapply(
+    X = paths_results,
+    FUN = function(path_results){
+      read_file(
+          path_results    = path_results,
+          posix_formats   = posix_formats,
+          first_match     = first_match,
+          drop_filetime   = drop_filetime,
+          tz              = tz,
+          dir_nesting     = dir_nesting,
+          return_ident    = return_ident,
+          dir_results     = dir_results,
+          thresholds      = thresholds,
+          binwidth        = binwidth,
+          calculate_rate  = calculate_rate
+      ) 
+    },
+    mc.cores = workers
+  ) |>
+    data.table::rbindlist(fill = T)
 
-  results_called <- call_detections(results, thresholds)
-  results_bin <- bin(results_called, binwidth=binwidth, calculate_rate = calculate_rate)
+  if(nrow(results_bin_dir)==0){return(data.frame())}
 
-  return(results_bin)
+  return(results_bin_dir)
 }

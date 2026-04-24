@@ -324,7 +324,8 @@ test_that("bin_directory returns binned data.table with detection columns", {
     posix_formats = "%y%m%d_%H%M",
     tz           = "UTC",
     dir_nesting  = c("flower", "recorder"),
-    binwidth     = 20
+    binwidth     = 20,
+    workers     = 1
   )
 
   expect_s3_class(result, "data.table")

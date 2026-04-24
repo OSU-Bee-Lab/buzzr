@@ -14,13 +14,17 @@ bin_directory(
   return_ident = FALSE,
   tz = NA,
   binwidth = 5,
-  calculate_rate = FALSE
+  calculate_rate = FALSE,
+  workers = 2
 )
 }
 \arguments{
 \item{dir_results}{The directory holding all buzzdetect results to be read.}
 
-\item{thresholds}{A named numeric vector mapping neuron names to detection thresholds (e.g. \code{c(ins_buzz = -1.2)}). Frames whose activation value \emph{exceeds} the threshold are counted as detections. Because \code{model_general_v3} outputs negative log-likelihoods, thresholds are typically negative.}
+\item{thresholds}{A named numeric vector mapping neuron names to detection thresholds (e.g. \code{c(ins_buzz = -1.2)}). Frames whose activation value \emph{exceeds} the threshold are counted as detections. Because \code{model_general_v3} outputs negative log-likelihoods, thresholds are typically negative.
+Activations \emph{above} the threshold value are counted as detections, so
+thresholds for models that output negative log-likelihoods (such as
+\code{model_general_v3}) are typically negative (e.g. \code{-1.2}).}
 
 \item{posix_formats}{Character vector of POSIX format strings (see \link[base:strptime]{base::strptime}) describing the timestamp embedded in each file name (e.g. \code{'\%y\%m\%d_\%H\%M'} for \verb{230809_0600}). Supply multiple strings when recordings from different logger types are mixed in one directory.
 If \code{NA} (default), results are left in file-time. See \link{file_start_time}.}
@@ -40,6 +44,8 @@ column as the first column of the output.}
 \item{binwidth}{Width of each time bin in minutes (e.g. \code{5}, \code{20}, or \code{60}).}
 
 \item{calculate_rate}{If \code{TRUE}, adds a \code{detectionrate_} column for each \code{detections_} column, calculated as detections divided by frames. Values range from 0 to 1.}
+
+\item{workers}{Number of parallel workers to use when processing results. Set to \code{Inf} to use all available cores. Note that because data.table already uses multiple threads, you may want to set fewer workers than there are cores on your machine. Overridden by MC_CORES environmental variable if set.}
 }
 \value{
 A data.table with \code{bin_filetime} or \code{bin_datetime}, \code{detections_}

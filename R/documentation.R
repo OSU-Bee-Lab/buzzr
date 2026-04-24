@@ -17,6 +17,7 @@ NULL
 
   # misc
   DOC_PARAM_TIME_START <- "A POSIXct value (or a value that can be converted to such) identifying the date and time that the output begins. Required if the input data has no start_real column, otherwise ignored."
+  DOC_PARAM_WORKERS <- "Number of parallel workers to use when processing results. Set to `Inf` to use all available cores. Note that because data.table already uses multiple threads, you may want to set fewer workers than there are cores on your machine. Overridden by MC_CORES environmental variable if set."
 
   # times
   DOC_PARAM_TIMES <- 'A POSIXct vector.'
@@ -24,3 +25,4 @@ NULL
   DOC_PARAM_DROP_FILETIME <- "If `TRUE` (default), the `start_filetime` / `bin_filetime` column is removed once `start_datetime` / `bin_datetime` has been added. Set `FALSE` to keep both."
   DOC_PARAM_FIRST_MATCH <- "Controls behaviour when multiple formats produce *different* times for the same file. `FALSE` (default) returns `NA` with a warning; `TRUE` accepts the time from the first matching format with a message."
   DOC_PARAM_POSIX_FORMATS <- "Character vector of POSIX format strings (see [base::strptime]) describing the timestamp embedded in each file name (e.g. `'%y%m%d_%H%M'` for `230809_0600`). Supply multiple strings when recordings from different logger types are mixed in one directory."
+

@@ -21,8 +21,9 @@ columns. Each detection column contains logical (\code{TRUE}/\code{FALSE}) value
 }
 \description{
 Converts raw neuron activation values into binary detections by applying a
-numeric threshold to each named neuron. Frames where the activation exceeds
-the threshold are marked \code{TRUE}; all others are \code{FALSE}. All \code{activation_}
+numeric threshold to each neuron named in the \code{thresholds} argument.
+Frames where the activation exceeds the threshold are marked \code{TRUE};
+all others are \code{FALSE}. All \code{activation_}
 columns are dropped from the output — use \link{bin} afterwards to
 summarise detection counts over time.
 }

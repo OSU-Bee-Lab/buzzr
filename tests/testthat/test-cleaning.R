@@ -182,7 +182,7 @@ test_that("trim_directory writes a single .rds file when path_out ends in .rds",
   out_file <- file.path(tempdir(), paste0("buzzr_trim_single_", Sys.getpid(), ".rds"))
   on.exit(unlink(out_file))
 
-  result <- trim_directory(dir_in, out_file, activation_digits = 2)
+  result <- trim_directory(dir_in, out_file, activation_digits = 2, if_exists = "overwrite")
 
   expect_equal(result, out_file)
   expect_true(file.exists(out_file))

@@ -12,7 +12,8 @@ Imports:
     data.table,
     lubridate,
     stringr,
-    ggplot2
+    ggplot2,
+    parallel
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
