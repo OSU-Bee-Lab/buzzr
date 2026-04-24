@@ -20,29 +20,29 @@ devtools::install_github('OSU-Bee-Lab/buzzr')
 
 ## Key features
 
-- **One-shot.**
-  [`bin_directory()`](https://osu-bee-lab.github.io/buzzr/reference/bin_directory.md)
-  combines most preprocessing operations into a single function call.
-  Point it at your results, pull the trigger, and you’re halfway to
-  plotting and modeling.
+**One-shot.**
+[`bin_directory()`](https://osu-bee-lab.github.io/buzzr/reference/bin_directory.md)
+combines most preprocessing operations into a single function call.
+Point it at your results, pull the trigger, and you’re halfway to
+plotting and modeling.
 
-- **Structure is data.** If your results are grouped into folders by
-  site, treatment, etc., that metadata can be interpreted from the file
-  structure. The `dir_nesting` argument decodes folder structure into
-  columns.
+**Structure is data.** If your results are grouped into folders by site,
+treatment, etc., that metadata can be interpreted from the file
+structure. The `dir_nesting` argument decodes folder structure into
+columns.
 
-- **Names are data.**
-  [`file_start_time()`](https://osu-bee-lab.github.io/buzzr/reference/file_start_time.md)
-  extracts recording start times from file names using POSIX format
-  strings
+**Names are data, too!**
+[`file_start_time()`](https://osu-bee-lab.github.io/buzzr/reference/file_start_time.md)
+extracts recording start times from file names using POSIX format
+strings
 
-- **Shrink your footprint.**
-  [`trim_directory()`](https://osu-bee-lab.github.io/buzzr/reference/trim_directory.md)
-  rounds activation values and drops unwanted neurons across an entire
-  results folder. The output file or folders can be less than 4% the
-  size of the raw buzzdetect results.
+**Honey, I shrunk the data.**
+[`trim_directory()`](https://osu-bee-lab.github.io/buzzr/reference/trim_directory.md)
+rounds activation values and drops unwanted neurons across an entire
+results folder. The output folder can be less than 4% the size of the
+raw buzzdetect results.
 
-- **Vroom vroom.** Squeeze every last drop of performance out of
-  buzzdetect using
-  [`evaluate_log()`](https://osu-bee-lab.github.io/buzzr/reference/evaluate_log.md)
-  to calculate your analysis rate and identify bottlenecks.
+**Vroom vroom.** Squeeze every last drop of performance out of
+buzzdetect using
+[`evaluate_log()`](https://osu-bee-lab.github.io/buzzr/reference/evaluate_log.md)
+to calculate your analysis rate and identify bottlenecks.

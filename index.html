@@ -36,7 +36,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/time-interpretation.html">Interpreting time in buzzr</a></li>
+<li><a class="dropdown-item" href="articles/time-interpretation.html">Handling time data in buzzr</a></li>
   </ul>
 </li>
       </ul>
@@ -68,13 +68,11 @@
 <div class="section level2">
 <h2 id="key-features">Key features<a class="anchor" aria-label="anchor" href="#key-features"></a>
 </h2>
-<ul>
-<li><p><strong>One-shot.</strong> <code><a href="reference/bin_directory.html">bin_directory()</a></code> combines most preprocessing operations into a single function call. Point it at your results, pull the trigger, and you’re halfway to plotting and modeling.</p></li>
-<li><p><strong>Structure is data.</strong> If your results are grouped into folders by site, treatment, etc., that metadata can be interpreted from the file structure. The <code>dir_nesting</code> argument decodes folder structure into columns.</p></li>
-<li><p><strong>Names are data.</strong> <code><a href="reference/file_start_time.html">file_start_time()</a></code> extracts recording start times from file names using POSIX format strings</p></li>
-<li><p><strong>Shrink your footprint.</strong> <code><a href="reference/trim_directory.html">trim_directory()</a></code> rounds activation values and drops unwanted neurons across an entire results folder. The output file or folders can be less than 4% the size of the raw buzzdetect results.</p></li>
-<li><p><strong>Vroom vroom.</strong> Squeeze every last drop of performance out of buzzdetect using <code><a href="reference/evaluate_log.html">evaluate_log()</a></code> to calculate your analysis rate and identify bottlenecks.</p></li>
-</ul>
+<p><strong>One-shot.</strong> <code><a href="reference/bin_directory.html">bin_directory()</a></code> combines most preprocessing operations into a single function call. Point it at your results, pull the trigger, and you’re halfway to plotting and modeling.</p>
+<p><strong>Structure is data.</strong> If your results are grouped into folders by site, treatment, etc., that metadata can be interpreted from the file structure. The <code>dir_nesting</code> argument decodes folder structure into columns.</p>
+<p><strong>Names are data, too!</strong> <code><a href="reference/file_start_time.html">file_start_time()</a></code> extracts recording start times from file names using POSIX format strings</p>
+<p><strong>Honey, I shrunk the data.</strong> <code><a href="reference/trim_directory.html">trim_directory()</a></code> rounds activation values and drops unwanted neurons across an entire results folder. The output folder can be less than 4% the size of the raw buzzdetect results.</p>
+<p><strong>Vroom vroom.</strong> Squeeze every last drop of performance out of buzzdetect using <code><a href="reference/evaluate_log.html">evaluate_log()</a></code> to calculate your analysis rate and identify bottlenecks.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

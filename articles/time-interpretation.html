@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Interpreting time in buzzr • buzzr</title>
+<title>Handling time data in buzzr • buzzr</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Interpreting time in buzzr">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Handling time data in buzzr">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -34,7 +34,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/time-interpretation.html">Interpreting time in buzzr</a></li>
+<li><a class="dropdown-item" href="../articles/time-interpretation.html">Handling time data in buzzr</a></li>
   </ul>
 </li>
       </ul>
@@ -56,7 +56,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Interpreting time in buzzr</h1>
+      <h1>Handling time data in buzzr</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/OSU-Bee-Lab/buzzdetect/blob/main/vignettes/time-interpretation.Rmd" class="external-link"><code>vignettes/time-interpretation.Rmd</code></a></small>
@@ -65,42 +65,108 @@
 
     
     
+<p>Passive monitoring goes hand-in-hand with (i) large datasets and (ii)
+long datasets. By which I mean, you probably have (i) lots of
+files/folders, and they (ii) span long stretches of time. With active
+observation, you’re probably finishing up a round of data collection
+within one day (even if you’re going back the next). With passive
+observation, one file might capture more than one day of data and one
+folder might capture a week on a standard MP3 recorder or a month on a
+field recorder with a duty cycle. Thus, tracking time is an essential
+component of a passive acoustic monitoring pipeline.</p>
+<div class="section level2">
+<h2 id="tldr">TL;DR<a class="anchor" aria-label="anchor" href="#tldr"></a>
+</h2>
+<p>buzzr can automatically interpret the start time of audio files based
+on their name, if a timestamp is used in the file name. This feature is
+baked into the <code>read_</code> functions and anything that calls
+them, notably: <code><a href="../reference/read_results.html">read_results()</a></code>,
+<code><a href="../reference/read_directory.html">read_directory()</a></code>, and <code><a href="../reference/bin_directory.html">bin_directory()</a></code>. Pass
+the POSIX format code (see <code><a href="https://rdrr.io/r/base/strptime.html" class="external-link">base::format.POSIXct()</a></code>) to the
+<code>posix_formats</code> argument as well as a time zone to
+<code>tz</code>; buzzr will translate the file-time (seconds) to a
+date-time (year, month, day, hour, minute, second). You can even pass
+multiple format codes if you have mixed timestamps in your dataset!</p>
+</div>
+<div class="section level2">
+<h2 id="warning-date-coercion-could-drive-you-insane">Warning: Date coercion could drive you insane<a class="anchor" aria-label="anchor" href="#warning-date-coercion-could-drive-you-insane"></a>
+</h2>
+<p>Any time you’re working with POSIXct (that is, date-time) data,
+<strong>write to .rds files using saveRDS. Do not save date-times to
+.csv files.</strong></p>
+<p>POSIXct data are numeric under the hood, even though we write them as
+text. “August 8, 2023 12:34 PM” has the value 1,691,598,840.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="st">"2023-08-09 12:34:00 EDT"</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 1691584440</span></span></code></pre></div>
+<p>It’s that many seconds from the start of the Unix Epoch. So, when you
+want to write it to a .csv file, R has to take a stab at formatting the
+numeric into text. When the POSIXct time corresponds exactly to
+midnight, R formats it without any hour, minute, or second. That is,
+just a date.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="st">"2023-08-09 12:34:00 EDT"</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "2023-08-09 12:34:00"</span></span>
+<span></span>
+<span><span class="st">"2023-08-09 00:00:00 EDT"</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "2023-08-09"</span></span></code></pre></div>
+<p>When R reads that CSV back in and you try to turn the column into
+date-times, if it sees <em>any</em> value that’s just a date, it will
+turn the <em>entire</em> column into dates.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-08-09 15:24:57 EDT"</span>, <span class="st">"2023-08-09"</span>, <span class="st">"2023-08-09 12:34:00 EDT"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "2023-08-09 UTC" "2023-08-09 UTC" "2023-08-09 UTC"</span></span></code></pre></div>
+<p>Avoid this by using .rds files, which save the full time information.
+When you read in a .rds file, you get back exactly the same object you
+wrote. And they’re smaller and they’re faster! Friends don’t let friends
+comma-separate.</p>
+</div>
+<div class="section level2">
+<h2 id="types-of-time">Types of time<a class="anchor" aria-label="anchor" href="#types-of-time"></a>
+</h2>
 <p>buzzr works with two different representations of time:</p>
 <ul>
 <li>
-<strong>File-time</strong> (<code>start_filetime</code>): seconds
-elapsed since the start of the audio file. This is what buzzdetect
-writes directly — it knows nothing about when you pressed record.</li>
+<strong>File-time</strong> (column: <code>start_filetime</code>):
+seconds elapsed since the start of the audio file. This is present in
+the raw buzzdetect results files as <code>start</code>.</li>
 <li>
-<strong>Date-time</strong> (<code>start_datetime</code>): an
-absolute timestamp, like <code>2023-08-09 06:00:00</code>. To get this,
-buzzr needs to know when the recording started, which it reads from the
-file name.</li>
+<strong>Date-time</strong> (column: <code>start_datetime</code>): a
+real-world timestamp, e.g. <code>2023-08-09 06:00:00</code>. To get
+this, buzzr needs to know when the recording started, which it reads
+from the file name.</li>
 </ul>
 <p>This vignette explains how buzzr converts file names into date-times,
-how to handle mixed recorder types, and how to work with the resulting
-timestamps for plotting and modelling.</p>
+how to handle mixed patterns in filenames (e.g. from different recorder
+types), and how to work with the resulting timestamps for plotting and
+modelling.</p>
 <hr>
+</div>
 <div class="section level2">
 <h2 id="reading-a-timestamp-from-a-file-name">Reading a timestamp from a file name<a class="anchor" aria-label="anchor" href="#reading-a-timestamp-from-a-file-name"></a>
 </h2>
 <p>Most field recorders embed the recording start time in the file name.
 buzzr reads this using the same POSIX format codes as base R’s
-<code><a href="https://rdrr.io/r/base/strptime.html" class="external-link">strptime()</a></code>. Common examples:</p>
+<code><a href="https://rdrr.io/r/base/strptime.html" class="external-link">strptime()</a></code>. For example, you might see:</p>
 <table class="table">
 <thead><tr class="header">
-<th>File name pattern</th>
+<th>File name</th>
 <th>Format string</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>
-<code>230809_0600</code> (YYMMDD_HHMM)</td>
+<td><code>230809_0000</code></td>
 <td><code>'%y%m%d_%H%M'</code></td>
 </tr>
 <tr class="even">
-<td>
-<code>20230809_000000</code> (YYYYMMDD_HHMMSS)</td>
+<td><code>20230809_000000</code></td>
 <td><code>'%Y%m%d_%H%M%S'</code></td>
 </tr>
 <tr class="odd">
@@ -109,11 +175,13 @@ buzzr reads this using the same POSIX format codes as base R’s
 </tr>
 </tbody>
 </table>
-<p>The Five Flowers dataset uses the <code>YYMMDD_HHMM</code> pattern.
-Let’s parse a single file:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<p>The Five Flowers dataset included with buzzr uses the
+<code>YYMMDD_HHMM</code> pattern, since that’s what our (the Ohio State
+University Bee Lab) recorders (Sony ICD-PX370) use. Let’s parse a single
+file:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
-<span>  <span class="st">'extdata/five_flowers_snip/soybean/53/230809_0600_buzzdetect.csv'</span>,</span>
+<span>  <span class="st">'extdata/five_flowers_snip/soybean/53/230809_0700_buzzdetect.csv'</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">'buzzr'</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -121,63 +189,55 @@ Let’s parse a single file:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/read_results.html">read_results</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    start_filetime activation_ins_trill activation_mech_plane</span></span>
 <span><span class="co">#&gt;             &lt;num&gt;                &lt;num&gt;                 &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:           0.00                 -2.8                  -2.3</span></span>
-<span><span class="co">#&gt; 2:           0.96                 -2.5                  -2.7</span></span>
+<span><span class="co">#&gt; 1:           0.00                 -2.3                  -1.9</span></span>
+<span><span class="co">#&gt; 2:           0.96                 -2.6                  -2.7</span></span>
 <span><span class="co">#&gt; 3:           1.92                 -2.2                  -2.4</span></span>
 <span><span class="co">#&gt;    activation_ambient_rain activation_ins_buzz</span></span>
 <span><span class="co">#&gt;                      &lt;num&gt;               &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:                    -2.4                -2.2</span></span>
-<span><span class="co">#&gt; 2:                    -2.5                -2.3</span></span>
-<span><span class="co">#&gt; 3:                    -2.4                -2.4</span></span>
+<span><span class="co">#&gt; 1:                    -1.7                -1.9</span></span>
+<span><span class="co">#&gt; 2:                    -2.9                -2.2</span></span>
+<span><span class="co">#&gt; 3:                    -2.5                -2.0</span></span>
 <span></span>
 <span><span class="co"># With posix_formats: file-time is converted to an absolute date-time</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/read_results.html">read_results</a></span><span class="op">(</span><span class="va">path</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         start_datetime activation_ins_trill activation_mech_plane</span></span>
 <span><span class="co">#&gt;                 &lt;POSc&gt;                &lt;num&gt;                 &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 2023-08-09 06:00:00                 -2.8                  -2.3</span></span>
-<span><span class="co">#&gt; 2: 2023-08-09 06:00:00                 -2.5                  -2.7</span></span>
-<span><span class="co">#&gt; 3: 2023-08-09 06:00:01                 -2.2                  -2.4</span></span>
+<span><span class="co">#&gt; 1: 2023-08-09 07:00:00                 -2.3                  -1.9</span></span>
+<span><span class="co">#&gt; 2: 2023-08-09 07:00:00                 -2.6                  -2.7</span></span>
+<span><span class="co">#&gt; 3: 2023-08-09 07:00:01                 -2.2                  -2.4</span></span>
 <span><span class="co">#&gt;    activation_ambient_rain activation_ins_buzz</span></span>
 <span><span class="co">#&gt;                      &lt;num&gt;               &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:                    -2.4                -2.2</span></span>
-<span><span class="co">#&gt; 2:                    -2.5                -2.3</span></span>
-<span><span class="co">#&gt; 3:                    -2.4                -2.4</span></span></code></pre></div>
-<p>The <code>_buzzdetect</code> suffix and file extension are stripped
-before matching, so your format string only needs to describe the
-timestamp part of the name.</p>
+<span><span class="co">#&gt; 1:                    -1.7                -1.9</span></span>
+<span><span class="co">#&gt; 2:                    -2.9                -2.2</span></span>
+<span><span class="co">#&gt; 3:                    -2.5                -2.0</span></span></code></pre></div>
 <p>You can also call <code><a href="../reference/file_start_time.html">file_start_time()</a></code> directly if you just
 want the recording’s start time without reading the full file:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">path</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT"</span></span></code></pre></div>
-<p>It works on a vector of paths too:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/five_flowers_snip/chicory'</span>, package <span class="op">=</span> <span class="st">'buzzr'</span><span class="op">)</span></span>
-<span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">dir</span>, pattern <span class="op">=</span> <span class="st">'_buzzdetect'</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">paths</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "2025-07-04 06:00:00 EDT" "2025-07-04 07:00:00 EDT"</span></span>
-<span><span class="co">#&gt;  [3] "2025-07-04 08:00:00 EDT" "2025-07-04 09:00:00 EDT"</span></span>
-<span><span class="co">#&gt;  [5] "2025-07-04 10:00:00 EDT" "2025-07-04 11:00:00 EDT"</span></span>
-<span><span class="co">#&gt;  [7] "2025-07-04 12:00:00 EDT" "2025-07-04 13:00:00 EDT"</span></span>
-<span><span class="co">#&gt;  [9] "2025-07-04 14:00:00 EDT" "2025-07-04 15:00:00 EDT"</span></span>
-<span><span class="co">#&gt; [11] "2025-07-04 16:00:00 EDT" "2025-07-04 17:00:00 EDT"</span></span>
-<span><span class="co">#&gt; [13] "2025-07-04 18:00:00 EDT" "2025-07-04 19:00:00 EDT"</span></span>
-<span><span class="co">#&gt; [15] "2025-07-04 20:00:00 EDT"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "2023-08-09 07:00:00 EDT"</span></span></code></pre></div>
+<p>Additional characters in the filename probably won’t mess up the
+extraction as long as they don’t also match the timestamp pattern.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">buzzr</span><span class="fu">::</span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span></span>
+<span>  <span class="st">'tmp_230809_1359_corrected_bad_time_whoops_buzzdetect.csv'</span>,</span>
+<span>  posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>,</span>
+<span>  tz <span class="op">=</span> <span class="st">'America/New_York'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "2023-08-09 13:59:00 EDT"</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="time-zones">Time zones<a class="anchor" aria-label="anchor" href="#time-zones"></a>
 </h2>
-<p>Always pass a <code>tz</code> argument. If you omit it, R uses your
-system time zone, which will silently produce wrong results if you
-analyse data collected in a different zone.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Same file, two different time zones — note the hour difference</span></span>
-<span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">path</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT"</span></span>
-<span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">path</span>, posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>, tz <span class="op">=</span> <span class="st">'America/Chicago'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 CDT"</span></span></code></pre></div>
+<p>You must always pass a <code>tz</code> argument. Time zones are a
+<em>nightmare</em> and they will bite you. To minimize our culpability,
+we try to make buzzr utterly explicit about time zones. In general, it
+will never guess and will always ask. The exceptions are
+<code><a href="../reference/commontime.html">commontime()</a></code> , which defaults to your local time zone since
+it destroys relevant time zone information, and
+<code><a href="../reference/label_hour.html">label_hour()</a></code> which interacts with
+<code><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">ggplot2::scale_x_datetime()</a></code>, which guesses your time zone
+anyways.</p>
 <p>Use <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> to browse valid time zone strings.</p>
 <hr>
 </div>
@@ -187,7 +247,7 @@ analyse data collected in a different zone.</p>
 <p>By default, <code>start_filetime</code> is dropped once
 <code>start_datetime</code> is added. Set
 <code>drop_filetime = FALSE</code> to keep both:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/read_results.html">read_results</a></span><span class="op">(</span></span>
 <span>    <span class="va">path</span>,</span>
@@ -199,56 +259,56 @@ analyse data collected in a different zone.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt;         start_datetime start_filetime activation_ins_trill</span></span>
 <span><span class="co">#&gt;                 &lt;POSc&gt;          &lt;num&gt;                &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1: 2023-08-09 06:00:00           0.00                 -2.8</span></span>
-<span><span class="co">#&gt; 2: 2023-08-09 06:00:00           0.96                 -2.5</span></span>
-<span><span class="co">#&gt; 3: 2023-08-09 06:00:01           1.92                 -2.2</span></span>
+<span><span class="co">#&gt; 1: 2023-08-09 07:00:00           0.00                 -2.3</span></span>
+<span><span class="co">#&gt; 2: 2023-08-09 07:00:00           0.96                 -2.6</span></span>
+<span><span class="co">#&gt; 3: 2023-08-09 07:00:01           1.92                 -2.2</span></span>
 <span><span class="co">#&gt;    activation_mech_plane activation_ambient_rain activation_ins_buzz</span></span>
 <span><span class="co">#&gt;                    &lt;num&gt;                   &lt;num&gt;               &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:                  -2.3                    -2.4                -2.2</span></span>
-<span><span class="co">#&gt; 2:                  -2.7                    -2.5                -2.3</span></span>
-<span><span class="co">#&gt; 3:                  -2.4                    -2.4                -2.4</span></span></code></pre></div>
-<p>File-time is useful if you want to extract audio clips later
-(e.g. using FFmpeg to cut from a specific second in the source
-file).</p>
+<span><span class="co">#&gt; 1:                  -1.9                    -1.7                -1.9</span></span>
+<span><span class="co">#&gt; 2:                  -2.7                    -2.9                -2.2</span></span>
+<span><span class="co">#&gt; 3:                  -2.4                    -2.5                -2.0</span></span></code></pre></div>
+<p>File-time can be useful if you want to reference the audio that
+corresponds to certain events. For example, you could use FFmpeg to
+extract the most active 5 minutes from every recorder or pull out every
+positive frame to review.</p>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="mixed-recorder-types-multiple-format-strings">Mixed recorder types: multiple format strings<a class="anchor" aria-label="anchor" href="#mixed-recorder-types-multiple-format-strings"></a>
+<h2 id="multiple-timestamp-formats">Multiple timestamp formats<a class="anchor" aria-label="anchor" href="#multiple-timestamp-formats"></a>
 </h2>
-<p>If your experiment used more than one recorder model, the file names
-may follow different timestamp conventions. Supply all formats as a
-character vector:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>If your experiment used more than one type of recorder, the file
+names may follow different timestamp conventions.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Imagine two recorder types in the same experiment:</span></span>
 <span><span class="co">#   AudioMoth:  YYYYMMDD_HHMMSS  e.g. 20230809_060000_buzzdetect.csv</span></span>
-<span><span class="co">#   SongMeter:  YYMMDD_HHMM      e.g. 230809_0600_buzzdetect.csv</span></span>
+<span><span class="co">#   Sony:  YYMMDD_HHMM      e.g. 230809_0600_buzzdetect.csv</span></span>
 <span></span>
 <span><span class="va">paths_mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">'site_a/audiomoth/20230809_060000_buzzdetect.csv'</span>,  <span class="co"># AudioMoth</span></span>
-<span>  <span class="st">'site_b/songmeter/230809_0600_buzzdetect.csv'</span>       <span class="co"># SongMeter</span></span>
-<span><span class="op">)</span></span>
+<span>  <span class="st">'site_b/Sony/230809_0600_buzzdetect.csv'</span>       <span class="co"># Sony</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>buzzr can handle this, just supply all audio formats to the
+posix_formats argument. When each file matches exactly one format,
+everything resolves cleanly:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">formats_mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'%Y%m%d_%H%M%S'</span>, <span class="st">'%y%m%d_%H%M'</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">formats_mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'%Y%m%d_%H%M%S'</span>, <span class="st">'%y%m%d_%H%M'</span><span class="op">)</span></span></code></pre></div>
-<p>When each file matches exactly one format, everything resolves
-cleanly:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">paths_mixed</span>, posix_formats <span class="op">=</span> <span class="va">formats_mixed</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span><span class="va">paths_mixed</span>, posix_formats <span class="op">=</span> <span class="va">formats_mixed</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT" "2023-08-09 06:00:00 EDT"</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="when-a-file-matches-two-formats-with-different-results">When a file matches two formats with different results<a class="anchor" aria-label="anchor" href="#when-a-file-matches-two-formats-with-different-results"></a>
+<h3 id="when-a-timestamp-matches-multiple-formats">When a timestamp matches multiple formats<a class="anchor" aria-label="anchor" href="#when-a-timestamp-matches-multiple-formats"></a>
 </h3>
-<p>This is where things get tricky. A SongMeter file like
-<code>230809_0600</code> will match <code>%y%m%d_%H%M</code> (→ 2023)
-but it can also match <code>%Y%m%d_%H%M%S</code> if interpreted as year
-0230 (an implausible date, but R won’t reject it). More dangerously,
-<code>20230809_060000</code> matches <code>%Y%m%d_%H%M%S</code> (→
-2023-08-09 06:00:00) but also <code>%y%m%d_%H%M</code> (→ year 2020,
-completely wrong).</p>
+<p>This is where things get tricky. A Sony file like
+<code>230809_0600</code> is YYMMDD, but perhaps another recorder has a
+format of YYDDMM. Or, maybe you’re using an AudioMoth recorder that
+includes the seconds count and you want accuracy down to the second.
+Since you can’t parse seconds from the Sony file name, those dates would
+fail.</p>
 <p>By default (<code>first_match = FALSE</code>), buzzr returns
 <code>NA</code> and warns you when formats conflict:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Construct a path that matches both formats ambiguously</span></span>
-<span><span class="va">ambiguous_path</span> <span class="op">&lt;-</span> <span class="st">'site/recorder/20230809_060000_buzzdetect.csv'</span></span>
+<span><span class="va">ambiguous_path</span> <span class="op">&lt;-</span> <span class="st">'site/recorder/20230809_060030_buzzdetect.csv'</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span></span>
 <span>  <span class="va">ambiguous_path</span>,</span>
@@ -256,53 +316,57 @@ completely wrong).</p>
 <span>  tz <span class="op">=</span> <span class="st">'America/New_York'</span>,</span>
 <span>  first_match <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT"</span></span></code></pre></div>
-<p>If you know which format should take priority, set
-<code>first_match = TRUE</code> to accept the first matching format and
-move on:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># With '%Y%m%d_%H%M%S' listed first, the four-digit-year parse wins</span></span>
-<span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span></span>
+<span><span class="co">#&gt; Warning: Returning NA for start time of file 'site/recorder/20230809_060030_buzzdetect.csv'; multiple POSIX matches: </span></span>
+<span><span class="co">#&gt; %Y%m%d_%H%M%S</span></span>
+<span><span class="co">#&gt; %y%m%d_%H%M</span></span>
+<span><span class="co">#&gt; [1] NA</span></span></code></pre></div>
+<p>If you set <code>first_match = TRUE</code>, formats will be matched
+in the order they appear, accepting the first matching format and moving
+on even if later formats match, too:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span></span>
 <span>  <span class="va">ambiguous_path</span>,</span>
 <span>  posix_formats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'%Y%m%d_%H%M%S'</span>, <span class="st">'%y%m%d_%H%M'</span><span class="op">)</span>,</span>
 <span>  tz <span class="op">=</span> <span class="st">'America/New_York'</span>,</span>
 <span>  first_match <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT"</span></span>
+<span><span class="co">#&gt; Multiple POSIXct patterns match for file 'site/recorder/20230809_060030_buzzdetect.csv'. Accepting first: %Y%m%d_%H%M%S</span></span>
+<span><span class="co">#&gt; [1] "2023-08-09 06:00:30 EDT"</span></span>
 <span></span>
-<span><span class="co"># Swap the order — now the two-digit-year parse wins (wrong!)</span></span>
+<span><span class="co"># Swap the order — now the seconds aren't extracted from the filename</span></span>
 <span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span></span>
 <span>  <span class="va">ambiguous_path</span>,</span>
 <span>  posix_formats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'%y%m%d_%H%M'</span>, <span class="st">'%Y%m%d_%H%M%S'</span><span class="op">)</span>,</span>
 <span>  tz <span class="op">=</span> <span class="st">'America/New_York'</span>,</span>
 <span>  first_match <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; Multiple POSIXct patterns match for file 'site/recorder/20230809_060030_buzzdetect.csv'. Accepting first: %y%m%d_%H%M</span></span>
 <span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT"</span></span></code></pre></div>
-<p>The order of <code>posix_formats</code> matters when
-<code>first_match = TRUE</code>. Put the most specific (or most trusted)
-format first.</p>
 </div>
 <div class="section level3">
 <h3 id="when-a-file-matches-two-formats-with-the-same-result">When a file matches two formats with the <em>same</em> result<a class="anchor" aria-label="anchor" href="#when-a-file-matches-two-formats-with-the-same-result"></a>
 </h3>
-<p>If two formats resolve to identical timestamps, buzzr silently
-deduplicates them — no warning, no NA:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<p>Even with <code>first_match=FALSE</code>, if multiple formats resolve
+to an identical timestamp, buzzr silently deduplicates:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># These two formats both parse '230809_0600' as 2023-08-09 06:00:00</span></span>
-<span><span class="co"># (one by coincidence of the numeric overlap)</span></span>
 <span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span></span>
-<span>  <span class="st">'site/recorder/230809_0600_buzzdetect.csv'</span>,</span>
-<span>  posix_formats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'%y%m%d_%H%M'</span>, <span class="st">'%y%m%d_%H%M'</span><span class="op">)</span>,  <span class="co"># duplicate format</span></span>
-<span>  tz <span class="op">=</span> <span class="st">'America/New_York'</span></span>
+<span>  <span class="st">'site/recorder/230809_060000_buzzdetect.csv'</span>,</span>
+<span>  posix_formats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'%y%m%d_%H%M'</span>, <span class="st">'%y%m%d_%H%M%S'</span><span class="op">)</span>,</span>
+<span>  tz <span class="op">=</span> <span class="st">'America/New_York'</span>,</span>
+<span>  first_match<span class="op">=</span><span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT"</span></span></code></pre></div>
+<p>Since the seconds really are zero, both formats gets the same answer
+and buzzr accepts it without a message. This is pretty common if your
+field recorders are starting on the minute.</p>
 </div>
 <div class="section level3">
 <h3 id="if-no-format-matches">If no format matches<a class="anchor" aria-label="anchor" href="#if-no-format-matches"></a>
 </h3>
 <p>buzzr returns <code>NA</code> with a warning, so downstream code
 doesn’t fail silently:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/file_start_time.html">file_start_time</a></span><span class="op">(</span></span>
 <span>  <span class="st">'site/recorder/no_timestamp_here_buzzdetect.csv'</span>,</span>
 <span>  posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>,</span>
@@ -315,57 +379,16 @@ doesn’t fail silently:</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="plotting-time-of-day-commontime">Plotting time of day: <code>commontime()</code><a class="anchor" aria-label="anchor" href="#plotting-time-of-day-commontime"></a>
+<h2 id="time-of-day-for-modeling-time_of_day">Time of day for modeling: <code>time_of_day()</code><a class="anchor" aria-label="anchor" href="#time-of-day-for-modeling-time_of_day"></a>
 </h2>
-<p>When recordings span multiple calendar days you can’t overlay them
-directly on a datetime axis — the dates differ even if the time of day
-is the same. <code><a href="../reference/commontime.html">commontime()</a></code> solves this by setting every date
-to the same arbitrary day (2000-01-01) while preserving the time of
-day:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/five_flowers_snip'</span>, package <span class="op">=</span> <span class="st">'buzzr'</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">binned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bin_directory.html">bin_directory</a></span><span class="op">(</span></span>
-<span>  dir_results   <span class="op">=</span> <span class="va">dir</span>,</span>
-<span>  thresholds    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>ins_buzz <span class="op">=</span> <span class="op">-</span><span class="fl">1.2</span><span class="op">)</span>,</span>
-<span>  posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>,</span>
-<span>  tz            <span class="op">=</span> <span class="st">'America/New_York'</span>,</span>
-<span>  dir_nesting   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'flower'</span>, <span class="st">'recorder'</span><span class="op">)</span>,</span>
-<span>  binwidth       <span class="op">=</span> <span class="fl">20</span>,</span>
-<span>  calculate_rate <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Grouping time bins using columns: flower, recorder</span></span>
-<span></span>
-<span><span class="co"># Dates vary across the five recordings; commontime collapses them</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">bin_datetime</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2023-08-09 06:00:00 EDT" "2025-07-04 20:00:00 EDT"</span></span>
-<span></span>
-<span><span class="va">binned</span><span class="op">$</span><span class="va">time_of_day</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/commontime.html">commontime</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">bin_datetime</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">time_of_day</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2000-01-01 06:00:00 EST" "2000-01-01 20:00:00 EST"</span></span></code></pre></div>
-<p>Now all five flowers share the same x axis, regardless of which day
-they were recorded:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">binned</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time_of_day</span>, y <span class="op">=</span> <span class="va">detectionrate_ins_buzz</span>, color <span class="op">=</span> <span class="va">flower</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_datetime</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu"><a href="../reference/label_hour.html">label_hour</a></span><span class="op">(</span>tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">'Time of day'</span>, y <span class="op">=</span> <span class="st">'Detection\nrate'</span>, color <span class="op">=</span> <span class="st">'Flower'</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="../reference/theme_buzzr.html">theme_buzzr</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="time-interpretation_files/figure-html/commontime-plot-1.png" class="r-plt" alt="" width="672"></p>
-<p>Always pass the <strong>same <code>tz</code></strong> to
-<code><a href="../reference/commontime.html">commontime()</a></code> and <code><a href="../reference/label_hour.html">label_hour()</a></code>. If they differ,
-the axis labels won’t match the data.</p>
-<hr>
-</div>
-<div class="section level2">
-<h2 id="numeric-time-of-day-time_of_day">Numeric time of day: <code>time_of_day()</code><a class="anchor" aria-label="anchor" href="#numeric-time-of-day-time_of_day"></a>
-</h2>
-<p>For statistical modelling — circular regression, GAMs, peak-time
-estimates — it’s more convenient to have time as a number.
-<code><a href="../reference/time_of_day.html">time_of_day()</a></code> returns either a proportion of the 24-hour
-day or a decimal hour:</p>
+<p>When doing stats on time of day, you probably don’t want to use a
+POSIXct object. For one thing, your coefficient values will have units
+of seconds, which is unlikely to be informative. For another, if your
+recordings were conducted on different days, you need to tell the model
+to ignore the date.</p>
+<p><code><a href="../reference/time_of_day.html">buzzr::time_of_day()</a></code> is a very simple convenience
+function that returns either a proportion of the 24-hour day or a
+decimal hour:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'2023-08-09 00:00:00'</span>, <span class="st">'2023-08-09 06:00:00'</span>,</span>
@@ -380,22 +403,57 @@ day or a decimal hour:</p>
 <span><span class="co"># Decimal hours: midnight = 0, 6 AM = 6, 6:30 PM = 18.5</span></span>
 <span><span class="fu"><a href="../reference/time_of_day.html">time_of_day</a></span><span class="op">(</span><span class="va">times</span>, time_format <span class="op">=</span> <span class="st">'hour'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]  0.0  6.0 12.0 18.5</span></span></code></pre></div>
-<p>Unlike <code><a href="../reference/commontime.html">commontime()</a></code>, this strips the date entirely and
-returns a plain number, which is easier to pass to modelling
-functions:</p>
+</div>
+<div class="section level2">
+<h2 id="time-of-day-for-plotting-commontime-label_hour">Time of day for plotting: <code>commontime()</code>,
+<code>label_hour()</code><a class="anchor" aria-label="anchor" href="#time-of-day-for-plotting-commontime-label_hour"></a>
+</h2>
+<p>It’s often annoying to plot date times. We might want to compare
+daily trends, so we use time on the X axis. But if your recordings were
+conducted on different days, they won’t overlap. We could use a solution
+like <code><a href="../reference/time_of_day.html">time_of_day()</a></code>, but then our X axis is funky; who wants
+to see X=0.77 on a diel plot?</p>
+<p><code><a href="../reference/commontime.html">commontime()</a></code>solves this by setting every date to the
+same arbitrary day (2000-01-01) while preserving the hour, minute, and
+second and leaving the class as POSIXct. This allows us to make pretty X
+axis labels using <code><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">ggplot2::scale_x_datetime()</a></code> and another
+buzzr function, <code><a href="../reference/label_hour.html">label_hour()</a></code>/</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">binned</span><span class="op">$</span><span class="va">hour</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/time_of_day.html">time_of_day</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">bin_datetime</span>, time_format <span class="op">=</span> <span class="st">'hour'</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/five_flowers'</span>, package <span class="op">=</span> <span class="st">'buzzr'</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># e.g. find the hour of peak detections for each flower</span></span>
-<span><span class="va">binned</span><span class="op">[</span>, <span class="va">.SD</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="va">detectionrate_ins_buzz</span><span class="op">)</span><span class="op">]</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span>peak_hour <span class="op">=</span> <span class="va">hour</span><span class="op">)</span><span class="op">]</span>,</span>
-<span>       by <span class="op">=</span> <span class="va">flower</span><span class="op">]</span></span>
-<span><span class="co">#&gt;        flower peak_hour</span></span>
-<span><span class="co">#&gt;        &lt;char&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:    chicory         9</span></span>
-<span><span class="co">#&gt; 2:    mustard        11</span></span>
-<span><span class="co">#&gt; 3:    pumpkin         8</span></span>
-<span><span class="co">#&gt; 4:    soybean        13</span></span>
-<span><span class="co">#&gt; 5: watermelon        13</span></span></code></pre></div>
+<span><span class="va">binned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bin_directory.html">bin_directory</a></span><span class="op">(</span></span>
+<span>  dir_results   <span class="op">=</span> <span class="va">dir</span>,</span>
+<span>  thresholds    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>ins_buzz <span class="op">=</span> <span class="op">-</span><span class="fl">1.2</span><span class="op">)</span>,</span>
+<span>  posix_formats <span class="op">=</span> <span class="st">'%y%m%d_%H%M'</span>,</span>
+<span>  tz            <span class="op">=</span> <span class="st">'America/New_York'</span>,</span>
+<span>  dir_nesting   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'flower'</span>, <span class="st">'recorder'</span><span class="op">)</span>,</span>
+<span>  binwidth       <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  calculate_rate <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Grouping time bins using columns: flower, recorder</span></span>
+<span></span>
+<span><span class="co"># Dates vary across the five recordings; commontime collapses them</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">bin_datetime</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "2023-08-09 00:00:00 EDT" "2025-07-04 23:40:00 EDT"</span></span>
+<span></span>
+<span><span class="va">binned</span><span class="op">$</span><span class="va">time_of_day</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/commontime.html">commontime</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">bin_datetime</span>, tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">binned</span><span class="op">$</span><span class="va">time_of_day</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "2000-01-01 00:00:00 EST" "2000-01-01 23:40:00 EST"</span></span></code></pre></div>
+<p>Now all five flowers share the same x axis, regardless of which day
+they were recorded:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">binned</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time_of_day</span>, y <span class="op">=</span> <span class="va">detectionrate_ins_buzz</span>, color <span class="op">=</span> <span class="va">flower</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_datetime</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">buzzr</span><span class="fu">::</span><span class="fu"><a href="../reference/label_hour.html">label_hour</a></span><span class="op">(</span>tz <span class="op">=</span> <span class="st">'America/New_York'</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">'Time of day'</span>, y <span class="op">=</span> <span class="st">'Detection\nrate'</span>, color <span class="op">=</span> <span class="st">'Flower'</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/theme_buzzr.html">theme_buzzr</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="time-interpretation_files/figure-html/commontime-plot-1.png" class="r-plt" alt="" width="672"></p>
+<p>Always pass the same <code>tz</code> to <code><a href="../reference/commontime.html">commontime()</a></code> and
+<code><a href="../reference/label_hour.html">label_hour()</a></code>. If they differ, the axis labels won’t match
+the data.</p>
+<hr>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
