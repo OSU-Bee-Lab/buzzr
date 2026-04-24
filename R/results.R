@@ -1,6 +1,15 @@
 #' @import data.table
 NULL
 
+warn_workers_ide <- function(workers) {
+  if (workers > 1 && nzchar(Sys.getenv("POSITRON"))) {
+    warning(
+      "Fork-based parallelism (mclapply) may not work in Positron. If results are empty, try workers = 1.",
+      call. = FALSE
+    )
+  }
+}
+
 convert_start_raw <- function(results){
   # convert buzzdetect "start" column to buzzr "start_filetime" column
   if((COL_START_RAW %in% names(results))){
@@ -434,9 +443,12 @@ read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, d
     return(data.frame())
   }
 
+  warn_workers_ide(workers)
+
   results_dir <- parallel::mclapply(
     X = paths_results,
     FUN = function(path_results){
+      if (workers > 1) data.table::setDTthreads(1)
       read_file(
           path_results   = path_results,
           posix_formats  = posix_formats,
@@ -498,12 +510,15 @@ bin_directory <- function(dir_results, thresholds, posix_formats=NULL, first_mat
   if(length(paths_results)==0){
     msg <- paste0('No results found in directory ', dir_results)
     warning(msg)
-    return(data.frame()) 
+    return(data.frame())
   }
+
+  warn_workers_ide(workers)
 
   results_bin_dir <- parallel::mclapply(
     X = paths_results,
     FUN = function(path_results){
+      if (workers > 1) data.table::setDTthreads(1)
       read_file(
           path_results    = path_results,
           posix_formats   = posix_formats,
