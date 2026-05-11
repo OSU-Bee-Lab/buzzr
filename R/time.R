@@ -33,6 +33,7 @@
 #' #   scale_x_datetime(labels = label_hour(tz = 'America/New_York'))
 #' @export
 commontime <- function(times, tz=Sys.timezone()) {
+  times <- as.POSIXct(times)
   lubridate::date(times) <- '2000-01-01'
   lubridate::tz(times) <- tz
   return(times)
