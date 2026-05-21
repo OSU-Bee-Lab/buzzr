@@ -234,16 +234,26 @@ floor_start <- function(results, binwidth){
 
   cnames <- names(results)
 
-  if(COL_START_FILETIME  %in% cnames){
-    results[[COL_BIN_FILETIME]] <- floor(results[[COL_START_FILETIME]]/(binwidth_sec))*(binwidth_sec)
-  } else if(COL_BIN_FILETIME %in% cnames){
-    results[[COL_BIN_FILETIME]] <- floor(results[[COL_BIN_FILETIME]]/(binwidth_sec))*(binwidth_sec)
-  }
+  has_datetime <- (COL_START_DATETIME %in% cnames) | (COL_BIN_DATETIME %in% cnames)
 
   if(COL_START_DATETIME  %in% cnames){
     results[[COL_BIN_DATETIME]] <- lubridate::floor_date(results[[COL_START_DATETIME]], unit = paste0(binwidth_sec, 'aseconds'))
   } else if(COL_BIN_DATETIME %in% cnames){
     results[[COL_BIN_DATETIME]] <- lubridate::floor_date(results[[COL_BIN_DATETIME]], unit = paste0(binwidth_sec, 'aseconds'))
+  }
+
+  if(has_datetime){
+    # filetime resets to 0 every file, so a directory-wide bin_filetime has no coherent meaning across files
+    # and its bin edges won't agree with bin_datetime's wall-clock edges unless file starts happen to align
+    if((COL_START_FILETIME %in% cnames) | (COL_BIN_FILETIME %in% cnames)){
+      message('Both filetime and datetime columns are present; dropping filetime columns in favor of datetime.')
+    }
+    results[[COL_START_FILETIME]] <- NULL
+    results[[COL_BIN_FILETIME]] <- NULL
+  } else if(COL_START_FILETIME %in% cnames){
+    results[[COL_BIN_FILETIME]] <- floor(results[[COL_START_FILETIME]]/(binwidth_sec))*(binwidth_sec)
+  } else if(COL_BIN_FILETIME %in% cnames){
+    results[[COL_BIN_FILETIME]] <- floor(results[[COL_BIN_FILETIME]]/(binwidth_sec))*(binwidth_sec)
   }
 
   if(is.null(results[[COL_BIN_FILETIME]]) & is.null(results[[COL_BIN_DATETIME]])){
