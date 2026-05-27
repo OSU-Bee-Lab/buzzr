@@ -335,6 +335,24 @@ test_that("bin_directory returns binned data.table with detection columns", {
   expect_equal(length(unique(result$flower)), 5)
 })
 
+test_that("bin_directory returns detectionrate_ columns when calculate_rate=TRUE", {
+  dir <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir) == 0)
+
+  result <- bin_directory(
+    dir_results    = dir,
+    thresholds     = c(ins_buzz = -1.2),
+    posix_formats  = "%y%m%d_%H%M",
+    tz             = "UTC",
+    binwidth       = 20,
+    calculate_rate = TRUE,
+    workers        = 1
+  )
+
+  expect_true("detectionrate_ins_buzz" %in% names(result))
+  expect_true(all(result$detectionrate_ins_buzz >= 0 & result$detectionrate_ins_buzz <= 1))
+})
+
 test_that("bin_directory returns empty data.frame when directory has no results", {
   dir <- tempdir()
   expect_warning(

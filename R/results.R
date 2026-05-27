@@ -555,7 +555,7 @@ bin_directory <- function(dir_results, thresholds, posix_formats=NULL, first_mat
     # read all files in a dir before binning, but this leads us back
     # to memory issues. Even in our largest datasets, the second binning takes
     # ~2s. We'll say it's worth it.
-    bin(binwidth)
+    bin(binwidth, calculate_rate = calculate_rate)
 
   if(nrow(results_bin_dir)==0){return(data.frame())}
 
