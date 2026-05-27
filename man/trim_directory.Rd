@@ -34,8 +34,7 @@ One of \code{"stop"} (default, throws an error), \code{"skip"} (silently skips e
 or \code{"overwrite"} (overwrites with a warning).}
 
 \item{workers}{Number of parallel workers. Defaults to \code{1} (sequential).
-Parallelism uses \link[parallel:mclapply]{parallel::mcmapply} and may not be supported on all platforms.
-Ignored when \code{path_out} is a single file.}
+Parallelism uses \link[parallel:mclapply]{parallel::mclapply} / \link[parallel:mclapply]{parallel::mcmapply} and may not be supported on all platforms.}
 }
 \value{
 Invisibly returns the output file path(s).

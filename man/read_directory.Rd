@@ -6,7 +6,7 @@
 \usage{
 read_directory(
   dir_results,
-  posix_formats = NA,
+  posix_formats = NULL,
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = NULL,
@@ -19,7 +19,7 @@ read_directory(
 \item{dir_results}{The directory holding all buzzdetect results to be read.}
 
 \item{posix_formats}{Character vector of POSIX format strings (see \link[base:strptime]{base::strptime}) describing the timestamp embedded in each file name (e.g. \code{'\%y\%m\%d_\%H\%M'} for \verb{230809_0600}). Supply multiple strings when recordings from different logger types are mixed in one directory.
-If \code{NA} (default), results are left in file-time. See \link{file_start_time}.}
+If \code{NULL} (default), results are left in file-time. See \link{file_start_time}.}
 
 \item{first_match}{Controls behaviour when multiple formats produce \emph{different} times for the same file. \code{FALSE} (default) returns \code{NA} with a warning; \code{TRUE} accepts the time from the first matching format with a message.}
 
