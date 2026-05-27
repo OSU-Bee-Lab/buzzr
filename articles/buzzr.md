@@ -23,6 +23,7 @@ start time.
 Here’s an example:
 
 ``` r
+
 df <- buzzr::bin_directory(
   dir_results=system.file('extdata/five_flowers', package='buzzr'),
   thresholds = c(ins_buzz=-1.2),
@@ -31,6 +32,11 @@ df <- buzzr::bin_directory(
   tz = 'America/New_York',
   binwidth = 20
 )
+```
+
+    ## Grouping time bins using columns: flower, recorder
+
+``` r
 
 head(df)
 ```
@@ -63,6 +69,7 @@ The path to the Five Flowers dataset on your machine can be retrieved
 with the `system.file` function. Let’s have a look.
 
 ``` r
+
 library(buzzr)
 dir_data <- system.file('extdata/five_flowers', package='buzzr')
 
@@ -88,6 +95,7 @@ pattern `flower/recorder_id/HHMMDD_MMSS_buzzdetect.csv`.
 Let’s look at a single results file using base R:
 
 ``` r
+
 path_results <- file.path(dir_data, paths_results[1])
 
 df_base <- read.csv(path_results)
@@ -122,6 +130,7 @@ The function we want is
 [`buzzr::read_results`](https://osu-bee-lab.github.io/buzzr/reference/read_results.md)
 
 ``` r
+
 df_buzzr <- buzzr::read_results(path_results)
 head(df_buzzr)
 ```
@@ -181,6 +190,7 @@ Date-time data are unfortunately cumbersome, but you should only have to
 figure out these settings once per project.
 
 ``` r
+
 df_datetime <- buzzr::read_results(
   path_results,
   posix_formats = '%y%m%d_%H%M',  # YYMMDD_HHMM
@@ -238,6 +248,7 @@ the file path. We can do this with two arguments:
   to investigate.
 
 ``` r
+
 df_nesting <- buzzr::read_results(
   path_results,
   dir_nesting = c('flower', 'recorder')
@@ -297,6 +308,7 @@ takes one argument in addition to the results data frame:
   threshold.
 
 ``` r
+
 df_called <- buzzr::call_detections(
   df_datetime,
   thresholds = c(
@@ -326,6 +338,7 @@ the total number of detections, in which case we could simply sum the
 column.
 
 ``` r
+
 total_detections <- sum(df_called$detections_ins_buzz)
 print(total_detections)
 ```
@@ -356,31 +369,37 @@ arguments in addition to the data frame:
   well save the rate calculation for the end.
 
 ``` r
+
 df_bin <- buzzr::bin(
   df_called,
   binwidth=15,  # 15-minute bins
   calculate_rate = TRUE  # calculate our detection rates for us
 )
+```
+
+    ## Both filetime and datetime columns are present; dropping filetime columns in favor of datetime.
+
+``` r
 
 head(df_bin)
 ```
 
-    ##    bin_filetime        bin_datetime detections_ins_buzz detections_mech_plane
-    ##           <num>              <POSc>               <int>                 <int>
-    ## 1:            0 2025-07-04 00:00:00                   1                    37
-    ## 2:          900 2025-07-04 00:15:00                   3                    22
-    ## 3:         1800 2025-07-04 00:30:00                   2                   106
-    ## 4:         2700 2025-07-04 00:45:00                   2                    60
-    ## 5:         3600 2025-07-04 01:00:00                   2                    62
-    ## 6:         4500 2025-07-04 01:15:00                   0                    12
-    ##    frames detectionrate_ins_buzz detectionrate_mech_plane
-    ##     <num>                  <num>                    <num>
-    ## 1:    938            0.001066098               0.03944563
-    ## 2:    937            0.003201708               0.02347919
-    ## 3:    938            0.002132196               0.11300640
-    ## 4:    937            0.002134472               0.06403415
-    ## 5:    938            0.002132196               0.06609808
-    ## 6:    937            0.000000000               0.01280683
+    ##           bin_datetime detections_ins_buzz detections_mech_plane frames
+    ##                 <POSc>               <int>                 <int>  <num>
+    ## 1: 2025-07-04 00:00:00                   1                    37    938
+    ## 2: 2025-07-04 00:15:00                   3                    22    937
+    ## 3: 2025-07-04 00:30:00                   2                   106    938
+    ## 4: 2025-07-04 00:45:00                   2                    60    937
+    ## 5: 2025-07-04 01:00:00                   2                    62    938
+    ## 6: 2025-07-04 01:15:00                   0                    12    937
+    ##    detectionrate_ins_buzz detectionrate_mech_plane
+    ##                     <num>                    <num>
+    ## 1:            0.001066098               0.03944563
+    ## 2:            0.003201708               0.02347919
+    ## 3:            0.002132196               0.11300640
+    ## 4:            0.002134472               0.06403415
+    ## 5:            0.002132196               0.06609808
+    ## 6:            0.000000000               0.01280683
 
 You can see that buzzr handled the file-time and the date-time each with
 no problem and now our detections have been turned from booleans to
@@ -389,6 +408,7 @@ integers.
 Let’s see what these data look like!
 
 ``` r
+
 plot(
   df_bin$bin_datetime,
   df_bin$detections_ins_buzz
@@ -412,6 +432,7 @@ This could cause unexpected results if you’ve created custom columns.
 For example:
 
 ``` r
+
 df_called$newcol <- rep(c('A', 'B'), nrow(df_called)/2)
 
 df_bin_customgroups <- buzzr::bin(
@@ -421,6 +442,8 @@ df_bin_customgroups <- buzzr::bin(
 )
 ```
 
+    ## Both filetime and datetime columns are present; dropping filetime columns in favor of datetime.
+
     ## Grouping time bins using columns: newcol
 
 buzzr prints a message showing all grouping columns just in case the
@@ -429,25 +452,26 @@ frames as we would have expected if we weren’t aware of the grouping
 logic.
 
 ``` r
+
 head(df_bin_customgroups)
 ```
 
-    ##    newcol bin_filetime        bin_datetime detections_ins_buzz
-    ##    <char>        <num>              <POSc>               <int>
-    ## 1:      A            0 2025-07-04 00:00:00                   1
-    ## 2:      B            0 2025-07-04 00:00:00                   0
-    ## 3:      A          900 2025-07-04 00:15:00                   1
-    ## 4:      B          900 2025-07-04 00:15:00                   2
-    ## 5:      B         1800 2025-07-04 00:30:00                   2
-    ## 6:      A         1800 2025-07-04 00:30:00                   0
-    ##    detections_mech_plane frames detectionrate_ins_buzz detectionrate_mech_plane
-    ##                    <int>  <num>                  <num>                    <num>
-    ## 1:                    16    469            0.002132196               0.03411514
-    ## 2:                    21    469            0.000000000               0.04477612
-    ## 3:                    11    469            0.002132196               0.02345416
-    ## 4:                    11    468            0.004273504               0.02350427
-    ## 5:                    56    469            0.004264392               0.11940299
-    ## 6:                    50    469            0.000000000               0.10660981
+    ##    newcol        bin_datetime detections_ins_buzz detections_mech_plane frames
+    ##    <char>              <POSc>               <int>                 <int>  <num>
+    ## 1:      A 2025-07-04 00:00:00                   1                    16    469
+    ## 2:      B 2025-07-04 00:00:00                   0                    21    469
+    ## 3:      A 2025-07-04 00:15:00                   1                    11    469
+    ## 4:      B 2025-07-04 00:15:00                   2                    11    468
+    ## 5:      B 2025-07-04 00:30:00                   2                    56    469
+    ## 6:      A 2025-07-04 00:30:00                   0                    50    469
+    ##    detectionrate_ins_buzz detectionrate_mech_plane
+    ##                     <num>                    <num>
+    ## 1:            0.002132196               0.03411514
+    ## 2:            0.000000000               0.04477612
+    ## 3:            0.002132196               0.02345416
+    ## 4:            0.004273504               0.02350427
+    ## 5:            0.004264392               0.11940299
+    ## 6:            0.000000000               0.10660981
 
 ## Reading entire directories
 
@@ -460,6 +484,7 @@ All of the above steps can be completed for every file in a directory
 For this, we just combine all of the arguments we’ve seen before.
 
 ``` r
+
 df_fullbin <- buzzr::bin_directory(
   dir_results=dir_data,
   thresholds = c(ins_buzz=-1.2),
@@ -472,6 +497,11 @@ df_fullbin <- buzzr::bin_directory(
   binwidth = 20,
   calculate_rate = TRUE
 )
+```
+
+    ## Grouping time bins using columns: flower, recorder
+
+``` r
 
 head(df_fullbin)
 ```
@@ -494,6 +524,7 @@ head(df_fullbin)
     ## 6:                   0   1250                 0.0000
 
 ``` r
+
 print(unique(df_fullbin$flower))
 ```
 
@@ -502,6 +533,7 @@ print(unique(df_fullbin$flower))
 Rebinning only requires a single command!
 
 ``` r
+
 head(bin(df_fullbin, 120))
 ```
 
@@ -536,6 +568,7 @@ The function for this is
 and it behaves how you expect given the information above.
 
 ``` r
+
 df_fullread <- buzzr::read_directory(
   dir_results=dir_data,
   posix_formats = '%y%m%d_%H%M',

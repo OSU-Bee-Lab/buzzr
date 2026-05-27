@@ -55,9 +55,9 @@ trim_directory(
 - workers:
 
   Number of parallel workers. Defaults to `1` (sequential). Parallelism
-  uses [parallel::mcmapply](https://rdrr.io/r/parallel/mclapply.html)
-  and may not be supported on all platforms. Ignored when `path_out` is
-  a single file.
+  uses [parallel::mclapply](https://rdrr.io/r/parallel/mclapply.html) /
+  [parallel::mcmapply](https://rdrr.io/r/parallel/mclapply.html) and may
+  not be supported on all platforms.
 
 ## Value
 

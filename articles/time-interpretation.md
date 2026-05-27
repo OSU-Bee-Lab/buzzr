@@ -35,6 +35,7 @@ POSIXct data are numeric under the hood, even though we write them as
 text. “August 8, 2023 12:34 PM” has the value 1,691,598,840.
 
 ``` r
+
 "2023-08-09 12:34:00 EDT" |>
   as.POSIXct() |>
   as.numeric()
@@ -48,6 +49,7 @@ midnight, R formats it without any hour, minute, or second. That is,
 just a date.
 
 ``` r
+
 "2023-08-09 12:34:00 EDT" |>
   as.POSIXct() |>
   format()
@@ -64,6 +66,7 @@ date-times, if it sees *any* value that’s just a date, it will turn the
 *entire* column into dates.
 
 ``` r
+
 c("2023-08-09 15:24:57 EDT", "2023-08-09", "2023-08-09 12:34:00 EDT") |>
   as.POSIXct()
 #> [1] "2023-08-09 UTC" "2023-08-09 UTC" "2023-08-09 UTC"
@@ -110,6 +113,7 @@ pattern, since that’s what our (the Ohio State University Bee Lab)
 recorders (Sony ICD-PX370) use. Let’s parse a single file:
 
 ``` r
+
 path <- system.file(
   'extdata/five_flowers_snip/soybean/53/230809_0700_buzzdetect.csv',
   package = 'buzzr'
@@ -148,6 +152,7 @@ directly if you just want the recording’s start time without reading the
 full file:
 
 ``` r
+
 file_start_time(path, posix_formats = '%y%m%d_%H%M', tz = 'America/New_York')
 #> [1] "2023-08-09 07:00:00 EDT"
 ```
@@ -156,6 +161,7 @@ Additional characters in the filename probably won’t mess up the
 extraction as long as they don’t also match the timestamp pattern.
 
 ``` r
+
 buzzr::file_start_time(
   'tmp_230809_1359_corrected_bad_time_whoops_buzzdetect.csv',
   posix_formats = '%y%m%d_%H%M',
@@ -191,6 +197,7 @@ By default, `start_filetime` is dropped once `start_datetime` is added.
 Set `drop_filetime = FALSE` to keep both:
 
 ``` r
+
 head(
   read_results(
     path,
@@ -225,6 +232,7 @@ If your experiment used more than one type of recorder, the file names
 may follow different timestamp conventions.
 
 ``` r
+
 # Imagine two recorder types in the same experiment:
 #   AudioMoth:  YYYYMMDD_HHMMSS  e.g. 20230809_060000_buzzdetect.csv
 #   Sony:  YYMMDD_HHMM      e.g. 230809_0600_buzzdetect.csv
@@ -240,6 +248,7 @@ posix_formats argument. When each file matches exactly one format,
 everything resolves cleanly:
 
 ``` r
+
 formats_mixed <- c('%Y%m%d_%H%M%S', '%y%m%d_%H%M')
 
 file_start_time(paths_mixed, posix_formats = formats_mixed, tz = 'America/New_York')
@@ -258,6 +267,7 @@ By default (`first_match = FALSE`), buzzr returns `NA` and warns you
 when formats conflict:
 
 ``` r
+
 # Construct a path that matches both formats ambiguously
 ambiguous_path <- 'site/recorder/20230809_060030_buzzdetect.csv'
 
@@ -278,6 +288,7 @@ they appear, accepting the first matching format and moving on even if
 later formats match, too:
 
 ``` r
+
 file_start_time(
   ambiguous_path,
   posix_formats = c('%Y%m%d_%H%M%S', '%y%m%d_%H%M'),
@@ -304,6 +315,7 @@ Even with `first_match=FALSE`, if multiple formats resolve to an
 identical timestamp, buzzr silently deduplicates:
 
 ``` r
+
 # These two formats both parse '230809_0600' as 2023-08-09 06:00:00
 file_start_time(
   'site/recorder/230809_060000_buzzdetect.csv',
@@ -324,6 +336,7 @@ buzzr returns `NA` with a warning, so downstream code doesn’t fail
 silently:
 
 ``` r
+
 file_start_time(
   'site/recorder/no_timestamp_here_buzzdetect.csv',
   posix_formats = '%y%m%d_%H%M',
@@ -349,6 +362,7 @@ is a very simple convenience function that returns either a proportion
 of the 24-hour day or a decimal hour:
 
 ``` r
+
 times <- as.POSIXct(
   c('2023-08-09 00:00:00', '2023-08-09 06:00:00',
     '2023-08-09 12:00:00', '2023-08-09 18:30:00'),
@@ -382,6 +396,7 @@ and another buzzr function,
 [`label_hour()`](https://osu-bee-lab.github.io/buzzr/reference/label_hour.md)/
 
 ``` r
+
 dir <- system.file('extdata/five_flowers', package = 'buzzr')
 
 binned <- bin_directory(
@@ -393,6 +408,7 @@ binned <- bin_directory(
   binwidth       = 20,
   calculate_rate = TRUE
 )
+#> Grouping time bins using columns: flower, recorder
 
 # Dates vary across the five recordings; commontime collapses them
 range(binned$bin_datetime)
@@ -407,6 +423,7 @@ Now all five flowers share the same x axis, regardless of which day they
 were recorded:
 
 ``` r
+
 library(ggplot2)
 
 ggplot(binned, aes(x = time_of_day, y = detectionrate_ins_buzz, color = flower)) +

@@ -13,7 +13,7 @@ their documentation for details.
 bin_directory(
   dir_results,
   thresholds,
-  posix_formats = NA,
+  posix_formats = NULL,
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = NULL,
@@ -47,7 +47,7 @@ bin_directory(
   [base::strptime](https://rdrr.io/r/base/strptime.html)) describing the
   timestamp embedded in each file name (e.g. `'%y%m%d_%H%M'` for
   `230809_0600`). Supply multiple strings when recordings from different
-  logger types are mixed in one directory. If `NA` (default), results
+  logger types are mixed in one directory. If `NULL` (default), results
   are left in file-time. See
   [file_start_time](https://osu-bee-lab.github.io/buzzr/reference/file_start_time.md).
 
@@ -142,6 +142,7 @@ bin_directory(
   binwidth       = 20,
   calculate_rate = TRUE
 )
+#> Grouping time bins using columns: flower, recorder
 #>          flower recorder        bin_datetime detections_ins_buzz frames
 #>          <char>   <char>              <POSc>               <int>  <num>
 #>   1:    chicory    1_104 2025-07-04 00:00:00                   1   1250

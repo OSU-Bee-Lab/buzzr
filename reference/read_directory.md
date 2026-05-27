@@ -12,7 +12,7 @@ forwarded to
 ``` r
 read_directory(
   dir_results,
-  posix_formats = NA,
+  posix_formats = NULL,
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = NULL,
@@ -34,7 +34,7 @@ read_directory(
   [base::strptime](https://rdrr.io/r/base/strptime.html)) describing the
   timestamp embedded in each file name (e.g. `'%y%m%d_%H%M'` for
   `230809_0600`). Supply multiple strings when recordings from different
-  logger types are mixed in one directory. If `NA` (default), results
+  logger types are mixed in one directory. If `NULL` (default), results
   are left in file-time. See
   [file_start_time](https://osu-bee-lab.github.io/buzzr/reference/file_start_time.md).
 

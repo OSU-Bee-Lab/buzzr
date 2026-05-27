@@ -14,6 +14,7 @@ full introduction.
 buzzr is not yet on CRAN. Install via `devtools`:
 
 ``` r
+
 install.packages('devtools')
 devtools::install_github('OSU-Bee-Lab/buzzr')
 ```
