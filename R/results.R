@@ -85,7 +85,8 @@ read_results <- function(path_results, posix_formats=NULL, first_match=FALSE, dr
   results <- convert_start_raw(results)
 
   has_real <- (COL_START_DATETIME %in% names(results)) | (COL_BIN_DATETIME %in% names(results))
-  if((!is.null(posix_formats)) & (!has_real)){
+  has_filetime <- COL_START_FILETIME %in% names(results)
+  if((!is.null(posix_formats)) & (!has_real) & has_filetime){
     file_start <- file_start_time(path_results, posix_formats=posix_formats, first_match=first_match, tz=tz)
     realcol <- list()
     realcol[[COL_START_DATETIME]] <-  results[[COL_START_FILETIME]] + file_start
@@ -541,21 +542,24 @@ bin_directory <- function(dir_results, thresholds, posix_formats=NULL, first_mat
           thresholds      = thresholds,
           binwidth        = binwidth,
           calculate_rate  = calculate_rate
-      ) 
+      )
     },
     mc.cores = workers
   ) |>
-    data.table::rbindlist(fill = T) |>
-    # this is inelegant, but here's why we're binning twice:
-    # if one recorder produces contiguous files, we want to bin across them.
-    # However, the above operation bins the two files seperately.
-    # We could have two seperate bins for (12:00, 12:10) if the files
-    # break at 12:05. Re-binning is an easy fix, and is very quick
-    # compared to the initial binning. Another solution would be to
-    # read all files in a dir before binning, but this leads us back
-    # to memory issues. Even in our largest datasets, the second binning takes
-    # ~2s. We'll say it's worth it.
-    bin(binwidth, calculate_rate = calculate_rate)
+    data.table::rbindlist(fill = T)
+
+  if(nrow(results_bin_dir)==0){return(data.frame())}
+
+  # this is inelegant, but here's why we're binning twice:
+  # if one recorder produces contiguous files, we want to bin across them.
+  # However, the above operation bins the two files seperately.
+  # We could have two seperate bins for (12:00, 12:10) if the files
+  # break at 12:05. Re-binning is an easy fix, and is very quick
+  # compared to the initial binning. Another solution would be to
+  # read all files in a dir before binning, but this leads us back
+  # to memory issues. Even in our largest datasets, the second binning takes
+  # ~2s. We'll say it's worth it.
+  results_bin_dir <- bin(results_bin_dir, binwidth, calculate_rate = calculate_rate)
 
   if(nrow(results_bin_dir)==0){return(data.frame())}
 
