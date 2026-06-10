@@ -7,6 +7,7 @@ PREFIX_DETECTION <- 'detections_'
 PREFIX_DETECTIONRATE <- 'detectionrate_'
 
 TAG_RESULTS <- '_buzzdetect'
+TAG_PARTIAL <- '_buzzpart'
 
 COL_START_RAW <- 'start'
 COL_START_FILETIME <- 'start_filetime'

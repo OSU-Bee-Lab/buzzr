@@ -1,5 +1,5 @@
 # Non-exported utils for file operations
-list_results <- function(dir_in) {
+list_results <- function(dir_in, include_partial = FALSE) {
   # Get all file paths
   paths_all <- list.files(
     dir_in,
@@ -11,6 +11,11 @@ list_results <- function(dir_in) {
   paths_dropext <- tools::file_path_sans_ext(paths_all)
 
   paths_matching <- paths_all[endsWith(paths_dropext, TAG_RESULTS)]
+
+  if (include_partial) {
+    paths_partial <- paths_all[endsWith(paths_dropext, TAG_PARTIAL)]
+    paths_matching <- c(paths_matching, paths_partial)
+  }
 
   return(paths_matching)
 }
@@ -69,6 +74,9 @@ get_ident <- function(path_in, dir_in=''){
 
     # no results tag
     stringr::str_remove(paste0(TAG_RESULTS, '$')) |>
+    
+    # no partial tag
+    stringr::str_remove(paste0(TAG_PARTIAL, '$')) |>
 
     # remove the data dir
     stringr::str_remove(paste0('^', stringr::fixed(dir_in))) |>

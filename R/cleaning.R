@@ -65,7 +65,7 @@ trim_results <- function(results, activation_digits, neurons_keep=NULL){
 }
 
 
-trim_to_file <- function(dir_results, path_out, output_format, activation_digits, neurons_keep, if_exists, workers){
+trim_to_file <- function(dir_results, path_out, output_format, activation_digits, neurons_keep, if_exists, workers, include_partial){
   if(file.exists(path_out)){
     if(if_exists == 'skip'){
       message('Skipping: output file already exists.')
@@ -77,11 +77,11 @@ trim_to_file <- function(dir_results, path_out, output_format, activation_digits
     }
   }
 
-  paths_results <- list_results(dir_results)
+  paths_results <- list_results(dir_results, include_partial)
   if(length(paths_results)==0){
     msg <- paste0('No results found in directory ', dir_results)
     warning(msg)
-    return(data.frame()) 
+    return(data.frame())
   }
 
   combined <- parallel::mclapply(
@@ -104,8 +104,8 @@ trim_to_file <- function(dir_results, path_out, output_format, activation_digits
 }
 
 
-trim_to_dir <- function(dir_results, path_out, output_format, activation_digits, neurons_keep, if_exists, workers){
-  paths_results <- list_results(dir_results)
+trim_to_dir <- function(dir_results, path_out, output_format, activation_digits, neurons_keep, if_exists, workers, include_partial){
+  paths_results <- list_results(dir_results, include_partial)
   if(length(paths_results)==0){
     msg <- paste0('No results found in directory ', dir_results)
     warning(msg)
@@ -182,6 +182,7 @@ trim_to_dir <- function(dir_results, path_out, output_format, activation_digits,
 #'   or `"overwrite"` (overwrites with a warning).
 #' @param workers Number of parallel workers. Defaults to `1` (sequential).
 #'   Parallelism uses [parallel::mclapply] / [parallel::mcmapply] and may not be supported on all platforms.
+#' @param include_partial `r DOC_PARAM_INCLUDE_PARTIAL`
 #' @return Invisibly returns the output file path(s).
 #' @seealso [buzzr::trim_results] for the single-file version.
 #' @examples
@@ -207,16 +208,16 @@ trim_to_dir <- function(dir_results, path_out, output_format, activation_digits,
 #' )
 #' }
 #' @export
-trim_directory <- function(dir_results, path_out, activation_digits, neurons_keep=NULL, output_format='rds', if_exists='stop', workers=1){
+trim_directory <- function(dir_results, path_out, activation_digits, neurons_keep=NULL, output_format='rds', if_exists='stop', workers=1, include_partial=FALSE){
   if_exists <- tolower(if_exists)
   if_exists <- match.arg(if_exists, c('stop', 'skip', 'overwrite'))
 
   out_ext <- tolower(tools::file_ext(path_out))
   if(out_ext %in% c('rds', 'csv')){
-    trim_to_file(dir_results, path_out, out_ext, activation_digits, neurons_keep, if_exists, workers)
+    trim_to_file(dir_results, path_out, out_ext, activation_digits, neurons_keep, if_exists, workers, include_partial)
   } else {
     output_format <- match.arg(tolower(output_format), c('rds', 'csv'))
-    trim_to_dir(dir_results, path_out, output_format, activation_digits, neurons_keep, if_exists, workers)
+    trim_to_dir(dir_results, path_out, output_format, activation_digits, neurons_keep, if_exists, workers, include_partial)
   }
 }
 

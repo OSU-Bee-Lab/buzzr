@@ -141,6 +141,46 @@ test_that("read_directory with return_ident=TRUE adds ident column", {
   expect_true("ident" %in% names(result))
 })
 
+test_that("read_directory excludes _buzzpart files by default", {
+  dir <- file.path(tempdir(), paste0("buzzr_rd_part_", Sys.getpid()))
+  dir.create(dir, showWarnings = FALSE)
+  on.exit(unlink(dir, recursive = TRUE))
+
+  path_csv <- system.file(
+    "extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv",
+    package = "buzzr"
+  )
+  skip_if(nchar(path_csv) == 0)
+  file.copy(path_csv, file.path(dir, "a_buzzdetect.csv"))
+  file.copy(path_csv, file.path(dir, "b_buzzpart.csv"))
+
+  result_default  <- read_directory(dir)
+  result_partial  <- read_directory(dir, include_partial = TRUE)
+
+  expect_equal(nrow(result_default) * 2, nrow(result_partial))
+})
+
+test_that("bin_directory includes _buzzpart files when include_partial=TRUE", {
+  dir <- file.path(tempdir(), paste0("buzzr_bd_part_", Sys.getpid()))
+  dir.create(dir, showWarnings = FALSE)
+  on.exit(unlink(dir, recursive = TRUE))
+
+  path_csv <- system.file(
+    "extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv",
+    package = "buzzr"
+  )
+  skip_if(nchar(path_csv) == 0)
+  file.copy(path_csv, file.path(dir, "a_buzzdetect.csv"))
+  file.copy(path_csv, file.path(dir, "b_buzzpart.csv"))
+
+  result_default <- bin_directory(dir, thresholds = c(ins_buzz = -1.2), workers = 1)
+  result_partial <- bin_directory(dir, thresholds = c(ins_buzz = -1.2), include_partial = TRUE, workers = 1)
+
+  # bin_directory re-bins across all files, so identical timestamps collapse to same
+  # bins with summed counts — frames doubles rather than row count doubling
+  expect_equal(sum(result_default$frames) * 2, sum(result_partial$frames))
+})
+
 
 # ── call_detections ───────────────────────────────────────────────────────────
 

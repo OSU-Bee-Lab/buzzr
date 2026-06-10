@@ -429,6 +429,7 @@ read_file <- function(
 #' @param return_ident `r DOC_PARAM_RETURN_IDENT` Set `TRUE` to add an `ident`
 #'   column as the first column of the output.
 #' @param workers `r DOC_PARAM_WORKERS`
+#' @param include_partial `r DOC_PARAM_INCLUDE_PARTIAL`
 #' @return A data.table combining all files, with the same columns as
 #'   [buzzr::read_results] plus an optional `ident` column.
 #' @seealso [buzzr::bin_directory] to also apply thresholds and bin in one call.
@@ -446,8 +447,8 @@ read_file <- function(
 #' # Also include the ident column for tracing results back to their source file
 #' read_directory(dir, return_ident = TRUE)
 #' @export
-read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, workers=2){
-  paths_results <- list_results(dir_results)
+read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, workers=2, include_partial=FALSE){
+  paths_results <- list_results(dir_results, include_partial)
   if(length(paths_results)==0){
     msg <- paste0('No results found in directory ', dir_results)
     warning(msg)
@@ -516,8 +517,8 @@ read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, d
 #'   calculate_rate = TRUE
 #' )
 #' @export
-bin_directory <- function(dir_results, thresholds, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE, workers=2){
-  paths_results <- list_results(dir_results)
+bin_directory <- function(dir_results, thresholds, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE, workers=2, include_partial=FALSE){
+  paths_results <- list_results(dir_results, include_partial)
   if(length(paths_results)==0){
     msg <- paste0('No results found in directory ', dir_results)
     warning(msg)

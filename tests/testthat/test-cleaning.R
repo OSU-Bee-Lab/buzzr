@@ -236,3 +236,28 @@ test_that("trim_directory single-file if_exists='skip' returns path with message
   )
   expect_equal(result, out_file)
 })
+
+test_that("trim_directory include_partial picks up _buzzpart files", {
+  dir_in <- file.path(tempdir(), paste0("buzzr_trim_part_in_", Sys.getpid()))
+  dir.create(dir_in, showWarnings = FALSE)
+  on.exit(unlink(dir_in, recursive = TRUE))
+
+  path_csv <- system.file(
+    "extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv",
+    package = "buzzr"
+  )
+  skip_if(nchar(path_csv) == 0)
+  file.copy(path_csv, file.path(dir_in, "a_buzzdetect.csv"))
+  file.copy(path_csv, file.path(dir_in, "b_buzzpart.csv"))
+
+  out_default <- file.path(tempdir(), paste0("buzzr_trim_part_def_", Sys.getpid(), ".rds"))
+  out_partial <- file.path(tempdir(), paste0("buzzr_trim_part_inc_", Sys.getpid(), ".rds"))
+  on.exit(unlink(c(out_default, out_partial)), add = TRUE)
+
+  trim_directory(dir_in, out_default, activation_digits = 2)
+  trim_directory(dir_in, out_partial, activation_digits = 2, include_partial = TRUE)
+
+  n_default <- nrow(readRDS(out_default))
+  n_partial <- nrow(readRDS(out_partial))
+  expect_equal(n_default * 2, n_partial)
+})
