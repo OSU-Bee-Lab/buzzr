@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   buzzr: buzzr.html
   time-interpretation: time-interpretation.html
-last_built: 2026-06-01T21:41Z
+last_built: 2026-06-10T19:21Z
 urls:
   reference: https://osu-bee-lab.github.io/buzzr/reference
   article: https://osu-bee-lab.github.io/buzzr/articles
