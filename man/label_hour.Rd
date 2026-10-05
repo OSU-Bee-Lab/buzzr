@@ -4,7 +4,7 @@
 \alias{label_hour}
 \title{ggplot2 x-axis label formatter for time-of-day plots.}
 \usage{
-label_hour(tz = Sys.timezone())
+label_hour(tz = NULL)
 }
 \arguments{
 \item{tz}{Time zone string (e.g. \code{'America/New_York'}). Defaults to your

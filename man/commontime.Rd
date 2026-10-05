@@ -4,7 +4,7 @@
 \alias{commontime}
 \title{Coerce all dates to the same day, preserving time of day.}
 \usage{
-commontime(times, tz = Sys.timezone())
+commontime(times, tz = NULL)
 }
 \arguments{
 \item{times}{A POSIXct vector.}

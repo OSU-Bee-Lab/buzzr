@@ -524,3 +524,64 @@ test_that("read_directory and bin_directory default to the system time zone", {
   bin_expl <- bin_directory(dir, thresholds = c(ins_buzz = -1.2), posix_formats = "%y%m%d_%H%M", tz = "America/New_York", binwidth = 20, workers = 1)
   expect_equal(bin_auto, bin_expl)
 })
+
+
+# ── summarize_detections ──────────────────────────────────────────────────────
+
+make_summary_input <- function() {
+  data.frame(
+    site                = c("a", "a", "b"),
+    detections_ins_buzz = c(1, 3, 2),
+    frames              = c(10, 10, 5)
+  )
+}
+
+test_that("summarize_detections sums by groupcols and computes rates", {
+  out <- summarize_detections(make_summary_input(), groupcols = "site")
+  out <- out[order(out$site), ]
+
+  expect_equal(out$site, c("a", "b"))
+  expect_equal(out$detections_ins_buzz, c(4, 2))
+  expect_equal(out$frames, c(20, 5))
+  expect_equal(out$detectionrate_ins_buzz, c(0.2, 0.4))
+})
+
+test_that("summarize_detections without groups warns and returns one row", {
+  expect_warning(out <- summarize_detections(make_summary_input()), "summarizing entire")
+  expect_equal(nrow(out), 1)
+  expect_equal(out$detections_ins_buzz, 6)
+  expect_equal(out$frames, 25)
+})
+
+test_that("summarize_detections calculate_rate = FALSE omits rate columns", {
+  out <- summarize_detections(make_summary_input(), groupcols = "site", calculate_rate = FALSE)
+  expect_false(any(startsWith(names(out), "detectionrate_")))
+})
+
+test_that("summarize_detections drops pre-existing rate columns rather than averaging", {
+  d <- make_summary_input()
+  d$detectionrate_ins_buzz <- c(0.1, 0.3, 0.4)
+  out <- summarize_detections(d, groupcols = "site", calculate_rate = FALSE)
+  expect_false("detectionrate_ins_buzz" %in% names(out))
+})
+
+test_that("summarize_detections errors on unknown groupcols", {
+  expect_error(summarize_detections(make_summary_input(), groupcols = "nope"), "not found")
+})
+
+test_that("summarize_detections picks up dplyr groups without requiring dplyr", {
+  skip_if_not_installed("dplyr")
+  grouped <- dplyr::group_by(tibble::as_tibble(make_summary_input()), site)
+
+  out <- summarize_detections(grouped)
+  expect_s3_class(out, "tbl_df")
+  expect_false(inherits(out, "grouped_df"))
+  expect_equal(out$detections_ins_buzz[order(out$site)], c(4, 2))
+})
+
+test_that("group_vars_base reads grouped_df groups and returns empty otherwise", {
+  skip_if_not_installed("dplyr")
+  d <- make_summary_input()
+  expect_equal(group_vars_base(d), character(0))
+  expect_equal(group_vars_base(dplyr::group_by(d, site)), "site")
+})

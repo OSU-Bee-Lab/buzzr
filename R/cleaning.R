@@ -211,8 +211,7 @@ trim_to_dir <- function(dir_results, path_out, output_format, activation_digits,
 #' @param if_exists What to do if an output file already exists.
 #'   One of `"stop"` (default, throws an error), `"skip"` (silently skips existing files),
 #'   or `"overwrite"` (overwrites with a warning).
-#' @param workers Number of parallel workers. Defaults to `1` (sequential).
-#'   Parallelism uses a PSOCK cluster ([parallel::parLapplyLB]), so buzzr must be installed.
+#' @param workers `r DOC_PARAM_WORKERS`
 #' @param include_partial `r DOC_PARAM_INCLUDE_PARTIAL`
 #' @return Invisibly returns the output file path(s).
 #' @seealso [buzzr::trim_results] for the single-file version.
@@ -239,7 +238,7 @@ trim_to_dir <- function(dir_results, path_out, output_format, activation_digits,
 #' )
 #' }
 #' @export
-trim_directory <- function(dir_results, path_out, activation_digits, neurons_keep=NULL, output_format='rds', if_exists='stop', workers=1, include_partial=FALSE){
+trim_directory <- function(dir_results, path_out, activation_digits, neurons_keep=NULL, output_format='rds', if_exists='stop', workers=getOption("cl.cores", 2), include_partial=FALSE){
   if_exists <- tolower(if_exists)
   if_exists <- match.arg(if_exists, c('stop', 'skip', 'overwrite'))
 

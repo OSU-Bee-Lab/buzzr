@@ -9,7 +9,7 @@ read_results(
   posix_formats = NULL,
   first_match = FALSE,
   drop_filetime = TRUE,
-  tz = NA,
+  tz = NULL,
   dir_nesting = NULL
 )
 }
@@ -23,7 +23,7 @@ If \code{NULL} (default), results are left in file-time. See \link{file_start_ti
 
 \item{drop_filetime}{If \code{TRUE} (default), the \code{start_filetime} / \code{bin_filetime} column is removed once \code{start_datetime} / \code{bin_datetime} has been added. Set \code{FALSE} to keep both. Ignored if no POSIX formats are given.}
 
-\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values.. Ignored if the results already contain a
+\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values. Defaults to your machine's timezone.. Ignored if the results already contain a
 \code{start_datetime} or \code{bin_datetime} column.}
 
 \item{dir_nesting}{A character vector used to name the directory levels above the results file. Each element becomes a column in the output, storing the components of the path. For example, dir_nesting = c('site', 'recorder') for the path data/2026/siteA/recorder_4/250704_11343_buzzdetect.csv would add a site column (holding the value 'siteA') and a recorder column (holding the value 'recorder_4').}

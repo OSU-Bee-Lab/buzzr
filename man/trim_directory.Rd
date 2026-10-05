@@ -11,7 +11,7 @@ trim_directory(
   neurons_keep = NULL,
   output_format = "rds",
   if_exists = "stop",
-  workers = 1,
+  workers = getOption("cl.cores", 2),
   include_partial = FALSE
 )
 }
@@ -34,8 +34,7 @@ One of \code{"rds"} (default) or \code{"csv"}. Ignored when \code{path_out} is a
 One of \code{"stop"} (default, throws an error), \code{"skip"} (silently skips existing files),
 or \code{"overwrite"} (overwrites with a warning).}
 
-\item{workers}{Number of parallel workers. Defaults to \code{1} (sequential).
-Parallelism uses a PSOCK cluster (\link[parallel:clusterApply]{parallel::parLapplyLB}), so buzzr must be installed.}
+\item{workers}{Number of parallel workers to use when processing results. Defaults to \code{getOption('cl.cores', 2)}. Set to 1 to run sequentially. Parallelism uses a PSOCK cluster (\link[parallel:clusterApply]{parallel::parLapplyLB}), so buzzr must be installed.}
 
 \item{include_partial}{If \code{TRUE}, also includes \verb{_buzzpart} files. These are results files for files that buzzdetect hasn't completely analyzed. Defaults to \code{FALSE}.}
 }

@@ -609,6 +609,13 @@ bin_directory <- function(dir_results, thresholds=NULL, posix_formats=NULL, firs
   return(results_bin_dir)
 }
 
+# groups of a dplyr grouped_df, read from its attribute so we don't need dplyr
+group_vars_base <- function(results){
+  groups <- attr(results, 'groups')
+  if(is.null(groups)){return(character(0))}
+  setdiff(names(groups), '.rows')
+}
+
 calculate_detectionrate <- function(results){
   for(c in names(results)[startsWith(names(results), PREFIX_DETECTION)]){
     c_rate <- gsub(PREFIX_DETECTION, PREFIX_DETECTIONRATE, c)
@@ -652,34 +659,37 @@ calculate_detectionrate <- function(results){
 #' summarize_detections(results)
 #' @export
 summarize_detections <- function(results, groupcols=NULL, calculate_rate = T){
-   if(!is.null(groupcols)){
-     results <- dplyr::group_by_at(results, groupcols)
-   }
+  is_tibble <- inherits(results, 'tbl_df')
 
-  groupcols <- dplyr::group_vars(results)
+  if(is.null(groupcols)){
+    groupcols <- group_vars_base(results)
+  }
 
   if(length(groupcols) == 0){
     warning('No groups given or detected for results; summarizing entire data frame')
   }
 
+  missing_cols <- setdiff(groupcols, names(results))
+  if(length(missing_cols) > 0){
+    stop('groupcols not found in results: ', paste(missing_cols, collapse = ', '))
+  }
 
-  df <- results %>%
-    dplyr::summarize(
-      dplyr::across(
-        .cols = dplyr::starts_with(PREFIX_DETECTION),
-        sum
-      ),
+  results <- data.table::as.data.table(results)  # also drops the grouped_df class
+  sumcols <- cols_sum(names(results))  # detections and frames
 
-      dplyr::across(
-        .cols = COL_FRAMES,
-        sum
-      ),
-
-      .groups = 'drop'
-    )
+  df <- results[
+    ,
+    lapply(.SD, sum),
+    by = groupcols,
+    .SDcols = sumcols
+  ]
 
   if(calculate_rate){
     df <- calculate_detectionrate(df)
+  }
+
+  if(is_tibble){
+    df <- tibble::as_tibble(df)
   }
 
   return(df)

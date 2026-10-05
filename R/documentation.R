@@ -17,7 +17,7 @@ NULL
 
   # misc
   DOC_PARAM_TIME_START <- "A POSIXct value (or a value that can be converted to such) identifying the date and time that the output begins. Required if the input data has no start_real column, otherwise ignored."
-  DOC_PARAM_WORKERS <- "Number of parallel workers to use when processing results. Defaults to MC_CORES environmental variable if set, 2 if not."
+  DOC_PARAM_WORKERS <- "Number of parallel workers to use when processing results. Defaults to `getOption('cl.cores', 2)`. Set to 1 to run sequentially."
   DOC_PARAM_INCLUDE_PARTIAL <- "If `TRUE`, also includes `_buzzpart` files. These are results files for files that buzzdetect hasn't completely analyzed. Defaults to `FALSE`."
 
   # times

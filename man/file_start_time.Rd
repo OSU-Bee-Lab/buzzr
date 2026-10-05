@@ -4,7 +4,7 @@
 \alias{file_start_time}
 \title{Extract date time information from a file's name.}
 \usage{
-file_start_time(paths, posix_formats, tz, first_match = FALSE)
+file_start_time(paths, posix_formats, tz = NULL, first_match = FALSE)
 }
 \arguments{
 \item{paths}{Character vector of file paths.}
@@ -12,7 +12,7 @@ file_start_time(paths, posix_formats, tz, first_match = FALSE)
 \item{posix_formats}{Character vector of POSIX format strings (see \link[base:strptime]{base::strptime}) describing the timestamp embedded in each file name (e.g. \code{'\%y\%m\%d_\%H\%M'} for \verb{230809_0600}). Supply multiple strings when recordings from different logger types are mixed in one directory.
 See \link[base:strptime]{base::strptime} for format codes.}
 
-\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values.}
+\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values. Defaults to your machine's timezone.}
 
 \item{first_match}{Controls behaviour when multiple formats produce \emph{different} times for the same file. \code{FALSE} (default) returns \code{NA} with a warning; \code{TRUE} accepts the time from the first matching format with a message.}
 }

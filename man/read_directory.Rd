@@ -11,7 +11,7 @@ read_directory(
   drop_filetime = TRUE,
   dir_nesting = NULL,
   return_ident = FALSE,
-  tz = NA,
+  tz = NULL,
   workers = getOption("cl.cores", 2),
   include_partial = FALSE
 )
@@ -31,10 +31,10 @@ If \code{NULL} (default), results are left in file-time. See \link{file_start_ti
 \item{return_ident}{The 'ident' is the relative path from your data directory to the results file, without the _buzzdetect tag or file extension. Useful for finding corresponding audio files or annotations. Set \code{TRUE} to add an \code{ident}
 column as the first column of the output.}
 
-\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values.. Ignored if the results already contain a
+\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values. Defaults to your machine's timezone.. Ignored if the results already contain a
 \code{start_datetime} or \code{bin_datetime} column.}
 
-\item{workers}{Number of parallel workers to use when processing results. Defaults to MC_CORES environmental variable if set, 2 if not.}
+\item{workers}{Number of parallel workers to use when processing results. Defaults to \code{getOption('cl.cores', 2)}. Set to 1 to run sequentially. Parallelism uses a PSOCK cluster (\link[parallel:clusterApply]{parallel::parLapplyLB}), so buzzr must be installed.}
 
 \item{include_partial}{If \code{TRUE}, also includes \verb{_buzzpart} files. These are results files for files that buzzdetect hasn't completely analyzed. Defaults to \code{FALSE}.}
 }
