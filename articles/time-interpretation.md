@@ -174,17 +174,12 @@ buzzr::file_start_time(
 
 ## Time zones
 
-You must always pass a `tz` argument. Time zones are a *nightmare* and
-they will bite you. To minimize our culpability, we try to make buzzr
-utterly explicit about time zones. In general, it will never guess and
-will always ask. The exceptions are
-[`commontime()`](https://osu-bee-lab.github.io/buzzr/reference/commontime.md)
-, which defaults to your local time zone since it destroys relevant time
-zone information, and
-[`label_hour()`](https://osu-bee-lab.github.io/buzzr/reference/label_hour.md)
-which interacts with
-[`ggplot2::scale_x_datetime()`](https://ggplot2.tidyverse.org/reference/scale_date.html),
-which guesses your time zone anyways.
+If you don’t pass a time zone argument to functions that need one, buzzr
+will default to your system’s time zone. This is convenient, but might
+produce unexpected results, for example, if your data were collected in
+a different time zone or if you’re analyzing the data in your hotel room
+the night before your presentation and the conference is in a different
+time zone. Time zones are a *nightmare* and they will bite you.
 
 Use [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) to browse
 valid time zone strings.

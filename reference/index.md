@@ -62,6 +62,8 @@ Utilities for making prettier plots
   : Read all buzzdetect result files in a directory (recursively).
 - [`read_results()`](https://osu-bee-lab.github.io/buzzr/reference/read_results.md)
   : Read a single buzzdetect results file.
+- [`summarize_detections()`](https://osu-bee-lab.github.io/buzzr/reference/summarize_detections.md)
+  : Summarize detections and frames, optionally by group.
 - [`theme_buzzr()`](https://osu-bee-lab.github.io/buzzr/reference/theme_buzzr.md)
   : A ggplot2 theme for aesthetic plotting of buzzdetect results.
 - [`time_of_day()`](https://osu-bee-lab.github.io/buzzr/reference/time_of_day.md)

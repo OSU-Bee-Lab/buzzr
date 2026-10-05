@@ -59,7 +59,7 @@ audio file) from real-world date-times.</p>
 <span>  posix_formats <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  first_match <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  drop_filetime <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  tz <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  tz <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dir_nesting <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -86,7 +86,7 @@ If <code>NULL</code> (default), results are left in file-time. See <a href="file
 
 
 <dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
-<dd><p>Time zone string passed to <a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">base::as.POSIXct</a> (e.g. <code>'America/New_York'</code>). See <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for valid values.. Ignored if the results already contain a
+<dd><p>Time zone string passed to <a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">base::as.POSIXct</a> (e.g. <code>'America/New_York'</code>). See <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for valid values. Defaults to your machine's timezone.. Ignored if the results already contain a
 <code>start_datetime</code> or <code>bin_datetime</code> column.</p></dd>
 
 
@@ -225,7 +225,7 @@ with <a href="read_directory.html">read_directory</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

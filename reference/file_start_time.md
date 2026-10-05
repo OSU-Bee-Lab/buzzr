@@ -5,7 +5,7 @@ Extract recording start date-times from file names.
 ## Usage
 
 ``` r
-file_start_time(paths, posix_formats, tz, first_match = FALSE)
+file_start_time(paths, posix_formats, tz = NULL, first_match = FALSE)
 ```
 
 ## Arguments
@@ -30,7 +30,7 @@ file_start_time(paths, posix_formats, tz, first_match = FALSE)
   [base::as.POSIXct](https://rdrr.io/r/base/as.POSIXlt.html) (e.g.
   `'America/New_York'`). See
   [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
-  values.
+  values. Defaults to your machine's timezone.
 
 - first_match:
 

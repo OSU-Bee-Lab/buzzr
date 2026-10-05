@@ -15,7 +15,8 @@ trim_directory(
   neurons_keep = NULL,
   output_format = "rds",
   if_exists = "stop",
-  workers = 1
+  workers = getOption("cl.cores", 2),
+  include_partial = FALSE
 )
 ```
 
@@ -54,10 +55,17 @@ trim_directory(
 
 - workers:
 
-  Number of parallel workers. Defaults to `1` (sequential). Parallelism
-  uses [parallel::mclapply](https://rdrr.io/r/parallel/mclapply.html) /
-  [parallel::mcmapply](https://rdrr.io/r/parallel/mclapply.html) and may
-  not be supported on all platforms.
+  Number of parallel workers to use when processing results. Defaults to
+  `getOption('cl.cores', 2)`. Set to 1 to run sequentially. Parallelism
+  uses a PSOCK cluster
+  ([parallel::parLapplyLB](https://rdrr.io/r/parallel/clusterApply.html)),
+  so buzzr must be installed.
+
+- include_partial:
+
+  If `TRUE`, also includes `_buzzpart` files. These are results files
+  for files that buzzdetect hasn't completely analyzed. Defaults to
+  `FALSE`.
 
 ## Value
 

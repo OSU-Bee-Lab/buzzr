@@ -52,7 +52,8 @@ in <code>dir_results</code>, saving the trimmed output to <code>path_out</code>.
 <span>  neurons_keep <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output_format <span class="op">=</span> <span class="st">"rds"</span>,</span>
 <span>  if_exists <span class="op">=</span> <span class="st">"stop"</span>,</span>
-<span>  workers <span class="op">=</span> <span class="fl">1</span></span>
+<span>  workers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"cl.cores"</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  include_partial <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -91,8 +92,11 @@ or <code>"overwrite"</code> (overwrites with a warning).</p></dd>
 
 
 <dt id="arg-workers">workers<a class="anchor" aria-label="anchor" href="#arg-workers"></a></dt>
-<dd><p>Number of parallel workers. Defaults to <code>1</code> (sequential).
-Parallelism uses <a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">parallel::mclapply</a> / <a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">parallel::mcmapply</a> and may not be supported on all platforms.</p></dd>
+<dd><p>Number of parallel workers to use when processing results. Defaults to <code>getOption('cl.cores', 2)</code>. Set to 1 to run sequentially. Parallelism uses a PSOCK cluster (<a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parallel::parLapplyLB</a>), so buzzr must be installed.</p></dd>
+
+
+<dt id="arg-include-partial">include_partial<a class="anchor" aria-label="anchor" href="#arg-include-partial"></a></dt>
+<dd><p>If <code>TRUE</code>, also includes <code>_buzzpart</code> files. These are results files for files that buzzdetect hasn't completely analyzed. Defaults to <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -146,7 +150,7 @@ directory structure.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

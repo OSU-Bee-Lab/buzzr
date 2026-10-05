@@ -8,7 +8,7 @@ ggplot2::scale_x_datetime after converting your time column with
 ## Usage
 
 ``` r
-label_hour(tz = Sys.timezone())
+label_hour(tz = NULL)
 ```
 
 ## Arguments

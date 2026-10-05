@@ -181,7 +181,8 @@ of the results file. For this, we need several more arguments.
   (TRUE)? Note: this argument is only respected if POSIX formats are
   given. File-time will not be dropped if there is no other time column.
 
-- **tz:** The time zone to use for the POSIX translation. Required if
+- **tz:** The time zone to use for the POSIX translation; if left blank,
+  buzzr uses the time zone your machine is configured to. Required if
   translating results to date-time. Should match the time zone of the
   recordings. Time zones are a real nightmare. If you’re finding
   everything is plotting incorrectly, it’s probably a time zone issue.

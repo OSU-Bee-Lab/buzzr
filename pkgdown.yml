@@ -1,10 +1,10 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   buzzr: buzzr.html
   time-interpretation: time-interpretation.html
-last_built: 2026-06-19T16:18Z
+last_built: 2026-10-05T20:43Z
 urls:
   reference: https://osu-bee-lab.github.io/buzzr/reference
   article: https://osu-bee-lab.github.io/buzzr/articles

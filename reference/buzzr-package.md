@@ -99,5 +99,3 @@ For a complete worked example see
 Useful links:
 
 - <https://OSU-Bee-Lab.github.io/buzzr>
-
-- <https://github.com/OSU-Bee-Lab/buzzdetect>

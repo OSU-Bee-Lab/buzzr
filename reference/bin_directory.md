@@ -12,16 +12,17 @@ their documentation for details.
 ``` r
 bin_directory(
   dir_results,
-  thresholds,
+  thresholds = NULL,
   posix_formats = NULL,
   first_match = FALSE,
   drop_filetime = TRUE,
   dir_nesting = NULL,
   return_ident = FALSE,
-  tz = NA,
+  tz = NULL,
   binwidth = 5,
   calculate_rate = FALSE,
-  workers = 2
+  workers = getOption("cl.cores", 2),
+  include_partial = FALSE
 )
 ```
 
@@ -37,9 +38,10 @@ bin_directory(
   (e.g. `c(ins_buzz = -1.2)`). Frames whose activation value *exceeds*
   the threshold are counted as detections. Because `model_general_v3`
   outputs negative log-likelihoods, thresholds are typically negative.
-  Activations *above* the threshold value are counted as detections, so
-  thresholds for models that output negative log-likelihoods (such as
-  `model_general_v3`) are typically negative (e.g. `-1.2`).
+  If omitted, the thresholds the model suggests are read from the
+  `buzzdetect_manifest.json` at the root of `dir_results`, with a
+  message naming them. Given thresholds are always used as-is, and the
+  manifest isn't consulted.
 
 - posix_formats:
 
@@ -86,8 +88,8 @@ bin_directory(
   [base::as.POSIXct](https://rdrr.io/r/base/as.POSIXlt.html) (e.g.
   `'America/New_York'`). See
   [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
-  values.. Ignored if the results already contain a `start_datetime` or
-  `bin_datetime` column.
+  values. Defaults to your machine's timezone.. Ignored if the results
+  already contain a `start_datetime` or `bin_datetime` column.
 
 - binwidth:
 
@@ -101,11 +103,17 @@ bin_directory(
 
 - workers:
 
-  Number of parallel workers to use when processing results. Set to
-  `Inf` to use all available cores. Note that because data.table already
-  uses multiple threads, you may want to set fewer workers than there
-  are cores on your machine. Overridden by MC_CORES environmental
-  variable if set.
+  Number of parallel workers to use when processing results. Defaults to
+  `getOption('cl.cores', 2)`. Set to 1 to run sequentially. Parallelism
+  uses a PSOCK cluster
+  ([parallel::parLapplyLB](https://rdrr.io/r/parallel/clusterApply.html)),
+  so buzzr must be installed.
+
+- include_partial:
+
+  If `TRUE`, also includes `_buzzpart` files. These are results files
+  for files that buzzdetect hasn't completely analyzed. Defaults to
+  `FALSE`.
 
 ## Value
 

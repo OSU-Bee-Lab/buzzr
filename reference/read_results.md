@@ -15,7 +15,7 @@ read_results(
   posix_formats = NULL,
   first_match = FALSE,
   drop_filetime = TRUE,
-  tz = NA,
+  tz = NULL,
   dir_nesting = NULL
 )
 ```
@@ -55,8 +55,8 @@ read_results(
   [base::as.POSIXct](https://rdrr.io/r/base/as.POSIXlt.html) (e.g.
   `'America/New_York'`). See
   [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
-  values.. Ignored if the results already contain a `start_datetime` or
-  `bin_datetime` column.
+  values. Defaults to your machine's timezone.. Ignored if the results
+  already contain a `start_datetime` or `bin_datetime` column.
 
 - dir_nesting:
 

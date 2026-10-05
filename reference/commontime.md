@@ -11,7 +11,7 @@ DST transition dates to avoid edge cases in most time zones.
 ## Usage
 
 ``` r
-commontime(times, tz = Sys.timezone())
+commontime(times, tz = NULL)
 ```
 
 ## Arguments

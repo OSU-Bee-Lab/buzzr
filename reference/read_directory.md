@@ -17,8 +17,9 @@ read_directory(
   drop_filetime = TRUE,
   dir_nesting = NULL,
   return_ident = FALSE,
-  tz = NA,
-  workers = 2
+  tz = NULL,
+  workers = getOption("cl.cores", 2),
+  include_partial = FALSE
 )
 ```
 
@@ -73,16 +74,22 @@ read_directory(
   [base::as.POSIXct](https://rdrr.io/r/base/as.POSIXlt.html) (e.g.
   `'America/New_York'`). See
   [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
-  values.. Ignored if the results already contain a `start_datetime` or
-  `bin_datetime` column.
+  values. Defaults to your machine's timezone.. Ignored if the results
+  already contain a `start_datetime` or `bin_datetime` column.
 
 - workers:
 
-  Number of parallel workers to use when processing results. Set to
-  `Inf` to use all available cores. Note that because data.table already
-  uses multiple threads, you may want to set fewer workers than there
-  are cores on your machine. Overridden by MC_CORES environmental
-  variable if set.
+  Number of parallel workers to use when processing results. Defaults to
+  `getOption('cl.cores', 2)`. Set to 1 to run sequentially. Parallelism
+  uses a PSOCK cluster
+  ([parallel::parLapplyLB](https://rdrr.io/r/parallel/clusterApply.html)),
+  so buzzr must be installed.
+
+- include_partial:
+
+  If `TRUE`, also includes `_buzzpart` files. These are results files
+  for files that buzzdetect hasn't completely analyzed. Defaults to
+  `FALSE`.
 
 ## Value
 

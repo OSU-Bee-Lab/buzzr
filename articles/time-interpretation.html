@@ -228,15 +228,13 @@ extraction as long as they don’t also match the timestamp pattern.</p>
 <div class="section level2">
 <h2 id="time-zones">Time zones<a class="anchor" aria-label="anchor" href="#time-zones"></a>
 </h2>
-<p>You must always pass a <code>tz</code> argument. Time zones are a
-<em>nightmare</em> and they will bite you. To minimize our culpability,
-we try to make buzzr utterly explicit about time zones. In general, it
-will never guess and will always ask. The exceptions are
-<code><a href="../reference/commontime.html">commontime()</a></code> , which defaults to your local time zone since
-it destroys relevant time zone information, and
-<code><a href="../reference/label_hour.html">label_hour()</a></code> which interacts with
-<code><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">ggplot2::scale_x_datetime()</a></code>, which guesses your time zone
-anyways.</p>
+<p>If you don’t pass a time zone argument to functions that need one,
+buzzr will default to your system’s time zone. This is convenient, but
+might produce unexpected results, for example, if your data were
+collected in a different time zone or if you’re analyzing the data in
+your hotel room the night before your presentation and the conference is
+in a different time zone. Time zones are a <em>nightmare</em> and they
+will bite you.</p>
 <p>Use <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> to browse valid time zone strings.</p>
 <hr>
 </div>
@@ -465,7 +463,7 @@ the data.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
