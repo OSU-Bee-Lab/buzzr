@@ -261,3 +261,37 @@ test_that("trim_directory include_partial picks up _buzzpart files", {
   n_partial <- nrow(readRDS(out_partial))
   expect_equal(n_default * 2, n_partial)
 })
+
+
+# ── trim_directory: parallel workers ──────────────────────────────────────────
+
+test_that("trim_directory writes identical files with workers = 1 and workers = 2", {
+  dir_in <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir_in) == 0)
+
+  out_seq <- file.path(tempdir(), paste0("buzzr_trim_seq_", Sys.getpid()))
+  out_par <- file.path(tempdir(), paste0("buzzr_trim_par_", Sys.getpid()))
+  on.exit(unlink(c(out_seq, out_par), recursive = TRUE), add = TRUE)
+
+  paths_seq <- trim_directory(dir_in, out_seq, activation_digits = 2, workers = 1)
+  paths_par <- trim_directory(dir_in, out_par, activation_digits = 2, workers = 2)
+
+  expect_equal(basename(paths_par), basename(paths_seq))
+  for (i in seq_along(paths_seq)) {
+    expect_equal(readRDS(paths_par[i]), readRDS(paths_seq[i]))
+  }
+})
+
+test_that("trim_directory to a single file is identical with workers = 1 and workers = 2", {
+  dir_in <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir_in) == 0)
+
+  file_seq <- file.path(tempdir(), paste0("buzzr_trim_seq_", Sys.getpid(), ".rds"))
+  file_par <- file.path(tempdir(), paste0("buzzr_trim_par_", Sys.getpid(), ".rds"))
+  on.exit(unlink(c(file_seq, file_par)), add = TRUE)
+
+  trim_directory(dir_in, file_seq, activation_digits = 2, workers = 1)
+  trim_directory(dir_in, file_par, activation_digits = 2, workers = 2)
+
+  expect_equal(readRDS(file_par), readRDS(file_seq))
+})

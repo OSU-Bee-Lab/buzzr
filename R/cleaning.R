@@ -84,15 +84,32 @@ trim_to_file <- function(dir_results, path_out, output_format, activation_digits
     return(data.frame())
   }
 
-  combined <- parallel::mclapply(
-    paths_results,
-    function(path_results){
-      results <- read_file(path_results, dir_results=dir_results, return_ident = TRUE )
-      trim_results(results, activation_digits, neurons_keep)
-    },
-    mc.cores = workers
-  ) |>
-    data.table::rbindlist(fill = TRUE)
+  workers <- min(workers, length(paths_results), parallel::detectCores())
+
+  trim_one <- function(path_results){
+    results <- read_file(path_results, dir_results=dir_results, return_ident = TRUE )
+    trim_results(results, activation_digits, neurons_keep)
+  }
+
+  if(workers > 1){
+    cl <- parallel::makeCluster(workers)
+    on.exit(parallel::stopCluster(cl), add = TRUE)
+    combined_list <- parallel::parLapplyLB(
+      cl,
+      X = paths_results,
+      fun = function(path_results){
+        data.table::setDTthreads(1)
+        trim_one(path_results)
+      }
+    )
+  } else {
+    combined_list <- lapply(
+      X = paths_results,
+      FUN = trim_one
+    )
+  }
+
+  combined <- data.table::rbindlist(combined_list, fill = TRUE)
 
   dir.create(dirname(path_out), recursive=TRUE, showWarnings=FALSE)
   if(output_format == 'csv'){
@@ -146,11 +163,25 @@ trim_to_dir <- function(dir_results, path_out, output_format, activation_digits,
     }
   }
 
+  workers <- min(workers, nrow(paths), parallel::detectCores())
+
+  write_one <- function(i){
+    trim_and_write(paths$input[i], paths$output[i])
+  }
+
   if(workers > 1){
-    parallel::mcmapply(trim_and_write, paths$input, paths$output,
-                       SIMPLIFY = FALSE, mc.cores = workers)
+    cl <- parallel::makeCluster(workers)
+    on.exit(parallel::stopCluster(cl), add = TRUE)
+    parallel::parLapplyLB(
+      cl,
+      X = seq_len(nrow(paths)),
+      fun = function(i){
+        data.table::setDTthreads(1)
+        write_one(i)
+      }
+    )
   } else {
-    mapply(trim_and_write, paths$input, paths$output)
+    lapply(X = seq_len(nrow(paths)), FUN = write_one)
   }
 
   invisible(paths$output)
@@ -181,7 +212,7 @@ trim_to_dir <- function(dir_results, path_out, output_format, activation_digits,
 #'   One of `"stop"` (default, throws an error), `"skip"` (silently skips existing files),
 #'   or `"overwrite"` (overwrites with a warning).
 #' @param workers Number of parallel workers. Defaults to `1` (sequential).
-#'   Parallelism uses [parallel::mclapply] / [parallel::mcmapply] and may not be supported on all platforms.
+#'   Parallelism uses a PSOCK cluster ([parallel::parLapplyLB]), so buzzr must be installed.
 #' @param include_partial `r DOC_PARAM_INCLUDE_PARTIAL`
 #' @return Invisibly returns the output file path(s).
 #' @seealso [buzzr::trim_results] for the single-file version.

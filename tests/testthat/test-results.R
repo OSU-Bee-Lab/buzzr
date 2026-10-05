@@ -443,3 +443,51 @@ test_that("bin_directory without thresholds or a manifest stops", {
     "No thresholds given"
   )
 })
+
+
+# ── parallel workers ──────────────────────────────────────────────────────────
+
+test_that("read_directory gives the same result with workers = 1 and workers = 2", {
+  dir <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir) == 0)
+
+  sequential <- read_directory(dir, dir_nesting = c("flower", "recorder"), workers = 1)
+  parallel   <- read_directory(dir, dir_nesting = c("flower", "recorder"), workers = 2)
+
+  expect_equal(parallel, sequential)
+})
+
+test_that("bin_directory gives the same result with workers = 1 and workers = 2", {
+  dir <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir) == 0)
+
+  args <- list(
+    dir_results   = dir,
+    thresholds    = c(ins_buzz = -1.2),
+    posix_formats = "%y%m%d_%H%M",
+    tz            = "UTC",
+    dir_nesting   = c("flower", "recorder"),
+    binwidth      = 20
+  )
+
+  sequential <- do.call(bin_directory, c(args, workers = 1))
+  parallel   <- do.call(bin_directory, c(args, workers = 2))
+
+  expect_equal(parallel, sequential)
+})
+
+test_that("workers larger than the number of files or cores is capped", {
+  dir <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir) == 0)
+
+  expect_no_error(read_directory(dir, workers = Inf))
+})
+
+test_that("parallel runs leave the session's data.table threads unchanged", {
+  dir <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir) == 0)
+
+  before <- data.table::getDTthreads()
+  read_directory(dir, workers = 2)
+  expect_equal(data.table::getDTthreads(), before)
+})

@@ -12,7 +12,7 @@ read_directory(
   dir_nesting = NULL,
   return_ident = FALSE,
   tz = NA,
-  workers = 2,
+  workers = getOption("cl.cores", 2),
   include_partial = FALSE
 )
 }
@@ -34,7 +34,7 @@ column as the first column of the output.}
 \item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values.. Ignored if the results already contain a
 \code{start_datetime} or \code{bin_datetime} column.}
 
-\item{workers}{Number of parallel workers to use when processing results. Set to \code{Inf} to use all available cores. Note that because data.table already uses multiple threads, you may want to set fewer workers than there are cores on your machine. Overridden by MC_CORES environmental variable if set.}
+\item{workers}{Number of parallel workers to use when processing results. Defaults to MC_CORES environmental variable if set, 2 if not.}
 
 \item{include_partial}{If \code{TRUE}, also includes \verb{_buzzpart} files. These are results files for files that buzzdetect hasn't completely analyzed. Defaults to \code{FALSE}.}
 }

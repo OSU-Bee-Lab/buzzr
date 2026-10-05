@@ -1,15 +1,6 @@
 #' @import data.table
 NULL
 
-warn_workers_ide <- function(workers) {
-  if (workers > 1 && nzchar(Sys.getenv("POSITRON"))) {
-    warning(
-      "Fork-based parallelism (mclapply) may not work in Positron. If results are empty, try workers = 1.",
-      call. = FALSE
-    )
-  }
-}
-
 convert_start_raw <- function(results){
   # convert buzzdetect "start" column to buzzr "start_filetime" column
   if((COL_START_RAW %in% names(results))){
@@ -447,36 +438,52 @@ read_file <- function(
 #' # Also include the ident column for tracing results back to their source file
 #' read_directory(dir, return_ident = TRUE)
 #' @export
-read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, workers=2, include_partial=FALSE){
+read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, workers=getOption("cl.cores", 2), include_partial=FALSE){
   paths_results <- list_results(dir_results, include_partial)
+  workers <- min(workers, length(paths_results), parallel::detectCores())
+
   if(length(paths_results)==0){
     msg <- paste0('No results found in directory ', dir_results)
     warning(msg)
     return(data.frame())
   }
 
-  warn_workers_ide(workers)
+  read_one <- function(path_results){
+    read_file(
+            path_results   = path_results,
+            posix_formats  = posix_formats,
+            first_match    = first_match,
+            drop_filetime  = drop_filetime,
+            tz             = tz,
+            dir_nesting    = dir_nesting,
+            return_ident   = return_ident,
+            dir_results    = dir_results,
+            thresholds     = NULL,
+            binwidth       = NULL,
+            calculate_rate = FALSE
+        )
+  }
 
-  results_dir <- parallel::mclapply(
-    X = paths_results,
-    FUN = function(path_results){
-      if (workers > 1) data.table::setDTthreads(1)
-      read_file(
-          path_results   = path_results,
-          posix_formats  = posix_formats,
-          first_match    = first_match,
-          drop_filetime  = drop_filetime,
-          tz             = tz,
-          dir_nesting    = dir_nesting,
-          return_ident   = return_ident,
-          dir_results    = dir_results,
-          thresholds     = NULL,
-          binwidth       = NULL,
-          calculate_rate = FALSE
-      ) 
-    },
-    mc.cores = workers
-  ) |>
+  if(workers > 1){
+    cl <- parallel::makeCluster(workers)
+    on.exit(parallel::stopCluster(cl), add = TRUE)
+    results_dir_list <- parallel::parLapplyLB(
+      cl,
+      X = paths_results,
+      fun = function(path_results){
+        data.table::setDTthreads(1)
+        read_one(path_results)
+      }
+    )
+  } else {
+    results_dir_list <- lapply(
+      X = paths_results,
+      FUN = read_one
+    )
+  }
+
+
+  results_dir <- results_dir_list|>
     data.table::rbindlist(fill = T)
 
   if(nrow(results_dir)==0){return(data.frame())}
@@ -521,8 +528,10 @@ read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, d
 #'   calculate_rate = TRUE
 #' )
 #' @export
-bin_directory <- function(dir_results, thresholds=NULL, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE, workers=2, include_partial=FALSE){
+bin_directory <- function(dir_results, thresholds=NULL, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE, workers=getOption("cl.cores", 2), include_partial=FALSE){
   paths_results <- list_results(dir_results, include_partial)
+  workers <- min(workers, length(paths_results), parallel::detectCores())
+
   if(length(paths_results)==0){
     msg <- paste0('No results found in directory ', dir_results)
     warning(msg)
@@ -539,13 +548,10 @@ bin_directory <- function(dir_results, thresholds=NULL, posix_formats=NULL, firs
             paste(names(thresholds), thresholds, sep = ' = ', collapse = ', '))
   }
 
-  warn_workers_ide(workers)
 
-  results_bin_dir <- parallel::mclapply(
-    X = paths_results,
-    FUN = function(path_results){
-      if (workers > 1) data.table::setDTthreads(1)
-      read_file(
+
+  read_one <- function(path_results){
+    read_file(
           path_results    = path_results,
           posix_formats   = posix_formats,
           first_match     = first_match,
@@ -558,9 +564,27 @@ bin_directory <- function(dir_results, thresholds=NULL, posix_formats=NULL, firs
           binwidth        = binwidth,
           calculate_rate  = calculate_rate
       )
-    },
-    mc.cores = workers
-  ) |>
+  }
+
+  if(workers > 1){
+    cl <- parallel::makeCluster(workers)
+    on.exit(parallel::stopCluster(cl), add = TRUE)
+    results_bin_dir_list <- parallel::parLapplyLB(
+      cl,
+      X = paths_results,
+      fun = function(path_results){
+        data.table::setDTthreads(1)
+        read_one(path_results)
+      }
+    )
+  } else {
+    results_bin_dir_list <- lapply(
+      X = paths_results,
+      FUN = read_one
+    )
+  }
+
+  results_bin_dir <- results_bin_dir_list |>
     data.table::rbindlist(fill = T)
 
   if(nrow(results_bin_dir)==0){return(data.frame())}
