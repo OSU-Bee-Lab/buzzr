@@ -401,3 +401,45 @@ test_that("bin_directory returns empty data.frame when directory has no results"
   )
   expect_equal(nrow(result), 0)
 })
+
+# ── bin_directory: thresholds from buzzdetect_manifest.json ──────────────────
+
+copy_five_flowers <- function(manifest = NULL) {
+  src <- system.file("extdata/five_flowers", package = "buzzr")
+  dest <- file.path(tempfile("five_flowers_"))
+  dir.create(dest)
+  file.copy(list.files(src, full.names = TRUE), dest, recursive = TRUE)
+  if (!is.null(manifest)) writeLines(manifest, file.path(dest, "buzzdetect_manifest.json"))
+  dest
+}
+
+test_that("bin_directory reads thresholds from the manifest when none are given", {
+  skip_if(nchar(system.file("extdata/five_flowers", package = "buzzr")) == 0)
+  dir <- copy_five_flowers('{"modelname": "model_general_v3", "thresholds": {"ins_buzz": -1.2}}')
+
+  expect_message(
+    from_manifest <- bin_directory(dir, binwidth = 20, workers = 1),
+    "Using thresholds from buzzdetect_manifest.json: ins_buzz = -1.2"
+  )
+  given <- bin_directory(dir, thresholds = c(ins_buzz = -1.2), binwidth = 20, workers = 1)
+  expect_equal(from_manifest, given)
+})
+
+test_that("given thresholds override the manifest, which is not read", {
+  skip_if(nchar(system.file("extdata/five_flowers", package = "buzzr")) == 0)
+  dir <- copy_five_flowers('{"thresholds": {"ins_buzz": 99}}')
+
+  expect_no_message(
+    result <- bin_directory(dir, thresholds = c(ins_buzz = -1.2), binwidth = 20, workers = 1)
+  )
+  expect_gt(sum(result$detections_ins_buzz), 0)
+})
+
+test_that("bin_directory without thresholds or a manifest stops", {
+  skip_if(nchar(system.file("extdata/five_flowers", package = "buzzr")) == 0)
+  expect_error(bin_directory(copy_five_flowers(), workers = 1), "No thresholds given")
+  expect_error(
+    bin_directory(copy_five_flowers('{"modelname": "m"}'), workers = 1),
+    "No thresholds given"
+  )
+})

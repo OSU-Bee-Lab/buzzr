@@ -84,3 +84,24 @@ get_ident <- function(path_in, dir_in=''){
     # remove any leading slash
     stringr::str_remove('^/')
 }
+
+
+# read the manifest written by buzzdetect for suggested thresholds
+manifest_thresholds <- function(dir_results) {
+  path <- file.path(dir_results, FNAME_MANIFEST)
+  if (!file.exists(path)) return(NULL)
+
+  manifest <- tryCatch(
+    jsonlite::read_json(path),
+    error = function(e) {
+      warning('Could not read ', path, ': ', conditionMessage(e))
+      NULL
+    }
+  )
+  thresholds <- manifest$thresholds
+  if (!is.list(thresholds) || length(thresholds) == 0) return(NULL)
+
+  numeric <- vapply(thresholds, function(v) is.numeric(v) && length(v) == 1, logical(1))
+  if (!any(numeric)) return(NULL)
+  unlist(thresholds[numeric])
+}

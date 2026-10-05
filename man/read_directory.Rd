@@ -12,7 +12,8 @@ read_directory(
   dir_nesting = NULL,
   return_ident = FALSE,
   tz = NA,
-  workers = 2
+  workers = 2,
+  include_partial = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ column as the first column of the output.}
 \code{start_datetime} or \code{bin_datetime} column.}
 
 \item{workers}{Number of parallel workers to use when processing results. Set to \code{Inf} to use all available cores. Note that because data.table already uses multiple threads, you may want to set fewer workers than there are cores on your machine. Overridden by MC_CORES environmental variable if set.}
+
+\item{include_partial}{If \code{TRUE}, also includes \verb{_buzzpart} files. These are results files for files that buzzdetect hasn't completely analyzed. Defaults to \code{FALSE}.}
 }
 \value{
 A data.table combining all files, with the same columns as

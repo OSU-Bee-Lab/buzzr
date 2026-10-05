@@ -9,6 +9,8 @@ PREFIX_DETECTIONRATE <- 'detectionrate_'
 TAG_RESULTS <- '_buzzdetect'
 TAG_PARTIAL <- '_buzzpart'
 
+FNAME_MANIFEST <- 'buzzdetect_manifest.json'
+
 COL_START_RAW <- 'start'
 COL_START_FILETIME <- 'start_filetime'
 COL_START_DATETIME <- 'start_datetime'

@@ -10,6 +10,7 @@ URL: https://OSU-Bee-Lab.github.io/buzzr
 License: MIT + file LICENSE
 Imports:
     data.table,
+    jsonlite,
     lubridate,
     stringr,
     ggplot2,

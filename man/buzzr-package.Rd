@@ -77,7 +77,6 @@ For a complete worked example see \code{vignette('buzzr')}.
 Useful links:
 \itemize{
   \item \url{https://OSU-Bee-Lab.github.io/buzzr}
-  \item \url{https://github.com/OSU-Bee-Lab/buzzdetect}
 }
 
 }

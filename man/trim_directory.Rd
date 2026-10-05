@@ -11,7 +11,8 @@ trim_directory(
   neurons_keep = NULL,
   output_format = "rds",
   if_exists = "stop",
-  workers = 1
+  workers = 1,
+  include_partial = FALSE
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ or \code{"overwrite"} (overwrites with a warning).}
 
 \item{workers}{Number of parallel workers. Defaults to \code{1} (sequential).
 Parallelism uses \link[parallel:mclapply]{parallel::mclapply} / \link[parallel:mclapply]{parallel::mcmapply} and may not be supported on all platforms.}
+
+\item{include_partial}{If \code{TRUE}, also includes \verb{_buzzpart} files. These are results files for files that buzzdetect hasn't completely analyzed. Defaults to \code{FALSE}.}
 }
 \value{
 Invisibly returns the output file path(s).

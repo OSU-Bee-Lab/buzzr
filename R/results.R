@@ -221,7 +221,7 @@ cols_group <- function(colnames_in){
 }
 
 cols_sum <- function(colnames_in){
-  mask <- grepl("^detections_", colnames_in)
+  mask <- grepl(paste0("^", PREFIX_DETECTION), colnames_in)
   mask[colnames_in==COL_FRAMES] <- T
 
   return(colnames_in[mask])
@@ -329,7 +329,7 @@ bin <- function(results, binwidth, calculate_rate=F){
   if(is.null(results[[COL_FRAMES]])){
     # but if the data are already binned, we must be missing the frames column for some reason. Stop.
     if(no_frametimes){  # only need to check frametimes since at this point either frametimes or bintimes must exist
-      stop('Results appear to be in a binned format, but no \'frames\' column exists. Cannot bin without frame counts.')
+      stop('Results appear to be in a binned format, but no', COL_FRAMES ,' column exists. Cannot bin without frame counts.')
       # I suppose we _could_ bin without frame counts, there's no mathematical reason not to. But it indicates something has gone wrong.
         # other than the mathematical reason that we may need to calculate detection rates and they could be >1 if we assume frames=1
     }
@@ -344,7 +344,7 @@ bin <- function(results, binwidth, calculate_rate=F){
 
 
   sumcols <- cols_sum(names(results))  # detections and frames
-  if(all(sumcols=='frames')){warning('No detection columns found in results')}
+  if(all(sumcols==COL_FRAMES)){warning('No detection columns found in results')}
 
   # Group by all columns in groupcols and sum the specified columns
   results_bin <- results[
@@ -499,6 +499,10 @@ read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, d
 #' @inheritParams read_directory
 #' @inheritParams call_detections
 #' @inheritParams bin
+#' @param thresholds `r DOC_PARAM_THRESHOLDS` If omitted, the thresholds the
+#'   model suggests are read from the `buzzdetect_manifest.json` at the root of
+#'   `dir_results`, with a message naming them. Given thresholds are always used
+#'   as-is, and the manifest isn't consulted.
 #' @return A data.table with `bin_filetime` or `bin_datetime`, `detections_`
 #'   columns, a `frames` column, and any columns from `dir_nesting` or `ident`.
 #' @seealso [buzzr::read_directory], [buzzr::call_detections], and [buzzr::bin]
@@ -517,12 +521,22 @@ read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, d
 #'   calculate_rate = TRUE
 #' )
 #' @export
-bin_directory <- function(dir_results, thresholds, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE, workers=2, include_partial=FALSE){
+bin_directory <- function(dir_results, thresholds=NULL, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE, workers=2, include_partial=FALSE){
   paths_results <- list_results(dir_results, include_partial)
   if(length(paths_results)==0){
     msg <- paste0('No results found in directory ', dir_results)
     warning(msg)
     return(data.frame())
+  }
+
+  if(is.null(thresholds)){
+    thresholds <- manifest_thresholds(dir_results)
+    if(is.null(thresholds)){
+      stop('No thresholds given, and no ', FNAME_MANIFEST, ' with thresholds found in ', dir_results,
+           '. Pass thresholds, e.g. thresholds = c(ins_buzz = -1.2).')
+    }
+    message('Using thresholds from ', FNAME_MANIFEST, ': ',
+            paste(names(thresholds), thresholds, sep = ' = ', collapse = ', '))
   }
 
   warn_workers_ide(workers)
@@ -566,3 +580,80 @@ bin_directory <- function(dir_results, thresholds, posix_formats=NULL, first_mat
 
   return(results_bin_dir)
 }
+
+calculate_detectionrate <- function(results){
+  for(c in names(results)[startsWith(names(results), PREFIX_DETECTION)]){
+    c_rate <- gsub(PREFIX_DETECTION, PREFIX_DETECTIONRATE, c)
+    results[[c_rate]] <- results[[c]]/results[[COL_FRAMES]]
+  }
+
+  return(results)
+}
+
+
+#' Summarize detections and frames, optionally by group.
+#'
+#' Sums all `detections_` columns and the `frames` column, either across the
+#' entire data frame or within groups. Detection rates are then (re)calculated
+#' from these summed totals, so any pre-existing `detectionrate_` columns are
+#' dropped rather than averaged.
+#'
+#' @param results `r DOC_PARAM_RESULTS`
+#' @param groupcols Character vector of column names to group by before
+#'   summarizing. If `NULL` (default) and `results` is already a grouped data
+#'   frame (e.g. via [dplyr::group_by]), its existing groups are used instead.
+#'   If `NULL` and `results` has no groups, the entire data frame is summarized
+#'   into a single row.
+#' @param calculate_rate `r DOC_PARAM_CALCULATE_RATE`
+#' @return A data frame with one row per group (or one row total), the summed
+#'   `detections_` columns, a summed `frames` column, and optionally
+#'   `detectionrate_` columns.
+#' @seealso [buzzr::bin] to summarize frame-level results into time bins,
+#'   which is usually done before further summarizing with this function.
+#' @examples
+#' results <- data.frame(
+#'   site                = c('a', 'a', 'b'),
+#'   detections_ins_buzz = c(1, 3, 2),
+#'   frames              = c(10, 10, 5)
+#' )
+#'
+#' # Summarize by group
+#' summarize_detections(results, groupcols = 'site')
+#'
+#' # Summarize the entire data frame
+#' summarize_detections(results)
+#' @export
+summarize_detections <- function(results, groupcols=NULL, calculate_rate = T){
+   if(!is.null(groupcols)){
+     results <- dplyr::group_by_at(results, groupcols)
+   }
+
+  groupcols <- dplyr::group_vars(results)
+
+  if(length(groupcols) == 0){
+    warning('No groups given or detected for results; summarizing entire data frame')
+  }
+
+
+  df <- results %>%
+    dplyr::summarize(
+      dplyr::across(
+        .cols = dplyr::starts_with(PREFIX_DETECTION),
+        sum
+      ),
+
+      dplyr::across(
+        .cols = COL_FRAMES,
+        sum
+      ),
+
+      .groups = 'drop'
+    )
+
+  if(calculate_rate){
+    df <- calculate_detectionrate(df)
+  }
+
+  return(df)
+}
+
