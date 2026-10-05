@@ -28,7 +28,8 @@
 #' fmt(as.POSIXct('2000-01-01 08:00:00', tz = 'America/New_York'))  # "8 am"
 #' fmt(as.POSIXct('2000-01-01 14:00:00', tz = 'America/New_York'))  # "2 pm"
 #' @export
-label_hour <- function(tz = Sys.timezone()){
+label_hour <- function(tz = NULL){
+  tz <- resolve_tz(tz)
   label_fn <- function(breaks){
     strftime(breaks, format = "%I %p", tz=tz) |>
       stringr::str_remove('^0') |>

@@ -1,3 +1,19 @@
+resolve_tz <- function(tz = NULL) {
+  if (!is.null(tz)){
+    return(tz)
+  }
+
+  tz <- Sys.timezone()
+
+  if (is.na(tz)){  # this can happen sometimes on misconfigured machines
+    warning('Sys.timezone() returns NA; coercing to UTC')
+    return("UTC")
+  }
+
+  return(tz)
+}
+
+
 #' Coerce all dates to the same day, preserving time of day.
 #'
 #' Sets the date of every element in `times` to 2000-01-01 while keeping the
@@ -32,7 +48,8 @@
 #' #   geom_line() +
 #' #   scale_x_datetime(labels = label_hour(tz = 'America/New_York'))
 #' @export
-commontime <- function(times, tz=Sys.timezone()) {
+commontime <- function(times, tz=NULL) {
+  tz <- resolve_tz(tz)
   times <- as.POSIXct(times)
   lubridate::date(times) <- '2000-01-01'
   lubridate::tz(times) <- tz
@@ -160,7 +177,8 @@ unlist_posix <- function(posixlist){
 #'   first_match = FALSE
 #' )
 #' @export
-file_start_time <- function(paths, posix_formats, tz, first_match=FALSE){
+file_start_time <- function(paths, posix_formats, tz=NULL, first_match=FALSE){
+  tz <- resolve_tz(tz)
   regex_patterns <- sapply(posix_formats, posix_to_regex, USE.NAMES=T)
 
   time_from_path <- function(path){

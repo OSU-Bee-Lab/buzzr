@@ -491,3 +491,36 @@ test_that("parallel runs leave the session's data.table threads unchanged", {
   read_directory(dir, workers = 2)
   expect_equal(data.table::getDTthreads(), before)
 })
+
+
+# ── time zone auto-detection ──────────────────────────────────────────────────
+
+test_that("read_results defaults to the system time zone", {
+  path <- system.file(
+    "extdata/five_flowers/soybean/9/230809_0000_buzzdetect.csv",
+    package = "buzzr"
+  )
+  skip_if(nchar(path) == 0, "example data not available")
+  local_tz("America/New_York")
+
+  auto     <- read_results(path, posix_formats = "%y%m%d_%H%M")
+  explicit <- read_results(path, posix_formats = "%y%m%d_%H%M", tz = "America/New_York")
+  utc      <- read_results(path, posix_formats = "%y%m%d_%H%M", tz = "UTC")
+
+  expect_equal(auto$start_datetime, explicit$start_datetime)
+  expect_false(isTRUE(all.equal(auto$start_datetime, utc$start_datetime)))
+})
+
+test_that("read_directory and bin_directory default to the system time zone", {
+  dir <- system.file("extdata/five_flowers", package = "buzzr")
+  skip_if(nchar(dir) == 0)
+  local_tz("America/New_York")
+
+  read_auto <- read_directory(dir, posix_formats = "%y%m%d_%H%M", workers = 1)
+  read_expl <- read_directory(dir, posix_formats = "%y%m%d_%H%M", tz = "America/New_York", workers = 1)
+  expect_equal(read_auto, read_expl)
+
+  bin_auto <- bin_directory(dir, thresholds = c(ins_buzz = -1.2), posix_formats = "%y%m%d_%H%M", binwidth = 20, workers = 1)
+  bin_expl <- bin_directory(dir, thresholds = c(ins_buzz = -1.2), posix_formats = "%y%m%d_%H%M", tz = "America/New_York", binwidth = 20, workers = 1)
+  expect_equal(bin_auto, bin_expl)
+})

@@ -127,3 +127,45 @@ test_that("file_start_time handles duplicate formats without warning", {
   )
   expect_false(is.na(result))
 })
+
+
+# ── resolve_tz / time zone auto-detection ─────────────────────────────────────
+
+test_that("resolve_tz passes an explicit tz through unchanged", {
+  expect_equal(resolve_tz("America/New_York"), "America/New_York")
+  expect_equal(resolve_tz("UTC"), "UTC")
+})
+
+test_that("resolve_tz detects the system time zone when tz is NULL", {
+  local_tz("America/Chicago")
+  expect_equal(resolve_tz(NULL), "America/Chicago")
+  expect_equal(resolve_tz(), "America/Chicago")
+})
+
+test_that("resolve_tz falls back to UTC with a warning when detection fails", {
+  testthat::local_mocked_bindings(
+    Sys.timezone = function(...) NA_character_,
+    .package = "base"
+  )
+  expect_warning(result <- resolve_tz(NULL), "UTC")
+  expect_equal(result, "UTC")
+})
+
+test_that("file_start_time defaults to the system time zone", {
+  local_tz("America/New_York")
+  path <- "path/to/230809_0000_buzzdetect.csv"
+
+  auto     <- file_start_time(path, posix_formats = "%y%m%d_%H%M")
+  explicit <- file_start_time(path, posix_formats = "%y%m%d_%H%M", tz = "America/New_York")
+  utc      <- file_start_time(path, posix_formats = "%y%m%d_%H%M", tz = "UTC")
+
+  expect_equal(auto, explicit)
+  expect_false(isTRUE(all.equal(auto, utc)))
+})
+
+test_that("commontime defaults to the system time zone", {
+  local_tz("America/New_York")
+  t <- as.POSIXct("2023-06-15 14:30:00", tz = "UTC")
+
+  expect_equal(commontime(t), commontime(t, tz = "America/New_York"))
+})

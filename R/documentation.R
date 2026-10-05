@@ -22,7 +22,7 @@ NULL
 
   # times
   DOC_PARAM_TIMES <- 'A POSIXct vector.'
-  DOC_PARAM_TZ <- "Time zone string passed to [base::as.POSIXct] (e.g. `'America/New_York'`). See `OlsonNames()` for valid values."
+  DOC_PARAM_TZ <- "Time zone string passed to [base::as.POSIXct] (e.g. `'America/New_York'`). See `OlsonNames()` for valid values. Defaults to your machine's timezone."
   DOC_PARAM_DROP_FILETIME <- "If `TRUE` (default), the `start_filetime` / `bin_filetime` column is removed once `start_datetime` / `bin_datetime` has been added. Set `FALSE` to keep both."
   DOC_PARAM_FIRST_MATCH <- "Controls behaviour when multiple formats produce *different* times for the same file. `FALSE` (default) returns `NA` with a warning; `TRUE` accepts the time from the first matching format with a message."
   DOC_PARAM_POSIX_FORMATS <- "Character vector of POSIX format strings (see [base::strptime]) describing the timestamp embedded in each file name (e.g. `'%y%m%d_%H%M'` for `230809_0600`). Supply multiple strings when recordings from different logger types are mixed in one directory."

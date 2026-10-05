@@ -59,7 +59,7 @@ convert_start_raw <- function(results){
 #'   dir_nesting    = c('flower', 'recorder')
 #' )
 #' @export
-read_results <- function(path_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, tz=NA, dir_nesting=NULL){
+read_results <- function(path_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, tz=NULL, dir_nesting=NULL){
   if(!file.exists(path_results)){
     stop('File does not exist: ', path_results)
   }
@@ -73,6 +73,7 @@ read_results <- function(path_results, posix_formats=NULL, first_match=FALSE, dr
     stop('file extension not supported for results file ', path_results, '.\n Must be .csv or .rds')
   }
 
+  tz <- resolve_tz(tz)
   results <- convert_start_raw(results)
 
   has_real <- (COL_START_DATETIME %in% names(results)) | (COL_BIN_DATETIME %in% names(results))
@@ -370,7 +371,7 @@ read_file <- function(
     posix_formats  = NULL,
     first_match    = FALSE,
     drop_filetime  = TRUE,
-    tz             = NA,
+    tz             = NULL,
     dir_nesting    = NULL,
     return_ident   = FALSE,
     dir_results    = NULL,
@@ -378,6 +379,7 @@ read_file <- function(
     binwidth       = NULL,
     calculate_rate = FALSE
 ) {
+  tz <- resolve_tz(tz)
   results <- read_results(
     path_results,
     posix_formats = posix_formats,
@@ -438,7 +440,7 @@ read_file <- function(
 #' # Also include the ident column for tracing results back to their source file
 #' read_directory(dir, return_ident = TRUE)
 #' @export
-read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, workers=getOption("cl.cores", 2), include_partial=FALSE){
+read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NULL, workers=getOption("cl.cores", 2), include_partial=FALSE){
   paths_results <- list_results(dir_results, include_partial)
   workers <- min(workers, length(paths_results), parallel::detectCores())
 
@@ -447,6 +449,8 @@ read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, d
     warning(msg)
     return(data.frame())
   }
+
+  tz <- resolve_tz(tz)
 
   read_one <- function(path_results){
     read_file(
@@ -528,7 +532,7 @@ read_directory <- function(dir_results, posix_formats=NULL, first_match=FALSE, d
 #'   calculate_rate = TRUE
 #' )
 #' @export
-bin_directory <- function(dir_results, thresholds=NULL, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NA, binwidth=5, calculate_rate=FALSE, workers=getOption("cl.cores", 2), include_partial=FALSE){
+bin_directory <- function(dir_results, thresholds=NULL, posix_formats=NULL, first_match=FALSE, drop_filetime=TRUE, dir_nesting=NULL, return_ident=FALSE, tz=NULL, binwidth=5, calculate_rate=FALSE, workers=getOption("cl.cores", 2), include_partial=FALSE){
   paths_results <- list_results(dir_results, include_partial)
   workers <- min(workers, length(paths_results), parallel::detectCores())
 
@@ -548,7 +552,7 @@ bin_directory <- function(dir_results, thresholds=NULL, posix_formats=NULL, firs
             paste(names(thresholds), thresholds, sep = ' = ', collapse = ', '))
   }
 
-
+  tz <- resolve_tz(tz)
 
   read_one <- function(path_results){
     read_file(

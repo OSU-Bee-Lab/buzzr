@@ -57,3 +57,10 @@ test_that("label_hour respects the tz parameter", {
   expect_equal(label_utc, "12 pm")
   expect_equal(label_est, "7 am")
 })
+
+test_that("label_hour defaults to the system time zone", {
+  local_tz("America/New_York")
+  t <- as.POSIXct("2000-01-01 12:00:00", tz = "UTC")
+
+  expect_equal(label_hour()(t), "7 am")
+})
