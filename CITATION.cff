@@ -1,7 +1,6 @@
 # The version and date-released fields are updated automatically by
 # .githooks/pre-commit whenever the Version in DESCRIPTION changes.
 cff-version: 1.2.0
-message: "If you use this software, please cite it using the metadata from this file."
 title: "buzzr: an R package for wrangling, plotting, and analyzing buzzdetect data"
 type: software
 authors:
