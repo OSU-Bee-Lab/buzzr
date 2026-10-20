@@ -1,0 +1,13 @@
+#!/bin/sh
+# When a commit changes the Version in DESCRIPTION, refresh CITATION.cff and
+# add it to the same commit.
+# Enable with: git config core.hooksPath .githooks
+
+old=$(git show HEAD:DESCRIPTION 2>/dev/null | sed -n 's/^Version: *//p')
+new=$(git show :DESCRIPTION 2>/dev/null | sed -n 's/^Version: *//p')
+
+if [ -n "$new" ] && [ "$old" != "$new" ]; then
+  echo "pre-commit: version $old -> $new, updating CITATION.cff"
+  Rscript .githooks/update-cff.R || exit 1
+  git add CITATION.cff
+fi

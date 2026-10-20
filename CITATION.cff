@@ -1,0 +1,21 @@
+# The version and date-released fields are updated automatically by
+# .githooks/pre-commit whenever the Version in DESCRIPTION changes.
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+title: "buzzr: Tools for wrangling buzzdetect results"
+type: software
+authors:
+  - family-names: "Hearon"
+    given-names: "Luke"
+    orcid: "https://orcid.org/0009-0004-3775-0849"
+    affiliation: "The Ohio State University"
+version: 1.2.0
+date-released: 2026-10-20
+license: MIT
+url: "https://OSU-Bee-Lab.github.io/buzzr"
+repository-code: "https://github.com/OSU-Bee-Lab/buzzr"
+keywords:
+  - bioacoustics
+  - passive acoustic monitoring
+  - pollinators
+  - buzzdetect

@@ -1,0 +1,10 @@
+# Version, title, and URL are read from DESCRIPTION, so this file needs no
+# per-release edits. To cite a paper instead, replace with a bibentry("Article", ...).
+bibentry(
+  "Manual",
+  title = paste0("buzzr: ", meta$Title),
+  author = person("Luke", "Hearon", comment = c(ORCID = "0009-0004-3775-0849")),
+  year = format(Sys.Date(), "%Y"),
+  note = paste("R package version", meta$Version),
+  url = meta$URL
+)
