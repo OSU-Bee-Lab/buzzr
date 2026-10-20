@@ -56,10 +56,7 @@ trim_directory(
 - workers:
 
   Number of parallel workers to use when processing results. Defaults to
-  `getOption('cl.cores', 2)`. Set to 1 to run sequentially. Parallelism
-  uses a PSOCK cluster
-  ([parallel::parLapplyLB](https://rdrr.io/r/parallel/clusterApply.html)),
-  so buzzr must be installed.
+  `getOption('cl.cores', 2)`. Set to 1 to run sequentially.
 
 - include_partial:
 
