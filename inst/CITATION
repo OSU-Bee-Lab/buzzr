@@ -6,5 +6,6 @@ bibentry(
   author = person("Luke", "Hearon", comment = c(ORCID = "0009-0004-3775-0849")),
   year = format(Sys.Date(), "%Y"),
   note = paste("R package version", meta$Version),
-  url = meta$URL
+  url = meta$URL,
+  doi = "10.5281/zenodo.23504639"
 )

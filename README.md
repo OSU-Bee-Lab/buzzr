@@ -1,4 +1,5 @@
 # buzzr
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23504639.svg)](https://doi.org/10.5281/zenodo.23504639) 
 
 buzzr is an R companion package to [buzzdetect](https://github.com/OSU-Bee-Lab/buzzdetect), a passive acoustic monitoring tool for pollinators. It provides a tidy pipeline for reading, thresholding, binning, and plotting buzzdetect results.
 
