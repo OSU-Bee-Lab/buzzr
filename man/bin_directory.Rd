@@ -46,7 +46,7 @@ column as the first column of the output.}
 
 \item{calculate_rate}{If \code{TRUE}, adds a \code{detectionrate_} column for each \code{detections_} column, calculated as detections divided by frames. Values range from 0 to 1.}
 
-\item{workers}{Number of parallel workers to use when processing results. Defaults to \code{getOption('cl.cores', 2)}. Set to 1 to run sequentially. Parallelism uses a PSOCK cluster (\link[parallel:clusterApply]{parallel::parLapplyLB}), so buzzr must be installed.}
+\item{workers}{Number of parallel workers to use when processing results. Defaults to \code{getOption('cl.cores', 2)}. Set to 1 to run sequentially.}
 
 \item{include_partial}{If \code{TRUE}, also includes \verb{_buzzpart} files. These are results files for files that buzzdetect hasn't completely analyzed. Defaults to \code{FALSE}.}
 }

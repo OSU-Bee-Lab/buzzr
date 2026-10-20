@@ -34,7 +34,7 @@ column as the first column of the output.}
 \item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values. Defaults to your machine's timezone.. Ignored if the results already contain a
 \code{start_datetime} or \code{bin_datetime} column.}
 
-\item{workers}{Number of parallel workers to use when processing results. Defaults to \code{getOption('cl.cores', 2)}. Set to 1 to run sequentially. Parallelism uses a PSOCK cluster (\link[parallel:clusterApply]{parallel::parLapplyLB}), so buzzr must be installed.}
+\item{workers}{Number of parallel workers to use when processing results. Defaults to \code{getOption('cl.cores', 2)}. Set to 1 to run sequentially.}
 
 \item{include_partial}{If \code{TRUE}, also includes \verb{_buzzpart} files. These are results files for files that buzzdetect hasn't completely analyzed. Defaults to \code{FALSE}.}
 }
