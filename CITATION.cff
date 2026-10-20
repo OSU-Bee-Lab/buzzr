@@ -9,7 +9,7 @@ authors:
     given-names: "Luke"
     orcid: "https://orcid.org/0009-0004-3775-0849"
     affiliation: "The Ohio State University"
-version: 1.2.0
+version: 1.2.1
 date-released: 2026-10-20
 license: MIT
 url: "https://OSU-Bee-Lab.github.io/buzzr"
