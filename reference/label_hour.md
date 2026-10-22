@@ -2,7 +2,8 @@
 
 Returns a labeller function that formats POSIXct values as readable hour
 strings (e.g. `"6 am"`, `"2 pm"`). Designed for use with
-ggplot2::scale_x_datetime after converting your time column with
+[ggplot2::scale_x_datetime](https://ggplot2.tidyverse.org/reference/scale_date.html)
+after converting your time column with
 [commontime](https://osu-bee-lab.github.io/buzzr/reference/commontime.md).
 
 ## Usage

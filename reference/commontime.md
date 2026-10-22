@@ -3,7 +3,8 @@
 Sets the date of every element in `times` to 2000-01-01 while keeping
 the time-of-day unchanged. This lets you overlay recordings from
 different calendar days on a shared x axis using
-ggplot2::scale_x_datetime and
+[ggplot2::scale_x_datetime](https://ggplot2.tidyverse.org/reference/scale_date.html)
+and
 [label_hour](https://osu-bee-lab.github.io/buzzr/reference/label_hour.md).
 The arbitrary date 2000-01-01 was chosen because it is far enough from
 DST transition dates to avoid edge cases in most time zones.

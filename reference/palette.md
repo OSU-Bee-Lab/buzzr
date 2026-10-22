@@ -10,10 +10,6 @@ through fuchsia and salmon to a warm off-white.
 palette
 ```
 
-## Format
-
-An object of class `character` of length 8.
-
 ## Details
 
 Named colors: `black`, `purple_deep`, `purple`, `periwinkle`, `fuchsia`,

@@ -72,6 +72,15 @@ documentation</a>. For a broader walkthrough of bioacoustic analysis
 with buzzdetect and buzzr, see <a href="https://lukehearon.com/buzzdetect/walkthrough" class="external-link">the walkthrough
 here</a>.</p>
 <div class="section level2">
+<h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a>
+</h2>
+<p>This vignette, and the “Five Flowers” dataset bundled with buzzr, use
+results from <code>model_general_v3</code>, the model we used in the
+original publication for buzzdetect. <code>model_general_v3</code> had a
+suggested ins_buzz threshold of -1.2. From buzzdetect v2.0 and onwards,
+all models have a suggested threshold of 0 for all neurons.</p>
+</div>
+<div class="section level2">
 <h2 id="tldr">TL;DR<a class="anchor" aria-label="anchor" href="#tldr"></a>
 </h2>
 <p>The core buzzr functionality is wrapped into a single function,
