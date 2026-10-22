@@ -32,8 +32,7 @@ pre-existing \code{detectionrate_} columns are dropped rather than averaged.
 }
 \details{
 If no groups are given or detected, rows are left as-is and
-\code{detectionrate_} columns are calculated in place: missing rate columns are
-added and existing ones are overwritten.
+\code{detectionrate_} columns are calculated in place.
 }
 \examples{
 results <- data.frame(

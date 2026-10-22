@@ -39,7 +39,7 @@ If \code{NULL} (default), results are left in file-time. See \link{file_start_ti
 \item{return_ident}{The 'ident' is the relative path from your data directory to the results file, without the _buzzdetect tag or file extension. Useful for finding corresponding audio files or annotations. Set \code{TRUE} to add an \code{ident}
 column as the first column of the output.}
 
-\item{tz}{Time zone string passed to \link[base:as.POSIXlt]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values. Defaults to your machine's timezone.. Ignored if the results already contain a
+\item{tz}{Time zone string passed to \link[base:as.POSIXct]{base::as.POSIXct} (e.g. \code{'America/New_York'}). See \code{OlsonNames()} for valid values. Defaults to your machine's timezone.. Ignored if the results already contain a
 \code{start_datetime} or \code{bin_datetime} column.}
 
 \item{binwidth}{Width of each time bin in minutes (e.g. \code{5}, \code{20}, or \code{60}).}

@@ -20,7 +20,7 @@ component set to 2000-01-01.
 \description{
 Sets the date of every element in \code{times} to 2000-01-01 while keeping the
 time-of-day unchanged. This lets you overlay recordings from different
-calendar days on a shared x axis using \link[ggplot2:scale_date]{ggplot2::scale_x_datetime} and
+calendar days on a shared x axis using \link[ggplot2:scale_x_datetime]{ggplot2::scale_x_datetime} and
 \link{label_hour}. The arbitrary date 2000-01-01 was chosen because it
 is far enough from DST transition dates to avoid edge cases in most time zones.
 }

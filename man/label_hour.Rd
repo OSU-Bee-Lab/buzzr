@@ -18,7 +18,7 @@ vector of hour labels.
 \description{
 Returns a labeller function that formats POSIXct values as readable hour
 strings (e.g. \code{"6 am"}, \code{"2 pm"}). Designed for use with
-\link[ggplot2:scale_date]{ggplot2::scale_x_datetime} after converting your time column with
+\link[ggplot2:scale_x_datetime]{ggplot2::scale_x_datetime} after converting your time column with
 \link{commontime}.
 }
 \details{
