@@ -546,11 +546,35 @@ test_that("summarize_detections sums by groupcols and computes rates", {
   expect_equal(out$detectionrate_ins_buzz, c(0.2, 0.4))
 })
 
-test_that("summarize_detections without groups warns and returns one row", {
-  expect_warning(out <- summarize_detections(make_summary_input()), "summarizing entire")
-  expect_equal(nrow(out), 1)
-  expect_equal(out$detections_ins_buzz, 6)
-  expect_equal(out$frames, 25)
+test_that("summarize_detections without groups calculates rates in place", {
+  out <- summarize_detections(make_summary_input())
+  expect_equal(nrow(out), 3)
+  expect_equal(out$detections_ins_buzz, c(1, 3, 2))
+  expect_equal(out$frames, c(10, 10, 5))
+  expect_equal(out$detectionrate_ins_buzz, c(0.1, 0.3, 0.4))
+})
+
+test_that("summarize_detections without groups overwrites existing rate columns", {
+  d <- make_summary_input()
+  d$detectionrate_ins_buzz <- c(9, 9, 9)
+  out <- summarize_detections(d)
+  expect_equal(out$detectionrate_ins_buzz, c(0.1, 0.3, 0.4))
+})
+
+test_that("summarize_detections without groups preserves input class", {
+  out <- summarize_detections(make_summary_input())
+  expect_s3_class(out, "data.frame")
+  expect_false(inherits(out, "data.table"))
+
+  skip_if_not_installed("tibble")
+  out_tbl <- summarize_detections(tibble::as_tibble(make_summary_input()))
+  expect_s3_class(out_tbl, "tbl_df")
+})
+
+test_that("summarize_detections without groups or rates warns and returns input unmodified", {
+  d <- make_summary_input()
+  expect_warning(out <- summarize_detections(d, calculate_rate = FALSE), "unmodified")
+  expect_equal(out, d)
 })
 
 test_that("summarize_detections calculate_rate = FALSE omits rate columns", {

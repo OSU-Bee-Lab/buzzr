@@ -12,21 +12,28 @@ summarize_detections(results, groupcols = NULL, calculate_rate = T)
 \item{groupcols}{Character vector of column names to group by before
 summarizing. If \code{NULL} (default) and \code{results} is already a grouped data
 frame (e.g. via \link[dplyr:group_by]{dplyr::group_by}), its existing groups are used instead.
-If \code{NULL} and \code{results} has no groups, the entire data frame is summarized
-into a single row.}
+If \code{NULL} and \code{results} has no groups, no summarizing is done and
+detection rates are calculated for each row.}
 
-\item{calculate_rate}{If \code{TRUE}, adds a \code{detectionrate_} column for each \code{detections_} column, calculated as detections divided by frames. Values range from 0 to 1.}
+\item{calculate_rate}{If \code{TRUE}, adds a \code{detectionrate_} column for each \code{detections_} column, calculated as detections divided by frames. Values range from 0 to 1. If there are no groups
+and this is \code{FALSE}, \code{results} is returned unmodified with a warning.}
 }
 \value{
-A data frame with one row per group (or one row total), the summed
+With groups: a data frame with one row per group, the summed
 \code{detections_} columns, a summed \code{frames} column, and optionally
-\code{detectionrate_} columns.
+\code{detectionrate_} columns. Without groups: \code{results} with the same rows,
+plus (re)calculated \code{detectionrate_} columns if \code{calculate_rate} is
+\code{TRUE}.
 }
 \description{
-Sums all \code{detections_} columns and the \code{frames} column, either across the
-entire data frame or within groups. Detection rates are then (re)calculated
-from these summed totals, so any pre-existing \code{detectionrate_} columns are
-dropped rather than averaged.
+Sums all \code{detections_} columns and the \code{frames} column within groups.
+Detection rates are then (re)calculated from these summed totals, so any
+pre-existing \code{detectionrate_} columns are dropped rather than averaged.
+}
+\details{
+If no groups are given or detected, rows are left as-is and
+\code{detectionrate_} columns are calculated in place: missing rate columns are
+added and existing ones are overwritten.
 }
 \examples{
 results <- data.frame(
@@ -38,7 +45,7 @@ results <- data.frame(
 # Summarize by group
 summarize_detections(results, groupcols = 'site')
 
-# Summarize the entire data frame
+# No groups: add detection rates to each row
 summarize_detections(results)
 }
 \seealso{

@@ -628,21 +628,26 @@ calculate_detectionrate <- function(results){
 
 #' Summarize detections and frames, optionally by group.
 #'
-#' Sums all `detections_` columns and the `frames` column, either across the
-#' entire data frame or within groups. Detection rates are then (re)calculated
-#' from these summed totals, so any pre-existing `detectionrate_` columns are
-#' dropped rather than averaged.
+#' Sums all `detections_` columns and the `frames` column within groups.
+#' Detection rates are then (re)calculated from these summed totals, so any
+#' pre-existing `detectionrate_` columns are dropped rather than averaged.
+#'
+#' If no groups are given or detected, rows are left as-is and
+#' `detectionrate_` columns are calculated in place.
 #'
 #' @param results `r DOC_PARAM_RESULTS`
 #' @param groupcols Character vector of column names to group by before
 #'   summarizing. If `NULL` (default) and `results` is already a grouped data
 #'   frame (e.g. via [dplyr::group_by]), its existing groups are used instead.
-#'   If `NULL` and `results` has no groups, the entire data frame is summarized
-#'   into a single row.
-#' @param calculate_rate `r DOC_PARAM_CALCULATE_RATE`
-#' @return A data frame with one row per group (or one row total), the summed
+#'   If `NULL` and `results` has no groups, no summarizing is done and
+#'   detection rates are calculated for each row.
+#' @param calculate_rate `r DOC_PARAM_CALCULATE_RATE` If there are no groups
+#'   and this is `FALSE`, `results` is returned unmodified with a warning.
+#' @return With groups: a data frame with one row per group, the summed
 #'   `detections_` columns, a summed `frames` column, and optionally
-#'   `detectionrate_` columns.
+#'   `detectionrate_` columns. Without groups: `results` with the same rows,
+#'   plus (re)calculated `detectionrate_` columns if `calculate_rate` is
+#'   `TRUE`.
 #' @seealso [buzzr::bin] to summarize frame-level results into time bins,
 #'   which is usually done before further summarizing with this function.
 #' @examples
@@ -655,7 +660,7 @@ calculate_detectionrate <- function(results){
 #' # Summarize by group
 #' summarize_detections(results, groupcols = 'site')
 #'
-#' # Summarize the entire data frame
+#' # No groups: add detection rates to each row
 #' summarize_detections(results)
 #' @export
 summarize_detections <- function(results, groupcols=NULL, calculate_rate = T){
@@ -665,17 +670,25 @@ summarize_detections <- function(results, groupcols=NULL, calculate_rate = T){
     groupcols <- group_vars_base(results)
   }
 
-  if(length(groupcols) == 0){
-    warning('No groups given or detected for results; summarizing entire data frame')
-  }
-
   missing_cols <- setdiff(groupcols, names(results))
   if(length(missing_cols) > 0){
     stop('groupcols not found in results: ', paste(missing_cols, collapse = ', '))
   }
 
+
+  if(length(groupcols) == 0){
+    if(calculate_rate){
+      results <- calculate_detectionrate(results)
+    } else {
+      warning("No group cols given, but calculate_rate is also false; returning results unmodified.")
+    }
+    
+    return(results)
+  }
+
   results <- data.table::as.data.table(results)  # also drops the grouped_df class
   sumcols <- cols_sum(names(results))  # detections and frames
+
 
   df <- results[
     ,
