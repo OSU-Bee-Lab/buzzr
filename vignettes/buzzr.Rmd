@@ -13,6 +13,11 @@ buzzr is a companion package to [buzzdetect](https://github.com/OSU-Bee-Lab/buzz
 For details about running buzzdetect itself, see the [buzzdetect documentation](https://buzzdetect.readthedocs.io/en/latest/).
 For a broader walkthrough of bioacoustic analysis with buzzdetect and buzzr, see [the walkthrough here](https://lukehearon.com/buzzdetect/walkthrough).
 
+## Note
+This vignette, and the "Five Flowers" dataset bundled with buzzr, use results from `model_general_v3`, the model we used in the original publication for buzzdetect.
+`model_general_v3` had a suggested ins_buzz threshold of -1.2.
+From buzzdetect v2.0 and onwards, all models have a suggested threshold of 0 for all neurons.
+
 ## TL;DR
 The core buzzr functionality is wrapped into a single function, `buzzr::bin_directory`.
 This function reads all buzzdetect results in a folder (recursively),
